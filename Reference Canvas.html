@@ -529,9 +529,10 @@ function renderEdges() {
     const fromEl = canvas.querySelector(`.rnode[data-id="${from.id}"]`);
     const toEl = canvas.querySelector(`.rnode[data-id="${to.id}"]`);
     if (!fromEl || !toEl) return;
-    const [ax, ay, bx, by] = routeEdge(from, fromEl, to, toEl);
-    const mx1 = (ax + bx) / 2;
-    const d = `M${ax} ${ay} C ${mx1} ${ay}, ${mx1} ${by}, ${bx} ${by}`;
+    const [ax, ay, bx, by, fs, ts] = routeEdge(from, fromEl, to, toEl, e);
+    const cp1 = ctrlPt({x:ax,y:ay}, fs);
+    const cp2 = ctrlPt({x:bx,y:by}, OPP[ts]);
+    const d = `M${ax} ${ay} C ${cp1.x} ${cp1.y}, ${cp2.x} ${cp2.y}, ${bx} ${by}`;
     const isSel = selected?.type==='edge' && selected.id===e.id;
     const style = e.style || 'solid';
     const arrow = e.arrow || 'end';   // 'end' | 'start' | 'both' | 'none' | 'dot'
@@ -575,21 +576,58 @@ function renderEdges() {
 function svgEl(tag) { return document.createElementNS('http://www.w3.org/2000/svg', tag); }
 function center(n, el) { return { x: n.x + el.offsetWidth/2, y: n.y + el.offsetHeight/2 }; }
 
-function routeEdge(from, fromEl, to, toEl) {
+const OPP = { n:'s', s:'n', e:'w', w:'e' };
+
+function portXY(node, el, side) {
+  const w = el.offsetWidth, h = el.offsetHeight;
+  switch (side) {
+    case 'n': return { x: node.x + w/2, y: node.y };
+    case 's': return { x: node.x + w/2, y: node.y + h };
+    case 'e': return { x: node.x + w,   y: node.y + h/2 };
+    case 'w': return { x: node.x,       y: node.y + h/2 };
+    default:  return { x: node.x + w/2, y: node.y + h/2 };
+  }
+}
+
+function nearestPort(node, el, cx, cy) {
+  let best = null, bestDist = Infinity;
+  for (const side of ['n','s','e','w']) {
+    const p = portXY(node, el, side);
+    const d = Math.hypot(p.x - cx, p.y - cy);
+    if (d < bestDist) { bestDist = d; best = { side, x: p.x, y: p.y }; }
+  }
+  return best;
+}
+
+function ctrlPt(p, side, len = 70) {
+  switch (side) {
+    case 'n': return { x: p.x,       y: p.y - len };
+    case 's': return { x: p.x,       y: p.y + len };
+    case 'e': return { x: p.x + len, y: p.y };
+    case 'w': return { x: p.x - len, y: p.y };
+    default:  return { x: p.x,       y: p.y };
+  }
+}
+
+function routeEdge(from, fromEl, to, toEl, edge) {
+  if (edge?.fromPort && edge?.toPort) {
+    const fp = portXY(from, fromEl, edge.fromPort);
+    const tp = portXY(to, toEl, edge.toPort);
+    return [fp.x, fp.y, tp.x, tp.y, edge.fromPort, edge.toPort];
+  }
   const fc = center(from, fromEl), tc = center(to, toEl);
   const dx = tc.x - fc.x, dy = tc.y - fc.y;
-  let ax, ay, bx, by;
+  let ax, ay, bx, by, fs, ts;
   if (Math.abs(dx) > Math.abs(dy)) {
-    // horizontal
-    if (dx > 0) { ax = from.x + fromEl.offsetWidth; bx = to.x; }
-    else        { ax = from.x; bx = to.x + toEl.offsetWidth; }
+    if (dx > 0) { ax = from.x + fromEl.offsetWidth; bx = to.x; fs = 'e'; ts = 'w'; }
+    else        { ax = from.x; bx = to.x + toEl.offsetWidth; fs = 'w'; ts = 'e'; }
     ay = fc.y; by = tc.y;
   } else {
-    if (dy > 0) { ay = from.y + fromEl.offsetHeight; by = to.y; }
-    else        { ay = from.y; by = to.y + toEl.offsetHeight; }
+    if (dy > 0) { ay = from.y + fromEl.offsetHeight; by = to.y; fs = 's'; ts = 'n'; }
+    else        { ay = from.y; by = to.y + toEl.offsetHeight; fs = 'n'; ts = 's'; }
     ax = fc.x; bx = tc.x;
   }
-  return [ax, ay, bx, by];
+  return [ax, ay, bx, by, fs, ts];
 }
 
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -856,41 +894,55 @@ function clearGuides() { svg.querySelectorAll('.guide').forEach(g => g.remove())
 // CONNECT
 // ============================================================
 function startConnect(fromId, e) {
-  const temp = svgEl('path'); temp.setAttribute('class','temp-edge');
+  const fromPortSide = e.target.dataset.port || 'e';
+  const temp = svgEl('path');
+  temp.setAttribute('class', 'temp-edge');
+  temp.setAttribute('marker-end', 'url(#arr-sel)');
   svg.appendChild(temp);
   const fromNode = graph.nodes.find(n => n.id === fromId);
   const fromEl = canvas.querySelector(`.rnode[data-id="${fromId}"]`);
-  let hoverTarget = null;
+  let hoverTarget = null, snapPort = null;
+
   const clearHover = () => {
     canvas.querySelectorAll('.rnode.connect-target').forEach(x => x.classList.remove('connect-target'));
+    canvas.querySelectorAll('.port.drop-target').forEach(x => x.classList.remove('drop-target'));
   };
+
   const onMove = ev => {
     const rect = canvas.getBoundingClientRect();
-    const bx = (ev.clientX - rect.left) / zoom;
-    const by = (ev.clientY - rect.top) / zoom;
-    const fc = center(fromNode, fromEl);
-    const mx = (fc.x + bx) / 2;
-    temp.setAttribute('d', `M${fc.x} ${fc.y} C ${mx} ${fc.y}, ${mx} ${by}, ${bx} ${by}`);
-    // highlight target — check by actual node bounds, not just elementFromPoint (avoids missing port/img hits)
+    const mx = (ev.clientX - rect.left) / zoom;
+    const my = (ev.clientY - rect.top) / zoom;
+    const fp = portXY(fromNode, fromEl, fromPortSide);
     clearHover();
-    hoverTarget = findNodeAtCanvasXY(bx, by, fromId);
+    hoverTarget = findNodeAtCanvasXY(mx, my, fromId);
+    snapPort = null;
+    let tx = mx, ty = my, toSide = null;
     if (hoverTarget) {
       const tEl = canvas.querySelector(`.rnode[data-id="${hoverTarget.id}"]`);
       tEl?.classList.add('connect-target');
+      snapPort = nearestPort(hoverTarget, tEl, mx, my);
+      tx = snapPort.x; ty = snapPort.y; toSide = snapPort.side;
+      tEl?.querySelector(`.port.${snapPort.side}`)?.classList.add('drop-target');
     }
+    const cp1 = ctrlPt(fp, fromPortSide);
+    const cp2 = ctrlPt({x: tx, y: ty}, toSide ? OPP[toSide] : null);
+    temp.setAttribute('d', `M${fp.x} ${fp.y} C ${cp1.x} ${cp1.y}, ${cp2.x} ${cp2.y}, ${tx} ${ty}`);
   };
+
   const onUp = ev => {
     removeEventListener('mousemove', onMove);
     removeEventListener('mouseup', onUp);
-    temp.remove();
-    clearHover();
+    temp.remove(); clearHover();
     if (hoverTarget && hoverTarget.id !== fromId) {
       commit();
-      graph.edges.push({ id: uidE(), from: fromId, to: hoverTarget.id, label: '', style: 'solid', arrow: 'end', weight: 'normal' });
+      graph.edges.push({ id: uidE(), from: fromId, to: hoverTarget.id,
+        fromPort: fromPortSide, toPort: snapPort?.side || OPP[fromPortSide],
+        label: '', style: 'solid', arrow: 'end', weight: 'normal' });
       save(); render();
       select('edge', graph.edges[graph.edges.length - 1].id);
     }
   };
+
   addEventListener('mousemove', onMove);
   addEventListener('mouseup', onUp);
 }
