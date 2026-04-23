@@ -495,6 +495,31 @@ function renderNode(n) {
   bindNode(el, n);
 }
 
+function patchNodeEl(n) {
+  const el = canvas.querySelector(`.rnode[data-id="${n.id}"]`);
+  if (!el) return;
+  if (n.kind === 'note') {
+    const b = el.querySelector('.body');
+    if (b && !b.isContentEditable) b.textContent = n.body || '';
+  } else if (n.kind === 'icon') {
+    const g = el.querySelector('.glyph');
+    if (g && !g.isContentEditable) g.textContent = n.glyph || '⭐';
+  } else if (n.kind === 'ref') {
+    const c = el.querySelector('.caption');
+    if (c && !c.isContentEditable) c.textContent = n.title || 'Reference';
+  } else if (n.kind === 'group') {
+    const lbl = el.querySelector('.group-label');
+    if (lbl && !lbl.isContentEditable) lbl.textContent = n.title || 'GROUP';
+  } else {
+    const ic = el.querySelector('.icon');
+    if (ic && !ic.isContentEditable) ic.textContent = n.icon || '';
+    const t = el.querySelector('.title');
+    if (t && !t.isContentEditable) t.textContent = n.title || '';
+    const s = el.querySelector('.sub');
+    if (s && !s.isContentEditable) s.textContent = n.sub || '';
+  }
+}
+
 function renderEdges() {
   svg.querySelectorAll('.edge, .edge-hit, .edge-label, .edge-label-bg').forEach(e => e.remove());
   graph.edges.forEach(e => {
@@ -940,11 +965,11 @@ function renderInspector() {
         In: ${graph.edges.filter(e=>e.to===n.id).length} · Out: ${graph.edges.filter(e=>e.from===n.id).length}
       </div>`;
     insp.innerHTML = html;
-    insp.querySelector('#fIcon')?.addEventListener('input', e => { n.icon = e.target.value; save(); render(); });
-    insp.querySelector('#fTitle')?.addEventListener('input', e => { n.title = e.target.value; save(); render(); });
-    insp.querySelector('#fSub')?.addEventListener('input', e => { n.sub = e.target.value; save(); render(); });
-    insp.querySelector('#fBody')?.addEventListener('input', e => { n.body = e.target.value; save(); render(); });
-    insp.querySelector('#fGlyph')?.addEventListener('input', e => { n.glyph = e.target.value || '⭐'; save(); render(); });
+    insp.querySelector('#fIcon')?.addEventListener('input', e => { n.icon = e.target.value; save(); patchNodeEl(n); });
+    insp.querySelector('#fTitle')?.addEventListener('input', e => { n.title = e.target.value; save(); patchNodeEl(n); });
+    insp.querySelector('#fSub')?.addEventListener('input', e => { n.sub = e.target.value; save(); });
+    insp.querySelector('#fBody')?.addEventListener('input', e => { n.body = e.target.value; save(); patchNodeEl(n); });
+    insp.querySelector('#fGlyph')?.addEventListener('input', e => { n.glyph = e.target.value || '⭐'; save(); patchNodeEl(n); });
     insp.querySelector('#imgBtn')?.addEventListener('click', () => insp.querySelector('#imgInsp').click());
     insp.querySelector('#imgInsp')?.addEventListener('change', async ev => {
       const f = ev.target.files[0]; if (!f) return;
