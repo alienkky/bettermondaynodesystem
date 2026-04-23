@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs><radialGradient id="cg" cx="35%" cy="30%"><stop offset="0%" stop-color="#F7DB8E"></stop><stop offset="100%" stop-color="#B8811F"></stop></radialGradient></defs>
+  <circle cx="24" cy="24" r="20" fill="url(#cg)" stroke="#8A5C10" stroke-width="2"></circle>
+  <circle cx="24" cy="24" r="14" fill="none" stroke="#8A5C10" stroke-width="1.5" opacity="0.6"></circle>
+  <text x="24" y="30" text-anchor="middle" font-family="&#39;Pretendard&#39;,sans-serif" font-size="18" font-weight="800" fill="#5C3C07">₩</text>
+  <ellipse cx="18" cy="17" rx="6" ry="3" fill="#fff" opacity="0.5"></ellipse>
+</svg>

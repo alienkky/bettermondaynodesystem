@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>BetterMonday Coffee Tycoon — UI Kit</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  html, body { background: #2A2420; height: 100%; }
+  body { display: flex; align-items: center; justify-content: center; padding: 24px; gap: 24px; flex-wrap: wrap; }
+  .phone-wrap { border-radius: 48px; box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.4); overflow: hidden; }
+  .phone { width: 390px; height: 844px; background: var(--paper); display: flex; flex-direction: column;
+    overflow: hidden; position: relative; font-family: var(--font-sans); }
+  .label { color: #8B7F76; font-family: var(--font-sans); font-weight: 700; font-size: 13px; margin-bottom: 10px; text-align: center; }
+  .col { display: flex; flex-direction: column; align-items: center; }
+</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="Core.jsx"></script>
+<script type="text/babel" src="PrologueScreen.jsx"></script>
+<script type="text/babel" src="CharacterCreateScreen.jsx"></script>
+<script type="text/babel" src="ShopScreen.jsx"></script>
+<script type="text/babel" src="MergeScreen.jsx"></script>
+<script type="text/babel" src="DexScreen.jsx"></script>
+</head>
+<body>
+<div class="col">
+  <div class="label">LIVE PROTOTYPE · tap the nav to switch screens</div>
+  <div class="phone-wrap"><div class="phone" id="app"></div></div>
+</div>
+
+<script type="text/babel">
+function App() {
+  const [stage, setStage] = React.useState('prologue'); // prologue | create | main
+  const [player, setPlayer] = React.useState({ name: '김점주', zodiac: 'tiger', element: 'fire' });
+  const [tab, setTab] = React.useState('shop');
+  const [coins, setCoins] = React.useState(50);
+  const [energy, setEnergy] = React.useState(120);
+  const [furniture, setFurniture] = React.useState(1);
+
+  if (stage === 'prologue') {
+    return <PrologueScreen onContinue={() => setStage('create')} />;
+  }
+  if (stage === 'create') {
+    return <CharacterCreateScreen onDone={p => { setPlayer(p); setStage('main'); }} />;
+  }
+
+  return (
+    <>
+      <HUD lv={12} exp={0.42} energy={energy} coin={coins.toLocaleString()} gem={24} />
+      {tab === 'shop' && <ShopScreen player={player} coins={coins} onCoinsChange={setCoins}
+        furniture={furniture} onBuildFurniture={() => { setFurniture(furniture + 1); setEnergy(Math.min(200, energy + 5)); }} />}
+      {tab === 'merge' && <MergeScreen coins={coins} onCoinsChange={setCoins}
+        energy={energy} onEnergyChange={setEnergy} />}
+      {tab === 'dex' && <DexScreen player={player} />}
+      {tab === 'menu' && (
+        <div style={{ flex: 1, padding: 24, background: 'var(--paper)' }}>
+          <div style={{ fontWeight: 800, fontSize: 22 }}>설정</div>
+          <Card style={{ marginTop: 16 }}>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <ZodiacAvatar zodiac={player.zodiac} element={player.element} size={56} />
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 16 }}>{player.name}</div>
+                <div style={{ fontSize: 13, color: 'var(--fg-2)' }}>{EL[player.element].glyph} {EL[player.element].label} · Lv 12</div>
+              </div>
+            </div>
+          </Card>
+          <Button full size="md" variant="ghost" onClick={() => setStage('prologue')}
+            style={{ marginTop: 16 }}>프롤로그 다시 보기</Button>
+        </div>
+      )}
+      <BottomNav active={tab} onNav={setTab} />
+    </>
+  );
+}
+ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+</script>
+</body>
+</html>

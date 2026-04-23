@@ -1,0 +1,366 @@
+[gd_scene load_steps=7 format=3 uid="uid://bmmain"]
+
+[ext_resource type="Script" path="res://scripts/Main.gd" id="1_main"]
+[ext_resource type="Script" path="res://scripts/HUD.gd" id="2_hud"]
+[ext_resource type="Script" path="res://scripts/CafeScene.gd" id="3_cafe"]
+[ext_resource type="Script" path="res://scripts/WorkshopScene.gd" id="4_work"]
+[ext_resource type="Script" path="res://scripts/DexScene.gd" id="5_dex"]
+[ext_resource type="Script" path="res://scripts/SettingsScene.gd" id="6_set"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="Background" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="HUD" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 72.0
+script = ExtResource("2_hud")
+
+[node name="HBox" type="HBoxContainer" parent="HUD"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Coin" type="PanelContainer" parent="HUD/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBox" type="HBoxContainer" parent="HUD/HBox/Coin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Icon" type="Label" parent="HUD/HBox/Coin/HBox"]
+layout_mode = 2
+text = "💰"
+
+[node name="Value" type="Label" parent="HUD/HBox/Coin/HBox"]
+layout_mode = 2
+text = "0"
+
+[node name="Gem" type="PanelContainer" parent="HUD/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBox" type="HBoxContainer" parent="HUD/HBox/Gem"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Icon" type="Label" parent="HUD/HBox/Gem/HBox"]
+layout_mode = 2
+text = "💎"
+
+[node name="Value" type="Label" parent="HUD/HBox/Gem/HBox"]
+layout_mode = 2
+text = "0"
+
+[node name="Energy" type="PanelContainer" parent="HUD/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HBox" type="HBoxContainer" parent="HUD/HBox/Energy"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Icon" type="Label" parent="HUD/HBox/Energy/HBox"]
+layout_mode = 2
+text = "⚡"
+
+[node name="Value" type="Label" parent="HUD/HBox/Energy/HBox"]
+layout_mode = 2
+text = "0/0"
+
+[node name="Level" type="PanelContainer" parent="HUD/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBox" type="VBoxContainer" parent="HUD/HBox/Level"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="HBox" type="HBoxContainer" parent="HUD/HBox/Level/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Icon" type="Label" parent="HUD/HBox/Level/VBox/HBox"]
+layout_mode = 2
+text = "⭐"
+
+[node name="Value" type="Label" parent="HUD/HBox/Level/VBox/HBox"]
+layout_mode = 2
+text = "Lv 1"
+
+[node name="ExpBar" type="ProgressBar" parent="HUD/HBox/Level/VBox"]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+show_percentage = false
+
+[node name="Stack" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 76.0
+offset_bottom = -110.0
+
+[node name="Cafe" type="Control" parent="Stack"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("3_cafe")
+
+[node name="VBox" type="VBoxContainer" parent="Stack/Cafe"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Stack/Cafe/VBox"]
+layout_mode = 2
+text = "카페"
+
+[node name="Subtitle" type="Label" parent="Stack/Cafe/VBox"]
+layout_mode = 2
+
+[node name="OrderRow" type="HBoxContainer" parent="Stack/Cafe/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DeliverRow" type="HBoxContainer" parent="Stack/Cafe/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BottomBar" type="HBoxContainer" parent="Stack/Cafe/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="SpawnBtn" type="Button" parent="Stack/Cafe/VBox/BottomBar"]
+layout_mode = 2
+text = "손님 받기"
+
+[node name="Hint" type="Label" parent="Stack/Cafe/VBox"]
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="Workshop" type="Control" parent="Stack"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("4_work")
+
+[node name="VBox" type="VBoxContainer" parent="Stack/Workshop"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Stack/Workshop/VBox"]
+layout_mode = 2
+text = "작업실"
+
+[node name="BoardPanel" type="PanelContainer" parent="Stack/Workshop/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="Grid" type="GridContainer" parent="Stack/Workshop/VBox/BoardPanel"]
+layout_mode = 2
+columns = 7
+
+[node name="BottomBar" type="HBoxContainer" parent="Stack/Workshop/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="SpawnBtn" type="Button" parent="Stack/Workshop/VBox/BottomBar"]
+layout_mode = 2
+text = "슬라임 소환"
+
+[node name="Hint" type="Label" parent="Stack/Workshop/VBox"]
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="GhostLayer" type="Control" parent="Stack/Workshop"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Dex" type="Control" parent="Stack"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("5_dex")
+
+[node name="VBox" type="VBoxContainer" parent="Stack/Dex"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Stack/Dex/VBox"]
+layout_mode = 2
+text = "도감"
+
+[node name="Subtitle" type="Label" parent="Stack/Dex/VBox"]
+layout_mode = 2
+
+[node name="Grid" type="GridContainer" parent="Stack/Dex/VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="Settings" type="Control" parent="Stack"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("6_set")
+
+[node name="VBox" type="VBoxContainer" parent="Stack/Settings"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Stack/Settings/VBox"]
+layout_mode = 2
+text = "설정"
+
+[node name="Info" type="Label" parent="Stack/Settings/VBox"]
+layout_mode = 2
+
+[node name="SaveBtn" type="Button" parent="Stack/Settings/VBox"]
+layout_mode = 2
+text = "저장"
+
+[node name="ResetBtn" type="Button" parent="Stack/Settings/VBox"]
+layout_mode = 2
+text = "초기화"
+
+[node name="TabBar" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -96.0
+
+[node name="HBox" type="HBoxContainer" parent="TabBar"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TabCafe" type="Button" parent="TabBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🏪 카페"
+
+[node name="TabWork" type="Button" parent="TabBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🧪 작업실"
+
+[node name="TabDex" type="Button" parent="TabBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "📚 도감"
+
+[node name="TabSet" type="Button" parent="TabBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "⚙ 설정"
+
+[node name="ToastLayer" type="CanvasLayer" parent="."]
+
+[node name="Toast" type="Label" parent="ToastLayer"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_top = 120.0
+offset_right = 120.0
+offset_bottom = 160.0
+grow_horizontal = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+text = ""
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="ModalLayer" type="CanvasLayer" parent="."]
+
+[node name="LevelUp" type="Control" parent="ModalLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Dim" type="ColorRect" parent="ModalLayer/LevelUp"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.55)
+
+[node name="Panel" type="PanelContainer" parent="ModalLayer/LevelUp"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -80.0
+offset_right = 140.0
+offset_bottom = 80.0
+
+[node name="VBox" type="VBoxContainer" parent="ModalLayer/LevelUp/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="ModalLayer/LevelUp/Panel/VBox"]
+layout_mode = 2
+text = "레벨업!"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 24
+
+[node name="Body" type="Label" parent="ModalLayer/LevelUp/Panel/VBox"]
+layout_mode = 2
+text = "+50 💰  +1 💎"
+horizontal_alignment = 1
+
+[node name="CloseBtn" type="Button" parent="ModalLayer/LevelUp/Panel/VBox"]
+layout_mode = 2
+text = "받기"

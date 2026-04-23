@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>BetterMonday — Game Flow Diagrams</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<style>
+  html, body { height: 100%; margin: 0; background: var(--paper); font-family: var(--font-sans); color: var(--ink); }
+  .app { display: flex; flex-direction: column; height: 100vh; }
+  .bar { height: 56px; background: var(--cream); border-bottom: 1.5px solid var(--border-card); display: flex; align-items: center; padding: 0 20px; gap: 14px; flex-shrink: 0; }
+  .brand { font-weight: 800; font-size: 15px; color: var(--roast-deep); letter-spacing: -0.01em; }
+  .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--border-card); }
+  .tabs { display: flex; gap: 4px; background: var(--bg-sunken); padding: 3px; border-radius: 10px; }
+  .tab { border: none; background: transparent; padding: 7px 14px; border-radius: 7px; font-weight: 700; font-size: 13px; color: var(--fg-2); cursor: pointer; font-family: var(--font-sans); }
+  .tab.on { background: var(--roast); color: var(--cream); }
+  .canvas-wrap { flex: 1; position: relative; overflow: auto; background:
+    radial-gradient(circle at 1px 1px, rgba(107,63,42,0.10) 1px, transparent 1px) 0 0 / 20px 20px,
+    var(--paper); }
+  .scene { display: none; width: 2600px; height: 1500px; position: relative; }
+  .scene.on { display: block; }
+
+  /* node */
+  .node { position: absolute; background: var(--cream); border: 2px solid var(--border-card); border-radius: 14px; padding: 12px 14px; box-shadow: var(--sh-md); min-width: 150px; transition: transform 120ms var(--ease-spring), box-shadow 240ms; }
+  .node:hover { transform: translateY(-2px); box-shadow: var(--sh-lg); z-index: 5; }
+  .node .icon { font-size: 22px; line-height: 1; margin-bottom: 6px; }
+  .node .title { font-weight: 800; font-size: 13px; color: var(--ink); letter-spacing: -0.01em; }
+  .node .sub { font-size: 11px; color: var(--fg-2); margin-top: 2px; line-height: 1.4; }
+  .node.pill { border-radius: 999px; padding: 8px 16px; min-width: 0; display: inline-flex; align-items: center; gap: 6px; }
+  .node.pill .title { font-size: 12px; }
+
+  .node.start { background: var(--roast); color: var(--cream); border-color: var(--roast-deep); }
+  .node.start .title, .node.start .sub { color: var(--cream); }
+  .node.end { background: var(--el-fire-bg); border-color: var(--el-fire); }
+  .node.scene-card { background: var(--cream); border-width: 3px; border-color: var(--roast); }
+  .node.state { background: #fff; border-style: dashed; }
+  .node.data { background: #F3E8D2; border-color: #D4B88A; }
+  .node.ui { background: var(--el-water-bg); border-color: var(--el-water); }
+  .node.input { background: var(--el-metal-bg); border-color: var(--el-metal); }
+  .node.store { background: var(--el-wood-bg); border-color: var(--el-wood); }
+
+  .cluster { position: absolute; border: 1.5px dashed var(--border-card); border-radius: 20px; padding: 28px 16px 16px; background: rgba(247,239,226,0.35); }
+  .cluster-label { position: absolute; top: -12px; left: 20px; background: var(--paper); padding: 2px 10px; font-weight: 800; font-size: 12px; color: var(--fg-2); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  svg.edges { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+  .edge { stroke: var(--roast); stroke-width: 2; fill: none; }
+  .edge.dashed { stroke-dasharray: 5 4; }
+  .edge.thin { stroke-width: 1.5; stroke: var(--fg-3); }
+  .edge.fire { stroke: var(--el-fire); }
+  .edge.water { stroke: var(--el-water); }
+  .edge.wood { stroke: var(--el-wood); }
+  .edge-label { font-family: var(--font-sans); font-weight: 700; font-size: 10px; fill: var(--fg-2); }
+  .edge-bg { fill: var(--paper); }
+
+  .scene-title { position: absolute; top: 18px; left: 28px; z-index: 10; }
+  .scene-title h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+  .scene-title .crumb { color: var(--fg-2); font-size: 12px; font-weight: 600; margin-top: 2px; }
+
+  .legend { position: fixed; bottom: 16px; right: 16px; background: var(--cream); border: 1.5px solid var(--border-card); border-radius: 12px; padding: 10px 14px; box-shadow: var(--sh-md); font-size: 11px; display: flex; gap: 14px; z-index: 20; }
+  .legend .item { display: flex; align-items: center; gap: 6px; }
+  .legend .swatch { width: 14px; height: 14px; border-radius: 4px; border: 2px solid transparent; }
+
+  .ann { position: absolute; max-width: 180px; font-size: 11px; color: var(--fg-2); font-family: 'Gaegu', var(--font-sans); font-weight: 700; line-height: 1.4; z-index: 2; }
+  .ann::before { content: ''; display: block; width: 14px; height: 14px; border-left: 1.5px solid var(--fg-3); border-bottom: 1.5px solid var(--fg-3); margin-bottom: 4px; border-bottom-left-radius: 6px; }
+
+  .chip { display: inline-block; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 999px; margin-right: 4px; }
+  .chip.trigger { background: var(--el-fire-bg); color: var(--el-fire-fg); }
+  .chip.time { background: var(--el-metal-bg); color: var(--el-metal-fg); }
+  .chip.cond { background: var(--el-water-bg); color: var(--el-water-fg); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <div class="brand">☕ BetterMonday · Game Flow</div>
+    <div class="dot"></div>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-v="master">① 전체 진행</button>
+      <button class="tab" data-v="state">② 상태머신</button>
+      <button class="tab" data-v="scene">③ 씬 전환</button>
+      <button class="tab" data-v="data">④ 데이터 플로우</button>
+    </div>
+    <div style="flex:1"></div>
+    <div style="color:var(--fg-2); font-size:11px;">drag canvas · hover nodes</div>
+  </div>
+  <div class="canvas-wrap" id="wrap">
+
+    <!-- ─────────────────────────────────────── MASTER FLOW ─────────────────────────────────────── -->
+    <div class="scene on" data-v="master">
+      <div class="scene-title"><h1>게임 전체 진행 플로우</h1><div class="crumb">튜토리얼 → 본편 루프 → 엔드콘텐츠</div></div>
+
+      <!-- Entry -->
+      <div class="node start" style="left:60px; top:220px;">
+        <div class="icon">▶</div><div class="title">앱 실행</div><div class="sub">splash · localStorage 로드</div>
+      </div>
+
+      <!-- Tutorial cluster -->
+      <div class="cluster" style="left:240px; top:80px; width:580px; height:480px;">
+        <div class="cluster-label">① 튜토리얼 (최초 1회)</div>
+        <div class="node" style="left:30px; top:40px;">
+          <div class="icon">📜</div><div class="title">프롤로그</div><div class="sub">월요일 아침 내레이션 · 5컷</div>
+        </div>
+        <div class="node" style="left:220px; top:40px;">
+          <div class="icon">🎭</div><div class="title">캐릭터 생성</div><div class="sub">이름 · 12지신 · 오행</div>
+        </div>
+        <div class="node" style="left:410px; top:40px;">
+          <div class="icon">🏪</div><div class="title">매장 첫 배치</div><div class="sub">카운터 하나 놓기</div>
+        </div>
+        <div class="node" style="left:30px; top:200px;">
+          <div class="icon">🧪</div><div class="title">첫 합성</div><div class="sub">아로마 슬라임 2개 → 2등급</div>
+        </div>
+        <div class="node" style="left:220px; top:200px;">
+          <div class="icon">☕</div><div class="title">첫 주문 전달</div><div class="sub">손님 도착 · 배달 · 팁</div>
+        </div>
+        <div class="node" style="left:410px; top:200px;">
+          <div class="icon">🎉</div><div class="title">튜토리얼 완료</div><div class="sub">도감 해금 · Lv 2</div>
+        </div>
+      </div>
+
+      <!-- Main loop cluster -->
+      <div class="cluster" style="left:870px; top:60px; width:1020px; height:620px;">
+        <div class="cluster-label">② 본편 루프 (매일 반복)</div>
+        <div class="node scene-card" style="left:40px; top:60px;">
+          <div class="icon">🏪</div><div class="title">매장</div>
+          <div class="sub">주문 받기 · 배달 · 배치 · 업그레이드</div>
+        </div>
+        <div class="node scene-card" style="left:300px; top:60px;">
+          <div class="icon">🧪</div><div class="title">작업실</div>
+          <div class="sub">머지 보드 · 재료 합성</div>
+        </div>
+        <div class="node scene-card" style="left:560px; top:60px;">
+          <div class="icon">📚</div><div class="title">도감</div>
+          <div class="sub">슬라임 수집 · 오행 상성</div>
+        </div>
+        <div class="node scene-card" style="left:820px; top:60px;">
+          <div class="icon">👥</div><div class="title">단골</div>
+          <div class="sub">12지신 손님 레벨업</div>
+        </div>
+
+        <div class="node" style="left:40px; top:260px;">
+          <div class="icon">⭐</div><div class="title">레벨업</div><div class="sub">Lv N · 신규 가구 · 신규 재료 해금</div>
+        </div>
+        <div class="node" style="left:300px; top:260px;">
+          <div class="icon">🎯</div><div class="title">일일 미션</div><div class="sub">하루 3개 · 코인 / 보석 보상</div>
+        </div>
+        <div class="node" style="left:560px; top:260px;">
+          <div class="icon">🎁</div><div class="title">출석 보상</div><div class="sub">7일 주기 · 에너지 · 슬라임</div>
+        </div>
+        <div class="node" style="left:820px; top:260px;">
+          <div class="icon">💝</div><div class="title">선물함</div><div class="sub">친구 · 이벤트 · 우편</div>
+        </div>
+
+        <div class="node pill" style="left:40px; top:440px; background:var(--el-wood-bg); border-color:var(--el-wood);"><span>⚡</span><div class="title">에너지 충전</div></div>
+        <div class="node pill" style="left:220px; top:440px; background:var(--el-fire-bg); border-color:var(--el-fire);"><span>🔥</span><div class="title">화 공명 이벤트</div></div>
+        <div class="node pill" style="left:420px; top:440px; background:var(--el-water-bg); border-color:var(--el-water);"><span>🌧</span><div class="title">오늘의 날씨</div></div>
+        <div class="node pill" style="left:620px; top:440px; background:var(--el-metal-bg); border-color:var(--el-metal);"><span>🪙</span><div class="title">금 이벤트 (주말)</div></div>
+        <div class="node pill" style="left:820px; top:440px; background:var(--bg-sunken); border-color:var(--fg-3);"><span>💤</span><div class="title">오프라인 수익</div></div>
+      </div>
+
+      <!-- Endgame cluster -->
+      <div class="cluster" style="left:240px; top:800px; width:1650px; height:260px;">
+        <div class="cluster-label">③ 엔드콘텐츠 (Lv 30+)</div>
+        <div class="node end" style="left:30px; top:50px;">
+          <div class="icon">🏆</div><div class="title">프랜차이즈</div><div class="sub">2호점 · 3호점 해금</div>
+        </div>
+        <div class="node end" style="left:230px; top:50px;">
+          <div class="icon">🎨</div><div class="title">시즌 테마</div><div class="sub">계절 가구 · 한정 손님</div>
+        </div>
+        <div class="node end" style="left:430px; top:50px;">
+          <div class="icon">🏅</div><div class="title">리더보드</div><div class="sub">주간 매출 랭킹</div>
+        </div>
+        <div class="node end" style="left:630px; top:50px;">
+          <div class="icon">👑</div><div class="title">마스터 슬라임</div><div class="sub">5등급 도감 완성</div>
+        </div>
+        <div class="node end" style="left:830px; top:50px;">
+          <div class="icon">🏘</div><div class="title">길드 / 마을</div><div class="sub">협동 미션</div>
+        </div>
+        <div class="node end" style="left:1030px; top:50px;">
+          <div class="icon">📖</div><div class="title">스토리 챕터</div><div class="sub">월요일 → 일요일 에피소드</div>
+        </div>
+        <div class="node end" style="left:1250px; top:50px;">
+          <div class="icon">♾️</div><div class="title">프레스티지</div><div class="sub">초기화 + 영구 버프</div>
+        </div>
+      </div>
+
+      <svg class="edges">
+        <defs>
+          <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--roast)"/>
+          </marker>
+          <marker id="arrow-thin" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="var(--fg-3)"/>
+          </marker>
+        </defs>
+        <!-- Entry → Prologue -->
+        <path class="edge" d="M180 250 C 220 250, 240 180, 290 180" marker-end="url(#arrow)"/>
+        <!-- Tutorial chain -->
+        <path class="edge" d="M400 160 L 480 160" marker-end="url(#arrow)"/>
+        <path class="edge" d="M590 160 L 670 160" marker-end="url(#arrow)"/>
+        <path class="edge" d="M750 200 C 750 260, 350 260, 350 320" marker-end="url(#arrow)"/>
+        <path class="edge" d="M400 320 L 480 320" marker-end="url(#arrow)"/>
+        <path class="edge" d="M590 320 L 670 320" marker-end="url(#arrow)"/>
+        <!-- Tutorial → Main loop -->
+        <path class="edge" d="M820 320 C 870 320, 880 200, 910 150" marker-end="url(#arrow)"/>
+        <!-- Main loop interconnections (scenes) -->
+        <path class="edge thin" d="M1030 150 Q 1145 130 1170 150" marker-end="url(#arrow-thin)"/>
+        <path class="edge thin" d="M1170 180 Q 1145 200 1030 180" marker-end="url(#arrow-thin)"/>
+        <path class="edge thin" d="M1290 150 Q 1405 130 1430 150" marker-end="url(#arrow-thin)"/>
+        <path class="edge thin" d="M1430 180 Q 1405 200 1290 180" marker-end="url(#arrow-thin)"/>
+        <path class="edge thin" d="M1550 150 Q 1665 130 1690 150" marker-end="url(#arrow-thin)"/>
+        <path class="edge thin" d="M1690 180 Q 1665 200 1550 180" marker-end="url(#arrow-thin)"/>
+        <!-- Loop-back arrow (day cycle) -->
+        <path class="edge dashed" d="M1870 360 Q 1960 420 1900 520 Q 1800 580 1400 560 Q 1000 540 960 400" marker-end="url(#arrow)"/>
+        <!-- Main loop → Endgame -->
+        <path class="edge dashed" d="M1400 680 L 1400 830" marker-end="url(#arrow)"/>
+      </svg>
+
+      <div class="ann" style="left:1970px; top:440px;">↺ 하루 리셋 · 매일 00:00 KST</div>
+      <div class="ann" style="left:150px; top:380px;">최초 1회만 재생 · 이후 설정에서 다시 보기</div>
+    </div>
+
+    <!-- ─────────────────────────────────────── STATE MACHINE ─────────────────────────────────────── -->
+    <div class="scene" data-v="state">
+      <div class="scene-title"><h1>주문 상태머신 (Order State Machine)</h1><div class="crumb">손님 도착 → 전달 → 보상 · 단일 주문 생명주기</div></div>
+
+      <div class="node state" style="left:80px; top:180px;">
+        <div class="icon">🚶</div><div class="title">IDLE</div>
+        <div class="sub">손님 없음 · 대기</div>
+      </div>
+      <div class="node state" style="left:320px; top:180px;">
+        <div class="icon">🔔</div><div class="title">ARRIVING</div>
+        <div class="sub">문 열림 애니 · 800ms</div>
+      </div>
+      <div class="node state" style="left:560px; top:180px;">
+        <div class="icon">💬</div><div class="title">ORDERING</div>
+        <div class="sub">주문 버블 · need 결정</div>
+      </div>
+      <div class="node state" style="left:800px; top:180px;">
+        <div class="icon">⏳</div><div class="title">WAITING</div>
+        <div class="sub">타이머 카운트다운 · 인내 게이지</div>
+      </div>
+      <div class="node state" style="left:1040px; top:80px;">
+        <div class="icon">🥤</div><div class="title">DELIVERED</div>
+        <div class="sub">드래그 드롭 · 보드 슬라임 소비</div>
+      </div>
+      <div class="node state" style="left:1040px; top:300px;">
+        <div class="icon">😤</div><div class="title">TIMEOUT</div>
+        <div class="sub">인내 0 · 손님 화남</div>
+      </div>
+      <div class="node state" style="left:1280px; top:80px;">
+        <div class="icon">✨</div><div class="title">REACTING</div>
+        <div class="sub">공명/상생/상극/조화 판정</div>
+      </div>
+      <div class="node state" style="left:1520px; top:80px;">
+        <div class="icon">💰</div><div class="title">REWARDING</div>
+        <div class="sub">코인 + EXP + 팁 · 파티클</div>
+      </div>
+      <div class="node state" style="left:1280px; top:300px;">
+        <div class="icon">💨</div><div class="title">LEAVING</div>
+        <div class="sub">불만 아이콘 · 호감도 -1</div>
+      </div>
+      <div class="node state end" style="left:1760px; top:190px;">
+        <div class="icon">⏹</div><div class="title">DONE</div>
+        <div class="sub">슬롯 비움 · IDLE로</div>
+      </div>
+
+      <!-- Annotations -->
+      <div class="ann" style="left:340px; top:290px;"><span class="chip trigger">TRIGGER</span> LV 게이지 30% 이상<br>spawn_interval 10~30s</div>
+      <div class="ann" style="left:580px; top:290px;"><span class="chip cond">COND</span> 손님의 원소로<br>need 결정 (오행 룰)</div>
+      <div class="ann" style="left:820px; top:290px;"><span class="chip time">TIMER</span> 8~15s · 인내<br>tick 100ms</div>
+      <div class="ann" style="left:1060px; top:200px;">드래그 온 drop<br>→ board.remove()</div>
+      <div class="ann" style="left:1300px; top:190px;">player.element<br>× customer.element</div>
+      <div class="ann" style="left:1540px; top:190px;">팁 = 기본팁 × 공명배율</div>
+
+      <svg class="edges">
+        <defs>
+          <marker id="arr2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--roast)"/>
+          </marker>
+          <marker id="arr2-fire" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--el-fire)"/>
+          </marker>
+        </defs>
+        <path class="edge" d="M230 210 L 320 210" marker-end="url(#arr2)"/>
+        <text class="edge-label" x="245" y="200">spawn()</text>
+        <path class="edge" d="M470 210 L 560 210" marker-end="url(#arr2)"/>
+        <path class="edge" d="M710 210 L 800 210" marker-end="url(#arr2)"/>
+        <path class="edge" d="M950 200 C 1000 200, 1000 120, 1040 120" marker-end="url(#arr2)"/>
+        <text class="edge-label" x="965" y="165">on_drop</text>
+        <path class="edge fire" d="M950 230 C 1000 230, 1000 330, 1040 330" marker-end="url(#arr2-fire)"/>
+        <text class="edge-label" x="965" y="295">timer=0</text>
+        <path class="edge" d="M1190 120 L 1280 120" marker-end="url(#arr2)"/>
+        <path class="edge" d="M1430 120 L 1520 120" marker-end="url(#arr2)"/>
+        <path class="edge" d="M1670 130 C 1720 130, 1720 210, 1760 210" marker-end="url(#arr2)"/>
+        <path class="edge fire" d="M1190 330 L 1280 330" marker-end="url(#arr2-fire)"/>
+        <path class="edge fire" d="M1430 330 C 1480 330, 1520 280, 1760 230" marker-end="url(#arr2-fire)"/>
+        <!-- loop back -->
+        <path class="edge dashed" d="M1780 270 Q 1400 500 600 500 Q 180 500 150 260" marker-end="url(#arr2)"/>
+        <text class="edge-label" x="900" y="525">reset · 다음 손님 대기</text>
+      </svg>
+    </div>
+
+    <!-- ─────────────────────────────────────── SCENE MAP ─────────────────────────────────────── -->
+    <div class="scene" data-v="scene">
+      <div class="scene-title"><h1>씬 전환 맵 (Scene Transition Map)</h1><div class="crumb">하단 네비 + 모달 스택 + 전환 트리거</div></div>
+
+      <div class="node scene-card" style="left:160px; top:160px; width:180px;">
+        <div class="icon">📜</div><div class="title">Prologue</div>
+        <div class="sub">최초 실행 · 스킵 가능</div>
+      </div>
+      <div class="node scene-card" style="left:160px; top:340px; width:180px;">
+        <div class="icon">🎭</div><div class="title">CharacterCreate</div>
+        <div class="sub">이름 · 얼굴 · 오행</div>
+      </div>
+
+      <!-- Central hub -->
+      <div class="node scene-card" style="left:680px; top:360px; width:220px; border-color: var(--accent);">
+        <div class="icon">🏪</div><div class="title">Shop (홈)</div>
+        <div class="sub">기본 탭 · 하단 네비 허브</div>
+      </div>
+
+      <div class="node scene-card" style="left:1020px; top:160px; width:180px;">
+        <div class="icon">🧪</div><div class="title">Workshop</div>
+        <div class="sub">머지 보드</div>
+      </div>
+      <div class="node scene-card" style="left:1020px; top:360px; width:180px;">
+        <div class="icon">📚</div><div class="title">Dex</div>
+        <div class="sub">도감 · 오행 상성</div>
+      </div>
+      <div class="node scene-card" style="left:1020px; top:560px; width:180px;">
+        <div class="icon">⚙</div><div class="title">Settings</div>
+        <div class="sub">프로필 · 음향</div>
+      </div>
+
+      <!-- Modals -->
+      <div class="cluster" style="left:1320px; top:100px; width:480px; height:680px;">
+        <div class="cluster-label">Modal · 오버레이 씬</div>
+        <div class="node" style="left:30px; top:40px;">
+          <div class="icon">💰</div><div class="title">상점 (IAP)</div>
+          <div class="sub">코인 / 보석 / 팩</div>
+        </div>
+        <div class="node" style="left:240px; top:40px;">
+          <div class="icon">📨</div><div class="title">우편함</div>
+          <div class="sub">보상 · 친구 선물</div>
+        </div>
+        <div class="node" style="left:30px; top:200px;">
+          <div class="icon">🎯</div><div class="title">미션</div>
+          <div class="sub">일일 / 주간</div>
+        </div>
+        <div class="node" style="left:240px; top:200px;">
+          <div class="icon">🎁</div><div class="title">출석 보상</div>
+          <div class="sub">자동 팝업 (1일 1회)</div>
+        </div>
+        <div class="node" style="left:30px; top:360px;">
+          <div class="icon">⬆️</div><div class="title">레벨업 축하</div>
+          <div class="sub">해금 요약</div>
+        </div>
+        <div class="node" style="left:240px; top:360px;">
+          <div class="icon">✨</div><div class="title">합성 결과</div>
+          <div class="sub">5등급 달성 시</div>
+        </div>
+        <div class="node" style="left:30px; top:520px;">
+          <div class="icon">💭</div><div class="title">손님 대화</div>
+          <div class="sub">단골 호감도 UI</div>
+        </div>
+        <div class="node" style="left:240px; top:520px;">
+          <div class="icon">⚠️</div><div class="title">확인 다이얼로그</div>
+          <div class="sub">구매 · 리셋</div>
+        </div>
+      </div>
+
+      <!-- Annotations -->
+      <div class="ann" style="left:700px; top:580px;">하단 네비로 전환<br>push/pop 없음 · 탭 스위치</div>
+      <div class="ann" style="left:220px; top:500px;">생성 완료 시<br>Shop으로 replace()</div>
+
+      <svg class="edges">
+        <defs>
+          <marker id="arr3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--roast)"/>
+          </marker>
+          <marker id="arr3-water" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--el-water)"/>
+          </marker>
+        </defs>
+        <!-- Linear onboarding -->
+        <path class="edge" d="M250 240 L 250 340" marker-end="url(#arr3)"/>
+        <path class="edge" d="M340 400 L 680 400" marker-end="url(#arr3)"/>
+        <text class="edge-label" x="420" y="392">on_done</text>
+        <!-- Nav tabs (bidirectional) -->
+        <path class="edge water" d="M900 380 L 1020 220" marker-end="url(#arr3-water)"/>
+        <path class="edge water" d="M1020 260 L 900 420" marker-end="url(#arr3-water)"/>
+        <path class="edge water" d="M900 400 L 1020 420" marker-end="url(#arr3-water)"/>
+        <path class="edge water" d="M1020 440 L 900 440" marker-end="url(#arr3-water)"/>
+        <path class="edge water" d="M900 440 L 1020 620" marker-end="url(#arr3-water)"/>
+        <path class="edge water" d="M1020 640 L 900 460" marker-end="url(#arr3-water)"/>
+        <!-- Hub → modals -->
+        <path class="edge dashed" d="M890 380 C 1200 280, 1300 180, 1350 170" marker-end="url(#arr3)"/>
+        <path class="edge dashed" d="M890 400 C 1200 400, 1300 410, 1560 400" marker-end="url(#arr3)"/>
+        <path class="edge dashed" d="M890 440 C 1200 540, 1300 600, 1350 670" marker-end="url(#arr3)"/>
+      </svg>
+
+      <!-- Trigger panel -->
+      <div class="node" style="left:80px; top:640px; width:560px;">
+        <div class="title" style="font-size:14px; margin-bottom:10px;">전환 트리거 표</div>
+        <div class="sub" style="line-height:1.8; font-size:12px; color:var(--ink);">
+          <span class="chip trigger">TAP</span> 하단 네비 탭 → 씬 스위치 (전환 없음)<br>
+          <span class="chip trigger">TAP</span> 손님 도착 배지 → Shop 자동 포커스<br>
+          <span class="chip cond">COND</span> Lv 상승 감지 → 레벨업 모달 push<br>
+          <span class="chip time">DAILY</span> 00:00 KST → 일일 리셋 + 출석 모달<br>
+          <span class="chip cond">COND</span> 에너지 0 도달 → 상점 모달 suggest<br>
+          <span class="chip trigger">TAP</span> 머지 보드 5등급 → 축하 모달
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────── DATA FLOW ─────────────────────────────────────── -->
+    <div class="scene" data-v="data">
+      <div class="scene-title"><h1>데이터 플로우</h1><div class="crumb">플레이어 입력 → 게임 상태 → UI 업데이트 · 단방향</div></div>
+
+      <div class="cluster" style="left:60px; top:120px; width:500px; height:780px;">
+        <div class="cluster-label">INPUT · 플레이어 입력</div>
+        <div class="node input" style="left:30px; top:50px;">
+          <div class="icon">👆</div><div class="title">Tap</div><div class="sub">버튼 · 탭 · 슬라임 선택</div>
+        </div>
+        <div class="node input" style="left:250px; top:50px;">
+          <div class="icon">✋</div><div class="title">Drag & Drop</div><div class="sub">머지 합성 · 주문 배달</div>
+        </div>
+        <div class="node input" style="left:30px; top:220px;">
+          <div class="icon">🤏</div><div class="title">Pinch / Pan</div><div class="sub">매장 줌 · 카메라</div>
+        </div>
+        <div class="node input" style="left:250px; top:220px;">
+          <div class="icon">⌨️</div><div class="title">Text Input</div><div class="sub">이름 · 채팅</div>
+        </div>
+        <div class="node input" style="left:30px; top:390px;">
+          <div class="icon">⏲</div><div class="title">Tick (1s)</div><div class="sub">타이머 · 수익 · 인내</div>
+        </div>
+        <div class="node input" style="left:250px; top:390px;">
+          <div class="icon">📡</div><div class="title">Server Event</div><div class="sub">푸시 · 친구 선물</div>
+        </div>
+        <div class="node input" style="left:140px; top:560px;">
+          <div class="icon">🔄</div><div class="title">App Resume</div><div class="sub">백그라운드 복귀</div>
+        </div>
+      </div>
+
+      <!-- Middle: State -->
+      <div class="cluster" style="left:640px; top:120px; width:560px; height:780px;">
+        <div class="cluster-label">STATE · 게임 상태 (싱글턴)</div>
+        <div class="node data" style="left:30px; top:50px; width:220px;">
+          <div class="icon">👤</div><div class="title">PlayerState</div>
+          <div class="sub">name · zodiac · element · lv · exp · coins · gems · energy</div>
+        </div>
+        <div class="node data" style="left:290px; top:50px; width:220px;">
+          <div class="icon">🏪</div><div class="title">ShopState</div>
+          <div class="sub">furniture[] · layout · 일일매출 · 오늘손님수</div>
+        </div>
+        <div class="node data" style="left:30px; top:220px; width:220px;">
+          <div class="icon">🧪</div><div class="title">BoardState</div>
+          <div class="sub">cells[7][7] · unlocked · dragging</div>
+        </div>
+        <div class="node data" style="left:290px; top:220px; width:220px;">
+          <div class="icon">☕</div><div class="title">OrderQueue</div>
+          <div class="sub">active[3] · FSM · 타이머</div>
+        </div>
+        <div class="node data" style="left:30px; top:390px; width:220px;">
+          <div class="icon">📚</div><div class="title">DexState</div>
+          <div class="sub">slimes_found · level · affinity_matrix</div>
+        </div>
+        <div class="node data" style="left:290px; top:390px; width:220px;">
+          <div class="icon">🎯</div><div class="title">MissionState</div>
+          <div class="sub">daily[] · progress · claimed</div>
+        </div>
+        <div class="node store" style="left:140px; top:580px; width:260px;">
+          <div class="icon">💾</div><div class="title">Persistence</div>
+          <div class="sub">SaveLoad.gd · localStorage · 30초 autosave</div>
+        </div>
+      </div>
+
+      <!-- Right: UI -->
+      <div class="cluster" style="left:1260px; top:120px; width:520px; height:780px;">
+        <div class="cluster-label">UI · 렌더링</div>
+        <div class="node ui" style="left:30px; top:50px;">
+          <div class="icon">🎚</div><div class="title">HUD</div>
+          <div class="sub">코인 · 보석 · 에너지 · Lv</div>
+        </div>
+        <div class="node ui" style="left:240px; top:50px;">
+          <div class="icon">🏪</div><div class="title">ShopCanvas</div>
+          <div class="sub">이소메트릭 뷰 · 가구</div>
+        </div>
+        <div class="node ui" style="left:30px; top:220px;">
+          <div class="icon">🧮</div><div class="title">MergeBoard</div>
+          <div class="sub">7×7 · 슬라임 셀</div>
+        </div>
+        <div class="node ui" style="left:240px; top:220px;">
+          <div class="icon">🧾</div><div class="title">OrderSlots</div>
+          <div class="sub">대기 손님 3칸</div>
+        </div>
+        <div class="node ui" style="left:30px; top:390px;">
+          <div class="icon">🔔</div><div class="title">Toast / Badge</div>
+          <div class="sub">알림 · +5 · +10 EXP</div>
+        </div>
+        <div class="node ui" style="left:240px; top:390px;">
+          <div class="icon">🎆</div><div class="title">Particles / VFX</div>
+          <div class="sub">공명 링 · 합성 번쩍</div>
+        </div>
+        <div class="node ui" style="left:140px; top:580px;">
+          <div class="icon">🎵</div><div class="title">Audio / Haptic</div>
+          <div class="sub">SFX · BGM · 진동</div>
+        </div>
+      </div>
+
+      <div class="ann" style="left:600px; top:960px; max-width:900px; text-align:center; font-family:var(--font-sans); font-weight:700; font-size:13px; color:var(--roast-deep);">
+        단방향 플로우 → Input 이벤트가 Action dispatch → State 뮤테이션 → 구독된 UI가 diff 렌더링 · 역방향 금지
+      </div>
+
+      <svg class="edges">
+        <defs>
+          <marker id="arr4" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--roast)"/>
+          </marker>
+          <marker id="arr4-wood" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--el-wood)"/>
+          </marker>
+        </defs>
+        <!-- Input → State (fan-in) -->
+        <path class="edge" d="M500 200 C 580 200, 620 130, 670 130" marker-end="url(#arr4)"/>
+        <path class="edge" d="M500 250 C 580 280, 620 290, 670 290" marker-end="url(#arr4)"/>
+        <path class="edge" d="M500 370 C 580 360, 620 300, 670 300" marker-end="url(#arr4)"/>
+        <path class="edge" d="M500 420 C 580 430, 620 460, 670 460" marker-end="url(#arr4)"/>
+        <path class="edge" d="M500 560 C 580 560, 620 460, 670 460" marker-end="url(#arr4)"/>
+        <!-- State → UI (fan-out) -->
+        <path class="edge wood" d="M1190 130 L 1290 130" marker-end="url(#arr4-wood)"/>
+        <path class="edge wood" d="M1190 150 L 1500 130" marker-end="url(#arr4-wood)"/>
+        <path class="edge wood" d="M1190 300 L 1290 300" marker-end="url(#arr4-wood)"/>
+        <path class="edge wood" d="M1190 310 L 1500 300" marker-end="url(#arr4-wood)"/>
+        <path class="edge wood" d="M1190 460 C 1240 460, 1240 470, 1290 470" marker-end="url(#arr4-wood)"/>
+        <path class="edge wood" d="M1190 470 L 1500 470" marker-end="url(#arr4-wood)"/>
+        <!-- State ↔ Persistence -->
+        <path class="edge dashed" d="M920 700 L 920 580" marker-end="url(#arr4)"/>
+        <path class="edge dashed" d="M860 580 L 860 700" marker-end="url(#arr4)"/>
+        <!-- UI tap back -->
+        <path class="edge dashed thin" d="M1500 520 C 1200 700, 900 720, 500 400" />
+      </svg>
+
+      <div class="ann" style="left:540px; top:700px;">State 전용 업데이트<br>Godot: signal emit · React: setState</div>
+      <div class="ann" style="left:1200px; top:700px;">UI는 State를 읽기만<br>local state 없음 (존재 시 derive)</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="legend">
+  <div class="item"><div class="swatch" style="background:var(--roast)"></div> Start / Action</div>
+  <div class="item"><div class="swatch" style="background:var(--cream); border-color:var(--roast)"></div> Scene</div>
+  <div class="item"><div class="swatch" style="background:var(--el-metal-bg); border-color:var(--el-metal)"></div> Input</div>
+  <div class="item"><div class="swatch" style="background:#F3E8D2; border-color:#D4B88A"></div> State</div>
+  <div class="item"><div class="swatch" style="background:var(--el-water-bg); border-color:var(--el-water)"></div> UI</div>
+  <div class="item"><div class="swatch" style="background:var(--el-wood-bg); border-color:var(--el-wood)"></div> Persistence</div>
+  <div class="item"><div class="swatch" style="background:var(--el-fire-bg); border-color:var(--el-fire)"></div> Endgame</div>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('#tabs .tab');
+  const scenes = document.querySelectorAll('.scene');
+  const wrap = document.getElementById('wrap');
+  const saved = localStorage.getItem('bm-flow-view') || 'master';
+  setView(saved);
+  tabs.forEach(t => t.addEventListener('click', () => {
+    setView(t.dataset.v);
+    localStorage.setItem('bm-flow-view', t.dataset.v);
+  }));
+  function setView(v) {
+    tabs.forEach(t => t.classList.toggle('on', t.dataset.v === v));
+    scenes.forEach(s => s.classList.toggle('on', s.dataset.v === v));
+    wrap.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+  }
+
+  // simple canvas drag-pan
+  let dragging = false, sx=0, sy=0, sl=0, st=0;
+  wrap.addEventListener('mousedown', e => {
+    if (e.target.closest('.node') || e.target.closest('button')) return;
+    dragging = true; sx = e.clientX; sy = e.clientY; sl = wrap.scrollLeft; st = wrap.scrollTop;
+    wrap.style.cursor = 'grabbing';
+  });
+  addEventListener('mouseup', () => { dragging = false; wrap.style.cursor = ''; });
+  addEventListener('mousemove', e => {
+    if (!dragging) return;
+    wrap.scrollLeft = sl - (e.clientX - sx);
+    wrap.scrollTop = st - (e.clientY - sy);
+  });
+</script>
+</body>
+</html>

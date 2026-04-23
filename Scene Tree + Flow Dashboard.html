@@ -1,0 +1,1409 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>BetterMonday — Scene Tree + Flow</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<style id="extras">
+  /* Smart-align guides */
+  .guide { stroke: #ff4d9a; stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.9; pointer-events: none; }
+  /* Box selection rectangle */
+  .box-select {
+    position: absolute;
+    border: 1.5px dashed var(--roast);
+    background: rgba(199, 144, 112, 0.12);
+    pointer-events: none;
+    z-index: 9999;
+    border-radius: 2px;
+  }
+</style>
+<style>
+  html,body{height:100%;margin:0;background:var(--paper);font-family:var(--font-sans);color:var(--ink);overflow:hidden;}
+  .app{display:flex;flex-direction:column;height:100vh;}
+  .bar{height:52px;background:var(--cream);border-bottom:1.5px solid var(--border-card);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;z-index:100;}
+  .brand{font-weight:800;font-size:14px;color:var(--roast-deep);}
+  .dot{width:5px;height:5px;border-radius:999px;background:var(--border-card);}
+  .hint{color:var(--fg-2);font-size:11px;}
+  .btn{border:1.5px solid var(--border-card);background:var(--cream);padding:6px 12px;border-radius:8px;font-weight:700;font-size:12px;color:var(--ink);cursor:pointer;font-family:var(--font-sans);}
+  .btn:hover{background:var(--cream-warm);}
+  .btn.primary{background:var(--roast);color:var(--cream);border-color:var(--roast-deep);}
+  .btn.danger{color:var(--accent);}
+  .sep{width:1px;height:22px;background:var(--border-card);margin:0 4px;}
+
+  .main{flex:1;display:grid;grid-template-columns:220px 1fr 320px;min-height:0;}
+
+  /* Palette */
+  .palette{border-right:1.5px solid var(--border-card);background:var(--cream);padding:14px 12px;overflow:auto;}
+  .palette h3{margin:0 0 10px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--fg-3);font-weight:800;}
+  .pitem{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:2px solid var(--border-card);background:#fff;margin-bottom:8px;cursor:grab;font-size:12px;font-weight:700;user-select:none;}
+  .pitem .ico{font-size:16px;}
+  .pitem.ref{border-color:var(--accent);background:var(--el-fire-bg);}
+  .pitem.note{border-color:var(--coin,#D4A64A);background:#FFF8D9;}
+  .pitem.screen{border-color:var(--roast);border-width:3px;}
+  .pitem.system{border-color:var(--el-wood);background:var(--el-wood-bg);}
+  .pitem.decision{background:#fff;transform:rotate(0deg);}
+  .pitem.group{border-style:dashed;}
+  .dropzone{border:2.5px dashed var(--roast);border-radius:12px;padding:14px;text-align:center;font-size:11px;color:var(--fg-2);font-weight:700;margin-top:12px;cursor:pointer;background:var(--paper);}
+  .dropzone:hover{background:var(--cream-warm);color:var(--roast);}
+
+  /* Canvas */
+  .canvas-wrap{position:relative;overflow:hidden;background:radial-gradient(circle at 1px 1px, rgba(107,63,42,0.10) 1px, transparent 1px) 0 0 / 20px 20px, var(--paper);}
+  .canvas{position:absolute;left:0;top:0;width:6000px;height:4000px;transform-origin:0 0;}
+  .rnode{position:absolute;border-radius:14px;box-shadow:var(--sh-md);user-select:none;cursor:grab;background:var(--cream);border:2px solid var(--border-card);}
+  .rnode:active{cursor:grabbing;}
+  .rnode.selected{outline:3px solid var(--accent);outline-offset:2px;z-index:10;}
+  .rnode.ref{padding:0;overflow:hidden;border-color:var(--accent);border-width:3px;background:#fff;}
+  .rnode.ref img{display:block;max-width:100%;pointer-events:none;}
+  .rnode.ref .caption{padding:6px 10px;font-size:11px;font-weight:700;color:var(--fg-2);background:var(--cream);border-top:1.5px solid var(--border-card);outline:none;}
+  .rnode.note{background:#FFF8D9;border-color:#D4B356;padding:10px 12px;min-width:160px;font-family:'Gaegu',var(--font-sans);font-weight:700;}
+  .rnode.note .body{font-size:14px;line-height:1.5;color:var(--ink);outline:none;white-space:pre-wrap;}
+  .rnode.screen{border-color:var(--roast);border-width:3px;padding:10px 14px;min-width:160px;}
+  .rnode.system{background:var(--el-wood-bg);border-color:var(--el-wood);padding:10px 14px;min-width:150px;}
+  .rnode.decision{background:#fff;padding:10px 18px;min-width:140px;text-align:center;border-radius:20px;}
+  .rnode.group{background:rgba(243,232,210,0.35);border:2px dashed var(--border-card);min-width:260px;min-height:180px;z-index:0;padding:28px 14px 14px;}
+  .rnode.group.drop-in{background:rgba(199,144,112,0.18);border-color:var(--accent);border-style:solid;}
+  .rnode .title{font-weight:800;font-size:13px;letter-spacing:-0.01em;outline:none;}
+  .rnode .sub{font-size:11px;color:var(--fg-2);margin-top:2px;line-height:1.35;outline:none;}
+  .rnode .icon{font-size:16px;line-height:1;margin-bottom:4px;}
+  .rnode .group-label{position:absolute;top:-11px;left:18px;background:var(--paper);padding:2px 10px;font-size:11px;font-weight:800;color:var(--fg-2);text-transform:uppercase;letter-spacing:0.08em;outline:none;}
+  .rnode .port{position:absolute;width:14px;height:14px;border-radius:999px;background:var(--cream);border:2.5px solid var(--roast);cursor:crosshair;z-index:4;transition:transform 120ms, background 120ms;}
+  .rnode .port::before{content:'';position:absolute;inset:-10px;border-radius:999px;}/* larger invisible hit area */
+  .rnode .port.n{top:-9px;left:50%;transform:translateX(-50%);}
+  .rnode .port.s{bottom:-9px;left:50%;transform:translateX(-50%);}
+  .rnode .port.e{right:-9px;top:50%;transform:translateY(-50%);}
+  .rnode .port.w{left:-9px;top:50%;transform:translateY(-50%);}
+  .rnode .port:hover,.rnode .port.drop-target{background:var(--accent);border-color:var(--accent);transform:translate(var(--tx,-50%),var(--ty,-50%)) scale(1.4);}
+  .rnode .port.n:hover,.rnode .port.s:hover,.rnode .port.n.drop-target,.rnode .port.s.drop-target{--tx:-50%;--ty:0;}
+  .rnode .port.e:hover,.rnode .port.w:hover,.rnode .port.e.drop-target,.rnode .port.w.drop-target{--tx:0;--ty:-50%;}
+  .rnode.connect-target{outline:3px dashed var(--accent);outline-offset:3px;}
+  .rnode.connect-target .port{background:var(--accent);border-color:var(--accent);}
+  .rnode .del{position:absolute;top:-10px;right:-10px;width:20px;height:20px;border-radius:999px;background:var(--accent);color:var(--cream);font-weight:900;font-size:12px;display:none;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--cream);line-height:1;z-index:5;}
+  .rnode.selected .del{display:flex;}
+  .rnode .resize{position:absolute;right:2px;bottom:2px;width:14px;height:14px;cursor:nwse-resize;opacity:0.4;display:none;}
+  .rnode.ref .resize, .rnode.group .resize{display:block;}
+  .rnode .resize::after{content:'';position:absolute;right:2px;bottom:2px;width:8px;height:8px;border-right:2px solid var(--fg-3);border-bottom:2px solid var(--fg-3);}
+
+  svg.edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:2;}
+  .edge{stroke:#6B3F2A;stroke-width:2.2;fill:none;pointer-events:none;}
+  .edge.selected{stroke:#C8383C !important;stroke-width:3.2;}
+  .edge.dashed{stroke-dasharray:5 4;}
+  .edge.dotted{stroke-dasharray:2 3;}
+  .edge.thick{stroke-width:3.5;}
+  .edge.thick.selected{stroke-width:4.5;}
+  .edge-hit{stroke:rgba(0,0,0,0.001);stroke-width:22;fill:none;pointer-events:stroke;cursor:pointer;}
+  .edge-label{font-family:var(--font-sans);font-weight:700;font-size:11px;fill:var(--ink);pointer-events:auto;cursor:text;}
+  .edge-label-bg{fill:var(--paper);}
+  .temp-edge{stroke:var(--accent);stroke-width:2.5;stroke-dasharray:4 3;fill:none;}
+
+  /* Inspector */
+  .insp{border-left:1.5px solid var(--border-card);background:var(--cream);overflow:auto;padding:16px;}
+  .insp h4{margin:0 0 8px;font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--fg-3);}
+  .insp .row{margin-bottom:12px;}
+  .insp label{display:block;font-size:11px;color:var(--fg-2);font-weight:700;margin-bottom:4px;}
+  .insp input,.insp select,.insp textarea{width:100%;box-sizing:border-box;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border-card);background:#fff;font-family:var(--font-sans);font-size:13px;color:var(--ink);}
+  .insp textarea{resize:vertical;min-height:80px;font-size:12px;font-family:'Gaegu',var(--font-sans);}
+  .empty{color:var(--fg-3);text-align:center;font-size:12px;padding:40px 0;line-height:1.6;}
+  .edge-style{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;}
+  .edge-style button{padding:6px 4px;border-radius:6px;border:1.5px solid var(--border-card);background:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font-sans);color:var(--ink);}
+  .edge-style button.on{background:var(--roast);color:var(--cream);border-color:var(--roast-deep);}
+  .arrow-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+  .arrow-grid button{padding:8px 4px;border-radius:6px;border:1.5px solid var(--border-card);background:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font-sans);color:var(--ink);}
+  .arrow-grid button.on{background:var(--roast);color:var(--cream);border-color:var(--roast-deep);}
+  .color-grid{display:flex;gap:6px;flex-wrap:wrap;}
+  .color-grid .sw{width:28px;height:28px;border-radius:999px;cursor:pointer;border:2.5px solid transparent;box-shadow:0 0 0 1.5px var(--border-card);}
+  .color-grid .sw.on{border-color:var(--cream);box-shadow:0 0 0 2.5px var(--accent);}
+
+  /* Brief panel */
+  .insp .brief{background:#fff;border:1.5px solid var(--border-card);border-radius:10px;padding:10px;font-size:12px;color:var(--ink);line-height:1.6;max-height:400px;overflow:auto;white-space:pre-wrap;}
+
+  .zoom{position:fixed;bottom:14px;right:16px;background:var(--cream);border:1.5px solid var(--border-card);border-radius:999px;padding:6px 14px;font-size:11px;font-weight:700;box-shadow:var(--sh-md);z-index:50;}
+  .toast{position:fixed;top:64px;left:50%;transform:translateX(-50%);background:var(--roast);color:var(--cream);padding:8px 18px;border-radius:999px;font-size:12px;font-weight:700;box-shadow:var(--sh-lg);z-index:200;opacity:0;pointer-events:none;transition:opacity 200ms;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <div class="brand">🌲 Scene Tree · Flow Dashboard</div>
+    <div class="dot"></div>
+    <button class="btn" id="newBtn">New</button>
+    <button class="btn" id="saveBtn">💾 Save</button>
+    <button class="btn" id="loadBtn">📂 Load</button>
+    <input type="file" id="fileIn" accept=".json" style="display:none">
+    <div class="sep"></div>
+    <button class="btn" id="exportBtn">Export JSON</button>
+    <button class="btn primary" id="briefBtn">📋 Generate Brief</button>
+    <div class="sep"></div>
+    <button class="btn" id="fitBtn">Fit</button>
+    <button class="btn" id="zoomIn">+</button>
+    <button class="btn" id="zoomOut">−</button>
+    <div style="flex:1"></div>
+    <span class="hint">씬 트리 · autoload · 모달 레이어 · 드래그 · 포트 연결 · dbl-click 편집</span>
+  </div>
+
+  <div class="main">
+    <aside class="palette">
+      <h3>Nodes</h3>
+      <div class="pitem ref" draggable="true" data-kind="ref"><span class="ico">🖼</span>Reference Image</div>
+      <div class="pitem note" draggable="true" data-kind="note"><span class="ico">📝</span>Sticky Note</div>
+      <div class="pitem screen" draggable="true" data-kind="screen"><span class="ico">📱</span>Screen</div>
+      <div class="pitem system" draggable="true" data-kind="system"><span class="ico">⚙</span>System</div>
+      <div class="pitem decision" draggable="true" data-kind="decision"><span class="ico">◇</span>Decision</div>
+      <div class="pitem group" draggable="true" data-kind="group"><span class="ico">▭</span>Group</div>
+
+      <div class="dropzone" id="dropzone">
+        📥 이미지 드롭<br>
+        <span style="font-weight:500;color:var(--fg-3);">여기/캔버스 어디든</span>
+      </div>
+      <input type="file" id="imgIn" accept="image/*" multiple style="display:none">
+
+      <h3 style="margin-top:18px;">Tips</h3>
+      <div style="font-size:11px;color:var(--fg-2);line-height:1.8;">
+        <b>🖼</b> 게임 레퍼런스 캡쳐 붙여넣기<br>
+        <b>📝</b> 스티키로 설명/감상 적기<br>
+        <b>📱</b> 우리 게임 화면 구상<br>
+        <b>⚙</b> 시스템/룰<br>
+        <b>◇</b> 분기 조건<br>
+        <b>▭</b> 섹션 묶음<br><br>
+        → 모두 연결 후 <b>Generate Brief</b>
+      </div>
+    </aside>
+
+    <div class="canvas-wrap" id="wrap">
+      <div class="canvas" id="canvas">
+        <svg class="edges" id="edges">
+          <defs>
+            <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 Z" fill="var(--roast)"/></marker>
+            <marker id="arr-sel" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 Z" fill="var(--accent)"/></marker>
+            <marker id="arr-start" markerWidth="10" markerHeight="10" refX="1" refY="5" orient="auto"><path d="M9,0 L0,5 L9,10 Z" fill="var(--roast)"/></marker>
+            <marker id="arr-start-sel" markerWidth="10" markerHeight="10" refX="1" refY="5" orient="auto"><path d="M9,0 L0,5 L9,10 Z" fill="var(--accent)"/></marker>
+            <marker id="dot" markerWidth="8" markerHeight="8" refX="4" refY="4"><circle cx="4" cy="4" r="3" fill="var(--roast)"/></marker>
+            <marker id="dot-sel" markerWidth="8" markerHeight="8" refX="4" refY="4"><circle cx="4" cy="4" r="3" fill="var(--accent)"/></marker>
+          </defs>
+        </svg>
+      </div>
+    </div>
+
+    <aside class="insp" id="insp"></aside>
+  </div>
+</div>
+
+<div class="zoom" id="zoomLabel">100%</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// MODEL
+// ============================================================
+const KIND_INFO = {
+  ref:      { title:'Reference', sub:'게임 캡쳐' },
+  note:     { title:'Note', sub:'설명/감상' },
+  screen:   { title:'Screen', sub:'화면 구상' },
+  system:   { title:'System', sub:'룰/매커닉' },
+  decision: { title:'?', sub:'조건' },
+  group:    { title:'GROUP', sub:'' },
+};
+
+let graph = load() || defaultGraph();
+let selected = null;
+let selectedIds = new Set(); // multi-selection of node ids
+let zoom = 1, pan = { x: 0, y: 0 };
+let nextId = Number(localStorage.getItem('bm-scenetree-nextid') || 100);
+const SNAP = 6; // px snap threshold (in canvas coords)
+
+function defaultGraph() {
+  return {
+    "nodes": [
+      {
+        "id": "g1",
+        "kind": "group",
+        "title": "AUTOLOAD · 싱글턴",
+        "x": 40,
+        "y": 60,
+        "w": 300,
+        "h": 480
+      },
+      {
+        "id": "a1",
+        "kind": "system",
+        "icon": "💾",
+        "title": "GameState",
+        "sub": "res://autoload/GameState.gd",
+        "x": 70,
+        "y": 130
+      },
+      {
+        "id": "a2",
+        "kind": "system",
+        "icon": "📦",
+        "title": "SaveLoad",
+        "sub": "user://save.json · 30s",
+        "x": 70,
+        "y": 260
+      },
+      {
+        "id": "a3",
+        "kind": "system",
+        "icon": "🔊",
+        "title": "AudioBus",
+        "sub": "BGM 3 · SFX 16",
+        "x": 70,
+        "y": 390
+      },
+      {
+        "id": "b1",
+        "kind": "decision",
+        "title": "▶ Main",
+        "sub": "res://Main.tscn",
+        "x": 400,
+        "y": 80
+      },
+      {
+        "id": "s1",
+        "kind": "screen",
+        "icon": "📜",
+        "title": "PrologueScene",
+        "sub": "5컷 · 최초 1회",
+        "x": 400,
+        "y": 220
+      },
+      {
+        "id": "s2",
+        "kind": "screen",
+        "icon": "🎭",
+        "title": "CharacterCreate",
+        "sub": "이름 · 12지신 · 오행",
+        "x": 660,
+        "y": 220
+      },
+      {
+        "id": "s3",
+        "kind": "screen",
+        "icon": "🏪",
+        "title": "ShopScene",
+        "sub": "홈 · 기본 탭 · Node2D",
+        "x": 920,
+        "y": 380
+      },
+      {
+        "id": "g2",
+        "kind": "group",
+        "title": "TAB SCENES · hub에서 스위치",
+        "x": 1200,
+        "y": 120,
+        "w": 380,
+        "h": 580
+      },
+      {
+        "id": "s4",
+        "kind": "screen",
+        "icon": "🧪",
+        "title": "WorkshopScene",
+        "sub": "7×7 머지 보드",
+        "x": 1230,
+        "y": 180
+      },
+      {
+        "id": "s5",
+        "kind": "screen",
+        "icon": "📚",
+        "title": "DexScene",
+        "sub": "도감 · 상성 매트릭스",
+        "x": 1230,
+        "y": 340
+      },
+      {
+        "id": "s6",
+        "kind": "screen",
+        "icon": "⚙",
+        "title": "SettingsScene",
+        "sub": "프로필 · 음향",
+        "x": 1230,
+        "y": 500
+      },
+      {
+        "id": "g3",
+        "kind": "group",
+        "title": "MODAL LAYER · CanvasLayer",
+        "x": 1620,
+        "y": 120,
+        "w": 360,
+        "h": 760
+      },
+      {
+        "id": "m1",
+        "kind": "screen",
+        "icon": "⬆️",
+        "title": "LevelUpModal",
+        "sub": "AcceptDialog · 자동",
+        "x": 1650,
+        "y": 180
+      },
+      {
+        "id": "m2",
+        "kind": "screen",
+        "icon": "✨",
+        "title": "RewardModal",
+        "sub": "머지 5등급 축하",
+        "x": 1650,
+        "y": 320
+      },
+      {
+        "id": "m3",
+        "kind": "screen",
+        "icon": "🟢",
+        "title": "SlimeDetailModal",
+        "sub": "도감 상세 · PopupPanel",
+        "x": 1650,
+        "y": 460
+      },
+      {
+        "id": "m4",
+        "kind": "screen",
+        "icon": "⚠️",
+        "title": "ConfirmDialog",
+        "sub": "구매 · 리셋",
+        "x": 1650,
+        "y": 600
+      },
+      {
+        "id": "m5",
+        "kind": "screen",
+        "icon": "🧾",
+        "title": "OrderSlots",
+        "sub": "HUD child · HBox",
+        "x": 1650,
+        "y": 740
+      },
+      {
+        "id": "n1",
+        "kind": "note",
+        "body": "HUD · Isometric · BuildCard\n(ShopScene children)",
+        "x": 920,
+        "y": 540
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1",
+        "from": "b1",
+        "to": "s1",
+        "label": "on_ready",
+        "style": "solid",
+        "arrow": "end"
+      },
+      {
+        "id": "e2",
+        "from": "s1",
+        "to": "s2",
+        "label": "prologue_finished",
+        "style": "solid",
+        "arrow": "end"
+      },
+      {
+        "id": "e3",
+        "from": "s2",
+        "to": "s3",
+        "label": "player_created",
+        "style": "solid",
+        "arrow": "end"
+      },
+      {
+        "id": "e4",
+        "from": "s3",
+        "to": "s4",
+        "label": "tap 작업실",
+        "style": "solid",
+        "arrow": "both"
+      },
+      {
+        "id": "e5",
+        "from": "s3",
+        "to": "s5",
+        "label": "tap 도감",
+        "style": "solid",
+        "arrow": "both"
+      },
+      {
+        "id": "e6",
+        "from": "s3",
+        "to": "s6",
+        "label": "tap 설정",
+        "style": "solid",
+        "arrow": "both"
+      },
+      {
+        "id": "e7",
+        "from": "s3",
+        "to": "m1",
+        "label": "level_up",
+        "style": "dashed",
+        "arrow": "end"
+      },
+      {
+        "id": "e8",
+        "from": "s4",
+        "to": "m2",
+        "label": "max_grade",
+        "style": "dashed",
+        "arrow": "end"
+      },
+      {
+        "id": "e9",
+        "from": "s5",
+        "to": "m3",
+        "label": "tap_slime",
+        "style": "dashed",
+        "arrow": "end"
+      },
+      {
+        "id": "ea",
+        "from": "s6",
+        "to": "m4",
+        "label": "reset",
+        "style": "dashed",
+        "arrow": "end"
+      },
+      {
+        "id": "eb",
+        "from": "s3",
+        "to": "m5",
+        "label": "customer_arrived",
+        "style": "dashed",
+        "arrow": "end"
+      },
+      {
+        "id": "ec",
+        "from": "s2",
+        "to": "a1",
+        "label": "set player",
+        "style": "dotted",
+        "arrow": "end"
+      },
+      {
+        "id": "ed",
+        "from": "s4",
+        "to": "a1",
+        "label": "merge()",
+        "style": "dotted",
+        "arrow": "end"
+      },
+      {
+        "id": "ee",
+        "from": "m5",
+        "to": "a1",
+        "label": "deliver()",
+        "style": "dotted",
+        "arrow": "end"
+      },
+      {
+        "id": "ef",
+        "from": "a1",
+        "to": "a2",
+        "label": "autosave",
+        "style": "dotted",
+        "arrow": "end"
+      },
+      {
+        "id": "eg",
+        "from": "a2",
+        "to": "b1",
+        "label": "save_loaded",
+        "style": "dotted",
+        "arrow": "end"
+      },
+      {
+        "id": "eh",
+        "from": "a1",
+        "to": "s3",
+        "label": "signals",
+        "style": "dotted",
+        "arrow": "end"
+      }
+    ]
+  };
+}
+
+function uid() { const id = 'n' + (nextId++); localStorage.setItem('bm-scenetree-nextid', nextId); return id; }
+function uidE() { const id = 'e' + (nextId++); localStorage.setItem('bm-scenetree-nextid', nextId); return id; }
+
+function save() { localStorage.setItem('bm-scenetree-canvas', JSON.stringify(graph)); }
+function load() { try { return JSON.parse(localStorage.getItem('bm-scenetree-canvas')); } catch { return null; } }
+
+// ============================================================
+// RENDER
+// ============================================================
+const canvas = document.getElementById('canvas');
+const svg = document.getElementById('edges');
+const wrap = document.getElementById('wrap');
+
+function applyTransform() {
+  canvas.style.transform = `translate(${pan.x}px,${pan.y}px) scale(${zoom})`;
+  document.getElementById('zoomLabel').textContent = Math.round(zoom * 100) + '%';
+}
+
+function render() {
+  canvas.querySelectorAll('.rnode').forEach(n => n.remove());
+  // Draw groups first so they're behind
+  const sorted = [...graph.nodes].sort((a,b) => (a.kind==='group'?0:1) - (b.kind==='group'?0:1));
+  sorted.forEach(n => renderNode(n));
+  renderEdges();
+  renderInspector();
+}
+
+function renderNode(n) {
+  const el = document.createElement('div');
+  const isSel = selectedIds.has(n.id) || (selected?.type==='node'&&selected.id===n.id);
+  el.className = 'rnode ' + n.kind + (isSel ? ' selected' : '');
+  el.dataset.id = n.id;
+  el.style.left = n.x + 'px';
+  el.style.top = n.y + 'px';
+  if (n.w) el.style.width = n.w + 'px';
+  if (n.h) el.style.height = n.h + 'px';
+
+  let inner = '';
+  if (n.kind === 'ref') {
+    inner = `
+      ${n.src ? `<img src="${n.src}" alt="">` : `<div style="padding:30px;text-align:center;color:var(--fg-3);font-size:12px;">이미지 없음<br>인스펙터에서 업로드</div>`}
+      <div class="caption">${escapeHtml(n.title || 'Reference')}</div>
+    `;
+  } else if (n.kind === 'note') {
+    inner = `<div class="body">${escapeHtml(n.body || '')}</div>`;
+  } else if (n.kind === 'screen' || n.kind === 'system') {
+    inner = `${n.icon ? `<div class="icon">${n.icon}</div>` : ''}
+      <div class="title">${escapeHtml(n.title||'')}</div>
+      <div class="sub">${escapeHtml(n.sub||'')}</div>`;
+  } else if (n.kind === 'decision') {
+    inner = `<div class="title">${escapeHtml(n.title||'?')}</div>
+      <div class="sub">${escapeHtml(n.sub||'')}</div>`;
+  } else if (n.kind === 'group') {
+    inner = `<div class="group-label">${escapeHtml(n.title||'GROUP')}</div>`;
+  }
+
+  // Ports (all 4 sides) — except group has no ports
+  if (n.kind !== 'group') {
+    inner += `<div class="port n" data-port="n"></div>
+      <div class="port s" data-port="s"></div>
+      <div class="port e" data-port="e"></div>
+      <div class="port w" data-port="w"></div>`;
+  }
+  inner += `<div class="del" title="delete">×</div>`;
+  if (n.kind === 'ref' || n.kind === 'group') {
+    inner += `<div class="resize"></div>`;
+  }
+  el.innerHTML = inner;
+  canvas.appendChild(el);
+  bindNode(el, n);
+}
+
+function renderEdges() {
+  svg.querySelectorAll('.edge, .edge-hit, .edge-label, .edge-label-bg').forEach(e => e.remove());
+  graph.edges.forEach(e => {
+    const from = graph.nodes.find(n => n.id === e.from);
+    const to = graph.nodes.find(n => n.id === e.to);
+    if (!from || !to) return;
+    const fromEl = canvas.querySelector(`.rnode[data-id="${from.id}"]`);
+    const toEl = canvas.querySelector(`.rnode[data-id="${to.id}"]`);
+    if (!fromEl || !toEl) return;
+    const [ax, ay, bx, by] = routeEdge(from, fromEl, to, toEl);
+    const mx1 = (ax + bx) / 2;
+    const d = `M${ax} ${ay} C ${mx1} ${ay}, ${mx1} ${by}, ${bx} ${by}`;
+    const isSel = selected?.type==='edge' && selected.id===e.id;
+    const style = e.style || 'solid';
+    const arrow = e.arrow || 'end';   // 'end' | 'start' | 'both' | 'none' | 'dot'
+    const weight = e.weight || 'normal';
+    // hit area (WIDE, for reliable clicking)
+    const hit = svgEl('path'); hit.setAttribute('class','edge-hit'); hit.setAttribute('d', d);
+    hit.dataset.id = e.id;
+    hit.addEventListener('click', ev => { ev.stopPropagation(); select('edge', e.id); });
+    svg.appendChild(hit);
+    // visible edge
+    const path = svgEl('path');
+    const cls = ['edge'];
+    if (isSel) cls.push('selected');
+    if (style === 'dashed') cls.push('dashed');
+    else if (style === 'dotted') cls.push('dotted');
+    if (weight === 'thick') cls.push('thick');
+    path.setAttribute('class', cls.join(' '));
+    path.setAttribute('d', d);
+    const suffix = isSel ? '-sel' : '';
+    if (arrow === 'end' || arrow === 'both') path.setAttribute('marker-end', `url(#arr${suffix})`);
+    if (arrow === 'start' || arrow === 'both') path.setAttribute('marker-start', `url(#arr-start${suffix})`);
+    if (arrow === 'dot') { path.setAttribute('marker-end', `url(#dot${suffix})`); path.setAttribute('marker-start', `url(#dot${suffix})`); }
+    svg.appendChild(path);
+    if (e.label) {
+      const mx = (ax+bx)/2, my = (ay+by)/2;
+      const w = e.label.length * 6.8 + 12;
+      const bg = svgEl('rect'); bg.setAttribute('class','edge-label-bg');
+      bg.setAttribute('x', mx - w/2); bg.setAttribute('y', my - 10);
+      bg.setAttribute('width', w); bg.setAttribute('height', 16); bg.setAttribute('rx', 4);
+      bg.addEventListener('click', ev => { ev.stopPropagation(); select('edge', e.id); });
+      svg.appendChild(bg);
+      const t = svgEl('text'); t.setAttribute('class','edge-label');
+      t.setAttribute('x', mx); t.setAttribute('y', my + 3); t.setAttribute('text-anchor','middle');
+      t.textContent = e.label;
+      t.addEventListener('click', ev => { ev.stopPropagation(); select('edge', e.id); });
+      svg.appendChild(t);
+    }
+  });
+}
+
+function svgEl(tag) { return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+function center(n, el) { return { x: n.x + el.offsetWidth/2, y: n.y + el.offsetHeight/2 }; }
+
+function routeEdge(from, fromEl, to, toEl) {
+  const fc = center(from, fromEl), tc = center(to, toEl);
+  const dx = tc.x - fc.x, dy = tc.y - fc.y;
+  let ax, ay, bx, by;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // horizontal
+    if (dx > 0) { ax = from.x + fromEl.offsetWidth; bx = to.x; }
+    else        { ax = from.x; bx = to.x + toEl.offsetWidth; }
+    ay = fc.y; by = tc.y;
+  } else {
+    if (dy > 0) { ay = from.y + fromEl.offsetHeight; by = to.y; }
+    else        { ay = from.y; by = to.y + toEl.offsetHeight; }
+    ax = fc.x; bx = tc.x;
+  }
+  return [ax, ay, bx, by];
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ============================================================
+// NODE INTERACTIONS
+// ============================================================
+function bindNode(el, n) {
+  const delEl = el.querySelector('.del');
+  const resizeEl = el.querySelector('.resize');
+
+  el.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('port')) return;
+    if (e.target.classList.contains('del')) return;
+    if (e.target.classList.contains('resize')) return;
+    if (e.target.isContentEditable) return;
+    e.preventDefault();
+    const additive = e.ctrlKey || e.metaKey;
+    if (additive) {
+      // Toggle in multi-selection
+      if (selectedIds.has(n.id)) selectedIds.delete(n.id);
+      else selectedIds.add(n.id);
+      selected = selectedIds.size ? { type:'node', id: n.id } : null;
+      canvas.querySelectorAll('.rnode').forEach(x => x.classList.toggle('selected', selectedIds.has(x.dataset.id)));
+      renderInspector();
+      return; // don't start drag on toggle click
+    }
+    // If clicking a non-selected node, replace selection
+    if (!selectedIds.has(n.id)) {
+      selectedIds.clear();
+      selectedIds.add(n.id);
+    }
+    selected = { type: 'node', id: n.id };
+    canvas.querySelectorAll('.rnode').forEach(x => x.classList.toggle('selected', selectedIds.has(x.dataset.id)));
+    renderInspector();
+    startNodeDrag(e, n, el);
+  });
+
+  // Double click for inline editing
+  el.addEventListener('dblclick', e => {
+    const tgt = e.target;
+    if (tgt.classList.contains('title') || tgt.classList.contains('caption') || tgt.classList.contains('group-label')) {
+      makeEditable(tgt, v => { n.title = v; save(); renderInspector(); });
+    } else if (tgt.classList.contains('sub')) {
+      makeEditable(tgt, v => { n.sub = v; save(); renderInspector(); });
+    } else if (tgt.classList.contains('body')) {
+      makeEditable(tgt, v => { n.body = v; save(); renderInspector(); }, true);
+    }
+  });
+
+  delEl?.addEventListener('click', e => { e.stopPropagation(); deleteNode(n.id); });
+
+  el.querySelectorAll('.port').forEach(p => {
+    p.addEventListener('mousedown', e => { e.stopPropagation(); startConnect(n.id, e); });
+  });
+
+  if (resizeEl) {
+    resizeEl.addEventListener('mousedown', e => {
+      e.stopPropagation();
+      const sx = e.clientX, sy = e.clientY;
+      const ow = el.offsetWidth, oh = el.offsetHeight;
+      const onMove = ev => {
+        n.w = Math.max(100, Math.round(ow + (ev.clientX - sx) / zoom));
+        n.h = Math.max(60, Math.round(oh + (ev.clientY - sy) / zoom));
+        el.style.width = n.w + 'px';
+        el.style.height = n.h + 'px';
+        renderEdges();
+      };
+      const onUp = () => { removeEventListener('mousemove', onMove); removeEventListener('mouseup', onUp); save(); };
+      addEventListener('mousemove', onMove);
+      addEventListener('mouseup', onUp);
+    });
+  }
+}
+
+function makeEditable(el, onCommit, multiline=false) {
+  el.contentEditable = 'true';
+  el.focus();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+  const commit = () => {
+    el.contentEditable = 'false';
+    el.removeEventListener('blur', commit);
+    el.removeEventListener('keydown', onKey);
+    onCommit(multiline ? el.innerText : el.textContent.trim());
+  };
+  const onKey = e => {
+    if (e.key === 'Enter' && !multiline) { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') { el.blur(); }
+  };
+  el.addEventListener('blur', commit);
+  el.addEventListener('keydown', onKey);
+}
+
+function startNodeDrag(e, n, el) {
+  const sx = e.clientX, sy = e.clientY;
+
+  // Build drag set: all selected nodes (includes n). Also include children of any selected groups.
+  const dragIds = new Set(selectedIds.size ? selectedIds : [n.id]);
+  const groupIds = [...dragIds].filter(id => {
+    const node = graph.nodes.find(x => x.id === id);
+    return node?.kind === 'group';
+  });
+  groupIds.forEach(gid => {
+    const g = graph.nodes.find(x => x.id === gid);
+    const gEl = canvas.querySelector(`.rnode[data-id="${gid}"]`);
+    const gw = g.w || gEl?.offsetWidth || 260;
+    const gh = g.h || gEl?.offsetHeight || 180;
+    graph.nodes.forEach(other => {
+      if (other.kind === 'group') return;
+      if (dragIds.has(other.id)) return;
+      const oEl = canvas.querySelector(`.rnode[data-id="${other.id}"]`);
+      const ow = oEl?.offsetWidth || 100, oh = oEl?.offsetHeight || 60;
+      const cx = other.x + ow / 2, cy = other.y + oh / 2;
+      if (cx >= g.x && cx <= g.x + gw && cy >= g.y && cy <= g.y + gh) {
+        dragIds.add(other.id);
+      }
+    });
+  });
+
+  // Snapshot start positions + dimensions for all dragged nodes
+  const snapshots = [...dragIds].map(id => {
+    const node = graph.nodes.find(x => x.id === id);
+    const nEl = canvas.querySelector(`.rnode[data-id="${id}"]`);
+    return { id, node, el: nEl, ox: node.x, oy: node.y, w: nEl?.offsetWidth || 100, h: nEl?.offsetHeight || 60 };
+  });
+
+  // Static nodes (for smart align): everything NOT being dragged
+  const staticNodes = graph.nodes.filter(x => !dragIds.has(x.id) && x.kind !== 'group').map(x => {
+    const xEl = canvas.querySelector(`.rnode[data-id="${x.id}"]`);
+    const w = xEl?.offsetWidth || 100, h = xEl?.offsetHeight || 60;
+    return { x: x.x, y: x.y, w, h, cx: x.x + w/2, cy: x.y + h/2, r: x.x + w, b: x.y + h };
+  });
+
+  // Pre-compute start center of the PRIMARY node for axis-lock reference
+  const primarySnap = snapshots.find(s => s.id === n.id);
+
+  // Groups for drop-in feedback (only when dragging non-group nodes)
+  const groups = graph.nodes.filter(g => g.kind === 'group' && !dragIds.has(g.id)).map(g => {
+    const gEl = canvas.querySelector(`.rnode[data-id="${g.id}"]`);
+    return { id: g.id, x: g.x, y: g.y, w: g.w || gEl?.offsetWidth || 260, h: g.h || gEl?.offsetHeight || 180 };
+  });
+
+  const onMove = ev => {
+    let dx = (ev.clientX - sx) / zoom;
+    let dy = (ev.clientY - sy) / zoom;
+    // Shift → axis lock (whichever axis has larger delta wins)
+    if (ev.shiftKey) {
+      if (Math.abs(dx) > Math.abs(dy)) dy = 0;
+      else dx = 0;
+    }
+
+    // Smart align (only if single primary drag OR multi-drag — uses primary bounds)
+    // Compute primary's would-be position, find snapped delta, apply to ALL.
+    let snapDX = 0, snapDY = 0;
+    const guides = { v: [], h: [] };
+    if (primarySnap && !ev.altKey) {
+      const px = primarySnap.ox + dx;
+      const py = primarySnap.oy + dy;
+      const pw = primarySnap.w, ph = primarySnap.h;
+      const pcx = px + pw/2, pcy = py + ph/2;
+      const pr = px + pw, pb = py + ph;
+      let bestX = Infinity, bestY = Infinity;
+      // For each vertical line of static nodes (left, center, right), find closest match for primary's lines
+      for (const s of staticNodes) {
+        for (const [sv, name] of [[s.x,'L'],[s.cx,'C'],[s.r,'R']]) {
+          for (const [pv, pname, adj] of [[px,'L',0],[pcx,'C',pw/2],[pr,'R',pw]]) {
+            const d = sv - pv;
+            if (Math.abs(d) < SNAP && Math.abs(d) < Math.abs(bestX)) {
+              bestX = d;
+              guides.v = [{ x: sv, y1: Math.min(s.y, py), y2: Math.max(s.b, py+ph) }];
+            } else if (Math.abs(Math.abs(d) - Math.abs(bestX)) < 0.5 && Math.abs(d) < SNAP) {
+              guides.v.push({ x: sv, y1: Math.min(s.y, py), y2: Math.max(s.b, py+ph) });
+            }
+          }
+        }
+        for (const [sv] of [[s.y],[s.cy],[s.b]]) {
+          for (const [pv] of [[py],[pcy],[pb]]) {
+            const d = sv - pv;
+            if (Math.abs(d) < SNAP && Math.abs(d) < Math.abs(bestY)) {
+              bestY = d;
+              guides.h = [{ y: sv, x1: Math.min(s.x, px), x2: Math.max(s.r, px+pw) }];
+            } else if (Math.abs(Math.abs(d) - Math.abs(bestY)) < 0.5 && Math.abs(d) < SNAP) {
+              guides.h.push({ y: sv, x1: Math.min(s.x, px), x2: Math.max(s.r, px+pw) });
+            }
+          }
+        }
+      }
+      if (Number.isFinite(bestX)) snapDX = bestX;
+      if (Number.isFinite(bestY)) snapDY = bestY;
+    }
+    const finalDX = dx + snapDX;
+    const finalDY = dy + snapDY;
+
+    // Apply to all dragged nodes
+    snapshots.forEach(s => {
+      s.node.x = Math.round(s.ox + finalDX);
+      s.node.y = Math.round(s.oy + finalDY);
+      if (s.el) { s.el.style.left = s.node.x + 'px'; s.el.style.top = s.node.y + 'px'; }
+    });
+
+    // Draw guides
+    drawGuides(guides);
+
+    // Group drop-in feedback (single-node drag, non-group)
+    if (dragIds.size === 1 && n.kind !== 'group') {
+      canvas.querySelectorAll('.rnode.group.drop-in').forEach(x => x.classList.remove('drop-in'));
+      const nowCX = n.x + primarySnap.w / 2, nowCY = n.y + primarySnap.h / 2;
+      groups.forEach(g => {
+        const inside = nowCX >= g.x && nowCX <= g.x + g.w && nowCY >= g.y && nowCY <= g.y + g.h;
+        if (inside) canvas.querySelector(`.rnode[data-id="${g.id}"]`)?.classList.add('drop-in');
+      });
+    }
+
+    renderEdges();
+  };
+  const onUp = () => {
+    removeEventListener('mousemove', onMove);
+    removeEventListener('mouseup', onUp);
+    canvas.querySelectorAll('.rnode.group.drop-in').forEach(x => x.classList.remove('drop-in'));
+    clearGuides();
+    save();
+  };
+  addEventListener('mousemove', onMove);
+  addEventListener('mouseup', onUp);
+}
+
+// ===== Smart-align guides =====
+function drawGuides(g) {
+  clearGuides();
+  g.v.forEach(v => {
+    const line = svgEl('line');
+    line.setAttribute('class','guide');
+    line.setAttribute('x1', v.x); line.setAttribute('x2', v.x);
+    line.setAttribute('y1', v.y1 - 20); line.setAttribute('y2', v.y2 + 20);
+    svg.appendChild(line);
+  });
+  g.h.forEach(h => {
+    const line = svgEl('line');
+    line.setAttribute('class','guide');
+    line.setAttribute('x1', h.x1 - 20); line.setAttribute('x2', h.x2 + 20);
+    line.setAttribute('y1', h.y); line.setAttribute('y2', h.y);
+    svg.appendChild(line);
+  });
+}
+function clearGuides() { svg.querySelectorAll('.guide').forEach(g => g.remove()); }
+
+// ============================================================
+// CONNECT
+// ============================================================
+function startConnect(fromId, e) {
+  const temp = svgEl('path'); temp.setAttribute('class','temp-edge');
+  svg.appendChild(temp);
+  const fromNode = graph.nodes.find(n => n.id === fromId);
+  const fromEl = canvas.querySelector(`.rnode[data-id="${fromId}"]`);
+  let hoverTarget = null;
+  const clearHover = () => {
+    canvas.querySelectorAll('.rnode.connect-target').forEach(x => x.classList.remove('connect-target'));
+  };
+  const onMove = ev => {
+    const rect = canvas.getBoundingClientRect();
+    const bx = (ev.clientX - rect.left) / zoom;
+    const by = (ev.clientY - rect.top) / zoom;
+    const fc = center(fromNode, fromEl);
+    const mx = (fc.x + bx) / 2;
+    temp.setAttribute('d', `M${fc.x} ${fc.y} C ${mx} ${fc.y}, ${mx} ${by}, ${bx} ${by}`);
+    // highlight target — check by actual node bounds, not just elementFromPoint (avoids missing port/img hits)
+    clearHover();
+    hoverTarget = findNodeAtCanvasXY(bx, by, fromId);
+    if (hoverTarget) {
+      const tEl = canvas.querySelector(`.rnode[data-id="${hoverTarget.id}"]`);
+      tEl?.classList.add('connect-target');
+    }
+  };
+  const onUp = ev => {
+    removeEventListener('mousemove', onMove);
+    removeEventListener('mouseup', onUp);
+    temp.remove();
+    clearHover();
+    if (hoverTarget && hoverTarget.id !== fromId) {
+      graph.edges.push({ id: uidE(), from: fromId, to: hoverTarget.id, label: '', style: 'solid', arrow: 'end', weight: 'normal' });
+      save(); render();
+      select('edge', graph.edges[graph.edges.length - 1].id);
+    }
+  };
+  addEventListener('mousemove', onMove);
+  addEventListener('mouseup', onUp);
+}
+
+// Find a non-group node whose rect contains the canvas point (topmost by draw order)
+function findNodeAtCanvasXY(x, y, excludeId) {
+  for (let i = graph.nodes.length - 1; i >= 0; i--) {
+    const n = graph.nodes[i];
+    if (n.id === excludeId) continue;
+    if (n.kind === 'group') continue;
+    const el = canvas.querySelector(`.rnode[data-id="${n.id}"]`);
+    if (!el) continue;
+    const w = el.offsetWidth, h = el.offsetHeight;
+    // expanded by 12px to include port area
+    if (x >= n.x - 12 && x <= n.x + w + 12 && y >= n.y - 12 && y <= n.y + h + 12) {
+      return n;
+    }
+  }
+  return null;
+}
+
+// ============================================================
+// SELECTION + INSPECTOR
+// ============================================================
+function select(type, id) { selected = { type, id }; render(); }
+
+function renderInspector() {
+  const insp = document.getElementById('insp');
+  if (!selected) {
+    insp.innerHTML = `<div class="empty">👈 노드/엣지 선택 시 속성 표시<br><br>씬 구조와 autoload 연결을<br>대시보드처럼 편집하세요.<br><br>완성 후 <b>Generate Brief</b>로<br>아키텍처 문서 생성.</div>`;
+    return;
+  }
+  if (selected.type === 'node') {
+    const n = graph.nodes.find(x => x.id === selected.id);
+    if (!n) { selected = null; renderInspector(); return; }
+    let html = `<h4>${n.kind.toUpperCase()} · ${n.id}</h4>`;
+    if (n.kind === 'ref') {
+      html += `
+        <div class="row"><label>Caption</label><input id="fTitle" value="${escapeHtml(n.title||'')}"></div>
+        <div class="row"><label>Image</label>
+          <button class="btn" id="imgBtn" style="width:100%;">${n.src?'🔄 교체':'📥 업로드'}</button>
+          <input type="file" id="imgInsp" accept="image/*" style="display:none">
+        </div>
+        <div class="row"><label>설명 / 감상</label>
+          <textarea id="fSub" placeholder="이 레퍼런스에서 어떤 요소를 참고할지 적어주세요">${escapeHtml(n.sub||'')}</textarea>
+        </div>
+      `;
+    } else if (n.kind === 'note') {
+      html += `<div class="row"><label>Body</label><textarea id="fBody" rows="8">${escapeHtml(n.body||'')}</textarea></div>`;
+    } else if (n.kind === 'group') {
+      html += `<div class="row"><label>Group Label</label><input id="fTitle" value="${escapeHtml(n.title||'')}"></div>`;
+    } else {
+      html += `
+        <div class="row"><label>Icon</label><input id="fIcon" value="${escapeHtml(n.icon||'')}" maxlength="4"></div>
+        <div class="row"><label>Title</label><input id="fTitle" value="${escapeHtml(n.title||'')}"></div>
+        <div class="row"><label>Subtitle</label><textarea id="fSub">${escapeHtml(n.sub||'')}</textarea></div>
+      `;
+    }
+    html += `<div class="row" style="display:flex;gap:6px;">
+      <button class="btn" id="dupBtn">Duplicate</button>
+      <button class="btn danger" id="delBtn">Delete</button>
+    </div>`;
+    html += `<h4 style="margin-top:18px;">Connections</h4>
+      <div style="font-size:11px;color:var(--fg-2);line-height:1.6;">
+        In: ${graph.edges.filter(e=>e.to===n.id).length} · Out: ${graph.edges.filter(e=>e.from===n.id).length}
+      </div>`;
+    insp.innerHTML = html;
+    insp.querySelector('#fIcon')?.addEventListener('input', e => { n.icon = e.target.value; save(); render(); });
+    insp.querySelector('#fTitle')?.addEventListener('input', e => { n.title = e.target.value; save(); render(); });
+    insp.querySelector('#fSub')?.addEventListener('input', e => { n.sub = e.target.value; save(); render(); });
+    insp.querySelector('#fBody')?.addEventListener('input', e => { n.body = e.target.value; save(); render(); });
+    insp.querySelector('#imgBtn')?.addEventListener('click', () => insp.querySelector('#imgInsp').click());
+    insp.querySelector('#imgInsp')?.addEventListener('change', ev => {
+      const f = ev.target.files[0]; if (!f) return;
+      const r = new FileReader();
+      r.onload = () => { n.src = r.result; save(); render(); };
+      r.readAsDataURL(f);
+    });
+    insp.querySelector('#dupBtn').addEventListener('click', () => duplicateNode(n.id));
+    insp.querySelector('#delBtn').addEventListener('click', () => deleteNode(n.id));
+  } else if (selected.type === 'edge') {
+    const e = graph.edges.find(x => x.id === selected.id);
+    if (!e) { selected = null; renderInspector(); return; }
+    const from = graph.nodes.find(n => n.id === e.from);
+    const to = graph.nodes.find(n => n.id === e.to);
+    const style = e.style || 'solid';
+    const arrow = e.arrow || 'end';
+    const weight = e.weight || 'normal';
+    insp.innerHTML = `
+      <h4>EDGE · ${e.id}</h4>
+      <div class="row"><label>Connection</label>
+        <div style="font-family:ui-monospace,monospace;font-size:12px;background:var(--cream-warm);padding:6px 8px;border-radius:6px;">
+          ${escapeHtml(from?.title||'?')} → ${escapeHtml(to?.title||'?')}
+        </div>
+      </div>
+      <div class="row"><label>Label</label>
+        <input id="fELabel" value="${escapeHtml(e.label||'')}" placeholder="참고 · 파생 · trigger · signal">
+      </div>
+      <div class="row"><label>Arrow Type</label>
+        <div class="arrow-grid">
+          <button class="${arrow==='end'?'on':''}" data-a="end" title="one-way">→</button>
+          <button class="${arrow==='start'?'on':''}" data-a="start" title="reverse">←</button>
+          <button class="${arrow==='both'?'on':''}" data-a="both" title="two-way">↔</button>
+          <button class="${arrow==='none'?'on':''}" data-a="none" title="line only">─</button>
+        </div>
+      </div>
+      <div class="row"><label>Line Style</label>
+        <div class="edge-style">
+          <button class="${style==='solid'?'on':''}" data-s="solid">━ Solid</button>
+          <button class="${style==='dashed'?'on':''}" data-s="dashed">╌ Dashed</button>
+          <button class="${style==='dotted'?'on':''}" data-s="dotted">┄ Dotted</button>
+        </div>
+      </div>
+      <div class="row"><label>Weight</label>
+        <div class="edge-style" style="grid-template-columns:1fr 1fr;">
+          <button class="${weight==='normal'?'on':''}" data-w="normal">Normal</button>
+          <button class="${weight==='thick'?'on':''}" data-w="thick">Thick</button>
+        </div>
+      </div>
+      <div class="row" style="display:flex;gap:6px;">
+        <button class="btn" id="reverseBtn">↔ Reverse</button>
+        <button class="btn danger" id="delEBtn">Delete</button>
+      </div>
+      <div style="font-size:11px;color:var(--fg-3);margin-top:10px;line-height:1.6;">💡 팁: 엣지는 두꺼운 클릭 영역으로 확실히 선택됩니다. Del 키로 삭제.</div>
+    `;
+    insp.querySelector('#fELabel').addEventListener('input', ev => { e.label = ev.target.value; save(); renderEdges(); });
+    insp.querySelectorAll('.arrow-grid button').forEach(b => b.addEventListener('click', () => { e.arrow = b.dataset.a; save(); render(); }));
+    insp.querySelectorAll('.edge-style button[data-s]').forEach(b => b.addEventListener('click', () => { e.style = b.dataset.s; save(); render(); }));
+    insp.querySelectorAll('.edge-style button[data-w]').forEach(b => b.addEventListener('click', () => { e.weight = b.dataset.w; save(); render(); }));
+    insp.querySelector('#reverseBtn').addEventListener('click', () => { [e.from,e.to]=[e.to,e.from]; save(); render(); });
+    insp.querySelector('#delEBtn').addEventListener('click', () => { graph.edges = graph.edges.filter(x=>x.id!==e.id); selected=null; save(); render(); });
+  }
+}
+
+function deleteNode(id) {
+  graph.nodes = graph.nodes.filter(n => n.id !== id);
+  graph.edges = graph.edges.filter(e => e.from !== id && e.to !== id);
+  selected = null; save(); render();
+}
+function duplicateNode(id) {
+  const n = graph.nodes.find(x => x.id === id);
+  if (!n) return;
+  const copy = JSON.parse(JSON.stringify(n));
+  copy.id = uid(); copy.x = n.x + 30; copy.y = n.y + 30;
+  graph.nodes.push(copy); select('node', copy.id); save(); render();
+}
+
+// ============================================================
+// PALETTE & IMAGE DROP
+// ============================================================
+document.querySelectorAll('.pitem').forEach(el => {
+  el.addEventListener('dragstart', e => { e.dataTransfer.setData('kind', el.dataset.kind); e.dataTransfer.effectAllowed = 'copy'; });
+});
+function canvasXY(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  return { x: (clientX - rect.left) / zoom, y: (clientY - rect.top) / zoom };
+}
+wrap.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+wrap.addEventListener('drop', e => {
+  e.preventDefault();
+  const { x, y } = canvasXY(e.clientX, e.clientY);
+  // Files → ref images
+  if (e.dataTransfer.files && e.dataTransfer.files.length) {
+    [...e.dataTransfer.files].forEach((f, i) => {
+      if (!f.type.startsWith('image/')) return;
+      const r = new FileReader();
+      r.onload = () => {
+        const n = { id: uid(), kind:'ref', title: f.name.replace(/\.[^.]+$/,''), sub:'', src: r.result,
+          x: Math.round(x + i*20 - 120), y: Math.round(y + i*20 - 80), w: 280 };
+        graph.nodes.push(n); save(); render(); select('node', n.id);
+      };
+      r.readAsDataURL(f);
+    });
+    return;
+  }
+  const kind = e.dataTransfer.getData('kind');
+  if (!kind) return;
+  const info = KIND_INFO[kind];
+  const n = { id: uid(), kind, title: info.title, sub: info.sub, x: Math.round(x-80), y: Math.round(y-30) };
+  if (kind === 'group') { n.w = 320; n.h = 240; }
+  if (kind === 'ref') n.w = 260;
+  graph.nodes.push(n); select('node', n.id); save(); render();
+});
+
+// Also handle drop on dropzone
+document.getElementById('dropzone').addEventListener('click', () => document.getElementById('imgIn').click());
+document.getElementById('imgIn').addEventListener('change', e => {
+  [...e.target.files].forEach((f, i) => {
+    if (!f.type.startsWith('image/')) return;
+    const r = new FileReader();
+    r.onload = () => {
+      const rect = wrap.getBoundingClientRect();
+      const { x, y } = canvasXY(rect.left + rect.width/2 + i*30, rect.top + rect.height/2 + i*30);
+      const n = { id: uid(), kind:'ref', title: f.name.replace(/\.[^.]+$/,''), sub:'', src: r.result,
+        x: Math.round(x-120), y: Math.round(y-80), w: 280 };
+      graph.nodes.push(n); save(); render();
+    };
+    r.readAsDataURL(f);
+  });
+  e.target.value = '';
+});
+
+// Paste image from clipboard
+addEventListener('paste', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+  const items = e.clipboardData?.items || [];
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const f = item.getAsFile();
+      const r = new FileReader();
+      r.onload = () => {
+        const rect = wrap.getBoundingClientRect();
+        const { x, y } = canvasXY(rect.left + rect.width/2, rect.top + rect.height/2);
+        const n = { id: uid(), kind:'ref', title: 'Pasted', sub:'', src: r.result,
+          x: Math.round(x-120), y: Math.round(y-80), w: 280 };
+        graph.nodes.push(n); save(); render(); toast('📋 붙여넣음');
+      };
+      r.readAsDataURL(f);
+    }
+  }
+});
+
+// ============================================================
+// CANVAS: pan, zoom
+// ============================================================
+let space = false;
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+  if (e.code === 'Space') { space = true; wrap.style.cursor = 'grab'; e.preventDefault(); }
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (selectedIds.size > 1) {
+      const ids = new Set(selectedIds);
+      graph.nodes = graph.nodes.filter(n => !ids.has(n.id));
+      graph.edges = graph.edges.filter(x => !ids.has(x.from) && !ids.has(x.to));
+      selectedIds.clear(); selected = null; save(); render(); e.preventDefault();
+    } else if (selected?.type === 'node') { deleteNode(selected.id); selectedIds.clear(); e.preventDefault(); }
+    else if (selected?.type === 'edge') { graph.edges = graph.edges.filter(x=>x.id!==selected.id); selected=null; save(); render(); e.preventDefault(); }
+  }
+  // Select All
+  if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+    e.preventDefault();
+    selectedIds = new Set(graph.nodes.filter(n => n.kind !== 'group').map(n => n.id));
+    selected = selectedIds.size ? { type:'node', id: [...selectedIds][0] } : null;
+    canvas.querySelectorAll('.rnode').forEach(x => x.classList.toggle('selected', selectedIds.has(x.dataset.id)));
+    renderInspector();
+  }
+  if ((e.ctrlKey||e.metaKey) && e.key === 's') { e.preventDefault(); exportJSON(); }
+});
+addEventListener('keyup', e => { if (e.code === 'Space') { space = false; wrap.style.cursor = ''; } });
+wrap.addEventListener('mousedown', e => {
+  if (e.target.closest('.rnode')) return;
+  if (e.target.classList.contains('edge-hit')) return;
+  // Pan with middle-mouse or space+drag
+  if (e.button === 1 || space) {
+    const sx=e.clientX, sy=e.clientY, opx=pan.x, opy=pan.y;
+    wrap.style.cursor='grabbing';
+    const onMove = ev => { pan.x = opx + (ev.clientX-sx); pan.y = opy + (ev.clientY-sy); applyTransform(); };
+    const onUp = () => { removeEventListener('mousemove', onMove); removeEventListener('mouseup', onUp); wrap.style.cursor = space?'grab':''; };
+    addEventListener('mousemove', onMove); addEventListener('mouseup', onUp);
+    return;
+  }
+  // Left-click on empty canvas → box-select
+  if (e.button === 0 && (e.target === wrap || e.target === canvas || e.target.tagName === 'svg' || e.target.tagName === 'SVG')) {
+    const additive = e.ctrlKey || e.metaKey || e.shiftKey;
+    if (!additive) { selectedIds.clear(); selected = null; }
+    startBoxSelect(e, additive);
+  }
+});
+
+// ===== Box selection =====
+function startBoxSelect(e, additive) {
+  const wrapRect = wrap.getBoundingClientRect();
+  // Convert start point to canvas coords
+  const toCanvas = (cx, cy) => ({
+    x: (cx - wrapRect.left - pan.x) / zoom,
+    y: (cy - wrapRect.top - pan.y) / zoom,
+  });
+  const start = toCanvas(e.clientX, e.clientY);
+  const baseSelected = additive ? new Set(selectedIds) : new Set();
+
+  const boxEl = document.createElement('div');
+  boxEl.className = 'box-select';
+  canvas.appendChild(boxEl);
+
+  const onMove = ev => {
+    const cur = toCanvas(ev.clientX, ev.clientY);
+    const x = Math.min(start.x, cur.x), y = Math.min(start.y, cur.y);
+    const w = Math.abs(cur.x - start.x), h = Math.abs(cur.y - start.y);
+    boxEl.style.left = x + 'px'; boxEl.style.top = y + 'px';
+    boxEl.style.width = w + 'px'; boxEl.style.height = h + 'px';
+    // Recompute selection: base ∪ nodes intersecting box
+    selectedIds = new Set(baseSelected);
+    graph.nodes.forEach(n => {
+      if (n.kind === 'group') return; // don't box-select groups
+      const nEl = canvas.querySelector(`.rnode[data-id="${n.id}"]`);
+      if (!nEl) return;
+      const nw = nEl.offsetWidth, nh = nEl.offsetHeight;
+      const hit = !(n.x + nw < x || n.x > x + w || n.y + nh < y || n.y > y + h);
+      if (hit) selectedIds.add(n.id);
+    });
+    canvas.querySelectorAll('.rnode').forEach(nEl => {
+      nEl.classList.toggle('selected', selectedIds.has(nEl.dataset.id));
+    });
+  };
+  const onUp = () => {
+    removeEventListener('mousemove', onMove);
+    removeEventListener('mouseup', onUp);
+    boxEl.remove();
+    selected = selectedIds.size ? { type: 'node', id: [...selectedIds][0] } : null;
+    renderInspector();
+  };
+  addEventListener('mousemove', onMove);
+  addEventListener('mouseup', onUp);
+}
+wrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = -e.deltaY * 0.001;
+  const newZoom = Math.min(2, Math.max(0.25, zoom * (1 + delta)));
+  const rect = wrap.getBoundingClientRect();
+  const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+  pan.x = cx - (cx - pan.x) * (newZoom / zoom);
+  pan.y = cy - (cy - pan.y) * (newZoom / zoom);
+  zoom = newZoom; applyTransform();
+}, { passive: false });
+
+// ============================================================
+// TOOLBAR
+// ============================================================
+document.getElementById('newBtn').addEventListener('click', () => {
+  if (!confirm('새 캔버스? 현재 작업 사라집니다.')) return;
+  graph = { nodes: [], edges: [] }; selected = null; save(); render(); toast('새 캔버스');
+});
+document.getElementById('saveBtn').addEventListener('click', () => { save(); toast('💾 저장'); });
+document.getElementById('loadBtn').addEventListener('click', () => document.getElementById('fileIn').click());
+document.getElementById('fileIn').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { try { graph = JSON.parse(r.result); selected = null; save(); render(); toast('📂 불러옴'); } catch { alert('JSON 오류'); } };
+  r.readAsText(f);
+});
+document.getElementById('exportBtn').addEventListener('click', exportJSON);
+document.getElementById('briefBtn').addEventListener('click', generateBrief);
+document.getElementById('fitBtn').addEventListener('click', fit);
+document.getElementById('zoomIn').addEventListener('click', () => { zoom = Math.min(2, zoom*1.2); applyTransform(); });
+document.getElementById('zoomOut').addEventListener('click', () => { zoom = Math.max(0.25, zoom/1.2); applyTransform(); });
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(graph, null, 2)], { type:'application/json' });
+  downloadBlob(blob, 'scene_tree.json'); toast('⬇ JSON');
+}
+function downloadBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function fit() {
+  if (graph.nodes.length === 0) { zoom=1; pan={x:0,y:0}; applyTransform(); return; }
+  const xs = graph.nodes.map(n=>n.x), ys = graph.nodes.map(n=>n.y);
+  const xm = graph.nodes.map(n => n.x + (n.w||200));
+  const ym = graph.nodes.map(n => n.y + (n.h||120));
+  const minX = Math.min(...xs)-40, minY = Math.min(...ys)-40;
+  const maxX = Math.max(...xm)+40, maxY = Math.max(...ym)+40;
+  const w = maxX-minX, h = maxY-minY;
+  const rect = wrap.getBoundingClientRect();
+  zoom = Math.min(rect.width/w, rect.height/h, 1.2);
+  pan.x = -minX*zoom + (rect.width - w*zoom)/2;
+  pan.y = -minY*zoom + (rect.height - h*zoom)/2;
+  applyTransform();
+}
+
+// ============================================================
+// BRIEF GENERATION — for pasting into VSCode Claude Code
+// ============================================================
+function generateBrief() {
+  const lines = [];
+  lines.push('# BetterMonday — Scene Tree & Flow Brief');
+  lines.push('');
+  lines.push('> Auto-generated from BetterMonday — Scene Tree + Flow. Paste into VSCode Claude Code.');
+  lines.push('');
+  lines.push('## 1. References');
+  graph.nodes.filter(n => n.kind === 'ref').forEach((n, i) => {
+    lines.push(`### Ref ${i+1} — ${n.title || '(untitled)'}`);
+    if (n.sub) lines.push(n.sub);
+    lines.push('');
+  });
+  lines.push('## 2. Notes');
+  graph.nodes.filter(n => n.kind === 'note').forEach(n => {
+    if (n.body) { lines.push('- ' + n.body.split('\n').join('\n  ')); }
+  });
+  lines.push('');
+  lines.push('## 3. Screens');
+  graph.nodes.filter(n => n.kind === 'screen').forEach(n => {
+    lines.push(`- **${n.title}** — ${n.sub || ''}`);
+  });
+  lines.push('');
+  lines.push('## 4. Systems');
+  graph.nodes.filter(n => n.kind === 'system').forEach(n => {
+    lines.push(`- **${n.title}** — ${n.sub || ''}`);
+  });
+  lines.push('');
+  lines.push('## 5. Decisions');
+  graph.nodes.filter(n => n.kind === 'decision').forEach(n => {
+    lines.push(`- ${n.title || '?'} — ${n.sub || ''}`);
+  });
+  lines.push('');
+  lines.push('## 6. Connections');
+  graph.edges.forEach(e => {
+    const f = graph.nodes.find(n => n.id === e.from);
+    const t = graph.nodes.find(n => n.id === e.to);
+    if (f && t) lines.push(`- ${f.title || f.kind} → ${t.title || t.kind}${e.label ? ` (${e.label})` : ''}`);
+  });
+  lines.push('');
+  lines.push('## 7. Instruction for Claude Code');
+  lines.push('');
+  lines.push('위 레퍼런스와 노트를 바탕으로, BetterMonday Coffee Tycoon의 다음 구현을 진행해주세요:');
+  lines.push('1. 각 Screen을 Godot Scene(.tscn)으로 스캐폴딩');
+  lines.push('2. 각 System을 scripts/systems/ 아래 .gd 로 생성');
+  lines.push('3. 씬 간 전환은 Connections 목록 그대로 반영 (signal 또는 SceneManager)');
+  lines.push('4. 색·폰트·간격은 DesignTokens 상수만 사용 (CLAUDE.md 규칙 준수)');
+  lines.push('5. 구현 전에 설계 상 애매한 부분 질문해주세요');
+
+  const text = lines.join('\n');
+  // Show in modal-like inspector
+  document.getElementById('insp').innerHTML = `
+    <h4>📋 BRIEF (복사해서 VSCode에 붙여넣기)</h4>
+    <div class="row" style="display:flex;gap:6px;">
+      <button class="btn primary" id="copyBriefBtn" style="flex:1;">📋 Copy</button>
+      <button class="btn" id="dlBriefBtn">⬇ .md</button>
+    </div>
+    <div class="brief">${escapeHtml(text)}</div>
+  `;
+  selected = null;
+  document.getElementById('copyBriefBtn').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(text); toast('📋 클립보드에 복사됨'); }
+    catch { toast('복사 실패 — 파일 다운로드 사용'); }
+  });
+  document.getElementById('dlBriefBtn').addEventListener('click', () => {
+    const blob = new Blob([text], { type:'text/markdown' });
+    downloadBlob(blob, 'scene_tree_brief.md'); toast('⬇ brief.md');
+  });
+}
+
+// ============================================================
+// BOOT
+// ============================================================
+render(); fit();
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1400);
+}
+</script>
+</body>
+</html>

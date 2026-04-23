@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="24" fill="#6B3F2A"></rect>
+  <circle cx="64" cy="54" r="28" fill="#F7EFE2"></circle>
+  <path d="M50 54 Q64 42 78 54" stroke="#6B3F2A" stroke-width="3" fill="none"></path>
+  <text x="64" y="104" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="800" fill="#F7EFE2">BM</text>
+</svg>

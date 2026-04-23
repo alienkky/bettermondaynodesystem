@@ -1,0 +1,172 @@
+/* =========================================================================
+   BetterMonday Coffee Tycoon — Design Tokens
+   Colors, typography, spacing, radii, shadows, motion.
+   Import this once; use tokens everywhere.
+   ========================================================================= */
+
+/* --- Fonts -------------------------------------------------------------- */
+/* Pretendard — local OTF files (uploaded by user) */
+@font-face { font-family: 'Pretendard'; font-weight: 100; font-style: normal; font-display: swap;
+  src: url('fonts/Pretendard-Thin.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 200; font-style: normal; font-display: swap;
+  src: url('fonts/Pretendard-ExtraLight.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 300; font-style: normal; font-display: swap;
+  src: url('fonts/Pretendard-Light.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 400; font-style: normal; font-display: swap;
+  src: url('fonts/Pretendard-Regular.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 500; font-style: normal; font-display: swap;
+  src: url('fonts/Pretendard-Medium.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 600; font-style: normal; font-display: swap;
+  src: url('fonts/Pretendard-SemiBold.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 700; font-style: normal; font-display: swap;
+  src: url('fonts/Pretendard-Bold.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 800; font-style: normal; font-display: swap;
+  src: url('fonts/Pretendard-ExtraBold.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 900; font-style: normal; font-display: swap;
+  src: url('fonts/Pretendard-Black.otf') format('opentype'); }
+:root {
+  /* --- Brand core ------------------------------------------------------- */
+  --roast:        #6B3F2A;   /* espresso - primary brand */
+  --roast-deep:   #4A2A1C;   /* pressed / border on brand */
+  --roast-soft:   #A67A5A;   /* hover / muted brand */
+  --cream:        #F7EFE2;   /* foam / card bg */
+  --cream-warm:   #EFE3CC;   /* secondary surface */
+  --paper:        #FAF6EE;   /* app background */
+  --ink:          #1F1A17;   /* 먹색 - primary text */
+  --ink-soft:     #3E342E;   /* secondary text */
+
+  /* --- Five Elements (오행) --------------------------------------------- */
+  --el-wood:      #6ABF45;   /* 🌿 목 - growth */
+  --el-wood-bg:   #E3F3DA;
+  --el-fire:      #C8383C;   /* 🔥 화 - 단청 red */
+  --el-fire-bg:   #F8DEDF;
+  --el-earth:     #B38B5C;   /* ⛰️ 토 - clay */
+  --el-earth-bg:  #F0E4D3;
+  --el-metal:     #D4A64A;   /* 🪙 금 - gold */
+  --el-metal-bg:  #F8EED2;
+  --el-water:     #4E8FB8;   /* 💧 수 - 청자 blue */
+  --el-water-bg:  #DCEBF5;
+
+  /* --- Currencies ------------------------------------------------------- */
+  --coin:         #D4A64A;   /* 💰 */
+  --coin-glow:    #F4CF6A;
+  --gem:          #5FA8D3;   /* 💙 */
+  --gem-glow:     #8FC4E3;
+  --credit:       #6B3F2A;   /* ☕ 베먼 크레딧 */
+  --energy:       #E8A020;   /* ⚡ */
+
+  /* --- Semantic --------------------------------------------------------- */
+  --fg-1:         var(--ink);
+  --fg-2:         #5A4F48;            /* 60% ink-ish */
+  --fg-3:         #8B7F76;            /* 40% */
+  --fg-on-brand:  var(--cream);
+  --bg-app:       var(--paper);
+  --bg-card:      var(--cream);
+  --bg-sunken:    var(--cream-warm);
+  --bg-ink:       var(--ink);
+
+  --border-hair:  rgba(31, 26, 23, 0.12);
+  --border-card:  rgba(31, 26, 23, 0.18);
+  --border-strong:rgba(31, 26, 23, 0.40);
+
+  --success:      #3E7A4E;
+  --warning:      #E8A020;
+  --danger:       #C8383C;
+  --info:         #4E8FB8;
+
+  /* --- Merge board / slime accent -------------------------------------- */
+  --board-grid:   rgba(107, 63, 42, 0.12);
+  --board-cell:   #FDF9F0;
+  --board-locked: rgba(107, 63, 42, 0.06);
+
+  /* --- Type families --------------------------------------------------- */
+  --font-sans:   'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --font-num:    'Pretendard', system-ui, monospace;
+
+  /* --- Type scale (mobile-first, 390px design width) ------------------- */
+  --fs-display: 32px; --lh-display: 1.15; --lw-display: 800;
+  --fs-h1:      24px; --lh-h1:      1.25; --lw-h1:      800;
+  --fs-h2:      20px; --lh-h2:      1.30; --lw-h2:      700;
+  --fs-h3:      18px; --lh-h3:      1.35; --lw-h3:      700;
+  --fs-body:    15px; --lh-body:    1.50; --lw-body:    500;
+  --fs-body-sm: 13px; --lh-body-sm: 1.50; --lw-body-sm: 500;
+  --fs-label:   12px; --lh-label:   1.40; --lw-label:   700;
+  --fs-caption: 11px; --lh-caption: 1.40; --lw-caption: 500;
+
+  /* --- Spacing (8pt grid w/ 4pt half-step) ---------------------------- */
+  --s-1:  4px;
+  --s-2:  8px;
+  --s-3:  12px;
+  --s-4:  16px;
+  --s-5:  20px;
+  --s-6:  24px;
+  --s-8:  32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+
+  /* --- Radii ----------------------------------------------------------- */
+  --r-xs:   2px;    /* chips, tokens */
+  --r-sm:   8px;    /* buttons, small cards */
+  --r-md:   12px;   /* inputs */
+  --r-lg:   16px;   /* cards, modals */
+  --r-xl:   24px;   /* hero surfaces */
+  --r-pill: 999px;  /* capsules */
+
+  /* --- Shadows (paper-lift) ------------------------------------------- */
+  --sh-sm:  0 1px 2px rgba(31, 26, 23, 0.08);
+  --sh-md:  0 4px 12px rgba(31, 26, 23, 0.10);
+  --sh-lg:  0 12px 32px rgba(31, 26, 23, 0.14);
+  --sh-inset-press: inset 0 -2px 0 rgba(31, 26, 23, 0.15);
+
+  /* Element reaction rings — additive glow */
+  --ring-resonance: 0 0 0 3px rgba(212, 166, 74, 0.9), 0 0 24px rgba(244, 207, 106, 0.55);
+  --ring-synergy:   0 0 0 3px rgba(106, 191, 69, 0.9), 0 0 20px rgba(106, 191, 69, 0.45);
+  --ring-challenge: 0 0 0 3px rgba(200, 56, 60, 0.9), 0 0 20px rgba(200, 56, 60, 0.45);
+  --ring-harmony:   0 0 0 3px rgba(255, 255, 255, 0.95), 0 0 16px rgba(255, 255, 255, 0.6);
+
+  /* --- Motion ---------------------------------------------------------- */
+  --ease-out:     cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in:      cubic-bezier(0.64, 0, 0.78, 0);
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 240ms;
+  --dur-4: 320ms;
+  --dur-5: 480ms;
+
+  /* --- Layout chrome --------------------------------------------------- */
+  --hud-h:   56px;
+  --navbar-h:72px;
+  --safe-b:  env(safe-area-inset-bottom, 0px);
+}
+
+/* --- Base resets -------------------------------------------------------- */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  color: var(--fg-1);
+  background: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* --- Semantic type classes --------------------------------------------- */
+.t-display { font: var(--lw-display) var(--fs-display)/var(--lh-display) var(--font-sans); letter-spacing: -0.02em; }
+.t-h1      { font: var(--lw-h1)      var(--fs-h1)/var(--lh-h1)           var(--font-sans); letter-spacing: -0.01em; }
+.t-h2      { font: var(--lw-h2)      var(--fs-h2)/var(--lh-h2)           var(--font-sans); }
+.t-h3      { font: var(--lw-h3)      var(--fs-h3)/var(--lh-h3)           var(--font-sans); }
+.t-body    { font: var(--lw-body)    var(--fs-body)/var(--lh-body)       var(--font-sans); }
+.t-body-sm { font: var(--lw-body-sm) var(--fs-body-sm)/var(--lh-body-sm) var(--font-sans); }
+.t-label   { font: var(--lw-label)   var(--fs-label)/var(--lh-label)     var(--font-sans); letter-spacing: 0.04em; text-transform: uppercase; }
+.t-caption { font: var(--lw-caption) var(--fs-caption)/var(--lh-caption) var(--font-sans); color: var(--fg-2); }
+.t-num     { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 800; }
+
+/* --- Utility -- element chip colors ------------------------------------ */
+.el-wood  { color: var(--el-wood);  background: var(--el-wood-bg); }
+.el-fire  { color: var(--el-fire);  background: var(--el-fire-bg); }
+.el-earth { color: var(--el-earth); background: var(--el-earth-bg); }
+.el-metal { color: var(--el-metal); background: var(--el-metal-bg); }
+.el-water { color: var(--el-water); background: var(--el-water-bg); }

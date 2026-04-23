@@ -1,0 +1,25 @@
+@import url('../colors_and_type.css');
+/* Preview loads fonts from project root */
+@font-face { font-family: 'Pretendard'; font-weight: 400; font-display: swap; src: url('../fonts/Pretendard-Regular.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 500; font-display: swap; src: url('../fonts/Pretendard-Medium.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 700; font-display: swap; src: url('../fonts/Pretendard-Bold.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 800; font-display: swap; src: url('../fonts/Pretendard-ExtraBold.otf') format('opentype'); }
+@font-face { font-family: 'Pretendard'; font-weight: 900; font-display: swap; src: url('../fonts/Pretendard-Black.otf') format('opentype'); }
+html, body { margin: 0; padding: 0; background: var(--paper); }
+.card {
+  width: 700px;
+  padding: 24px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-card);
+  border-radius: 16px;
+  box-shadow: var(--sh-md);
+  box-sizing: border-box;
+}
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.row   { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.grid  { display: grid; gap: 12px; }
+.swatch { width: 100%; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: flex-end; min-height: 72px; font-family: var(--font-sans); }
+.swatch .name { font-weight: 800; font-size: 13px; }
+.swatch .hex  { font-size: 11px; opacity: 0.75; font-variant-numeric: tabular-nums; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }

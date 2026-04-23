@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>BetterMonday — Scene Tree + Flow Dashboard</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<style>
+  html, body { height: 100%; margin: 0; background: var(--paper); font-family: var(--font-sans); color: var(--ink); }
+  .app { display: flex; flex-direction: column; height: 100vh; }
+  .bar { height: 56px; background: var(--cream); border-bottom: 1.5px solid var(--border-card);
+    display: flex; align-items: center; padding: 0 20px; gap: 14px; flex-shrink: 0; }
+  .brand { font-weight: 800; font-size: 15px; color: var(--roast-deep); }
+  .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--border-card); }
+  .crumb { color: var(--fg-2); font-size: 12px; font-weight: 600; }
+  .btn { border: 1.5px solid var(--border-card); background: var(--cream);
+    padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 12px;
+    color: var(--ink); cursor: pointer; font-family: var(--font-sans); }
+  .btn:hover { background: var(--cream-warm); }
+
+  .split { display: grid; grid-template-columns: 320px 1fr 360px; flex: 1; min-height: 0; }
+
+  /* ─ LEFT: Scene tree ─ */
+  .tree { border-right: 1.5px solid var(--border-card); background: var(--cream);
+    overflow: auto; padding: 12px 8px; }
+  .tree h3 { margin: 4px 8px 10px; font-size: 11px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--fg-3); font-weight: 800; }
+  .tnode { display: flex; align-items: center; gap: 6px; padding: 6px 8px;
+    border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--ink);
+    cursor: pointer; user-select: none; line-height: 1.2; }
+  .tnode:hover { background: var(--cream-warm); }
+  .tnode.on { background: var(--roast); color: var(--cream); }
+  .tnode .caret { width: 12px; display: inline-flex; justify-content: center;
+    color: var(--fg-3); font-size: 10px; flex-shrink: 0; }
+  .tnode .ico { width: 18px; display: flex; justify-content: center; flex-shrink: 0; font-size: 14px; }
+  .tnode .type { font-size: 10px; color: var(--fg-3); font-weight: 700;
+    margin-left: auto; font-family: ui-monospace, monospace; }
+  .tnode.on .type { color: rgba(247,239,226,0.55); }
+  .tnode.leaf .caret { visibility: hidden; }
+  .children { margin-left: 14px; border-left: 1px dashed var(--border-card);
+    padding-left: 4px; }
+  .children.collapsed { display: none; }
+
+  /* ─ CENTER: Flow graph ─ */
+  .graph-wrap { position: relative; overflow: auto;
+    background: radial-gradient(circle at 1px 1px, rgba(107,63,42,0.10) 1px, transparent 1px) 0 0 / 20px 20px,
+      var(--paper); }
+  .graph { width: 2200px; height: 1400px; position: relative; }
+  .gnode { position: absolute; background: var(--cream); border: 2px solid var(--border-card);
+    border-radius: 14px; padding: 10px 14px; box-shadow: var(--sh-md); min-width: 150px;
+    cursor: pointer; transition: transform 120ms var(--ease-spring), box-shadow 240ms, border-color 120ms; }
+  .gnode:hover { transform: translateY(-2px); box-shadow: var(--sh-lg); z-index: 5; }
+  .gnode.on { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(200,56,60,0.22), var(--sh-lg); z-index: 6; }
+  .gnode.dim { opacity: 0.35; filter: saturate(0.4); }
+  .gnode .gicon { font-size: 18px; line-height: 1; }
+  .gnode .gtitle { font-weight: 800; font-size: 13px; margin-top: 4px; letter-spacing: -0.01em; }
+  .gnode .gsub { font-size: 11px; color: var(--fg-2); margin-top: 1px; line-height: 1.35; }
+  .gnode.scene { background: var(--cream); border-color: var(--roast); border-width: 3px; }
+  .gnode.modal { background: var(--el-water-bg); border-color: var(--el-water); }
+  .gnode.system { background: var(--el-wood-bg); border-color: var(--el-wood); }
+  .gnode.start { background: var(--roast); color: var(--cream); border-color: var(--roast-deep); }
+  .gnode.start .gtitle, .gnode.start .gsub { color: var(--cream); }
+
+  svg.edges { position: absolute; inset: 0; width: 100%; height: 100%;
+    pointer-events: none; overflow: visible; }
+  .edge { stroke: var(--fg-3); stroke-width: 1.8; fill: none; transition: stroke 200ms, stroke-width 200ms; }
+  .edge.hi { stroke: var(--accent); stroke-width: 2.6; }
+  .edge.dashed { stroke-dasharray: 5 4; }
+  .edge.tab { stroke: var(--el-water); }
+  .edge.modal { stroke-dasharray: 3 3; stroke: var(--el-metal-fg); }
+  .edge-label { font-family: var(--font-sans); font-weight: 700; font-size: 10px;
+    fill: var(--fg-2); }
+
+  /* ─ RIGHT: Inspector ─ */
+  .inspector { border-left: 1.5px solid var(--border-card); background: var(--cream);
+    overflow: auto; }
+  .insp-head { padding: 18px 20px 14px; border-bottom: 1.5px solid var(--border-hair); }
+  .insp-head .ico { font-size: 28px; }
+  .insp-head h2 { margin: 6px 0 2px; font-size: 17px; font-weight: 800; letter-spacing: -0.01em; }
+  .insp-head .path { font-family: ui-monospace, monospace; font-size: 11px; color: var(--fg-2); }
+  .insp-sec { padding: 14px 20px; border-bottom: 1px solid var(--border-hair); }
+  .insp-sec h4 { margin: 0 0 8px; font-size: 10px; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-3); }
+  .kv { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 3px 0; }
+  .kv .k { color: var(--fg-2); font-weight: 600; }
+  .kv .v { color: var(--ink); font-family: ui-monospace, monospace; font-weight: 600; text-align: right; }
+  .evt { display: flex; gap: 8px; align-items: flex-start; padding: 8px 0;
+    border-bottom: 1px dashed var(--border-hair); font-size: 12px; }
+  .evt:last-child { border-bottom: none; }
+  .evt .tag { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 999px;
+    flex-shrink: 0; margin-top: 1px; }
+  .evt .tag.sig { background: var(--el-fire-bg); color: var(--el-fire-fg); }
+  .evt .tag.in { background: var(--el-metal-bg); color: var(--el-metal-fg); }
+  .evt .tag.out { background: var(--el-water-bg); color: var(--el-water-fg); }
+  .evt .arrow { color: var(--fg-3); font-family: ui-monospace, monospace; font-size: 10px; }
+  .evt .target { color: var(--accent); font-weight: 800; cursor: pointer; }
+  .evt .target:hover { text-decoration: underline; }
+
+  .tok { display: inline-flex; align-items: center; gap: 6px; font-size: 11px;
+    font-family: ui-monospace, monospace; padding: 2px 6px 2px 4px; border-radius: 6px;
+    background: var(--cream-warm); color: var(--ink); font-weight: 700; margin-right: 4px; margin-top: 4px; }
+  .tok .sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.08); }
+
+  .legend { position: fixed; bottom: 14px; left: 340px; background: var(--cream);
+    border: 1.5px solid var(--border-card); border-radius: 12px; padding: 8px 12px;
+    box-shadow: var(--sh-md); font-size: 11px; display: flex; gap: 14px; z-index: 20; }
+  .legend .item { display: flex; align-items: center; gap: 6px; }
+  .legend .sw { width: 14px; height: 14px; border-radius: 4px; border: 2px solid transparent; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <div class="brand">🌲 Scene Tree + Flow</div>
+    <div class="dot"></div>
+    <div class="crumb">씬 구조 · 전환 · 시그널 대시보드</div>
+    <div style="flex:1"></div>
+    <button class="btn" id="reset">Reset selection</button>
+    <button class="btn" id="expand">Expand all</button>
+  </div>
+
+  <div class="split">
+    <!-- LEFT: scene tree -->
+    <aside class="tree" id="tree">
+      <h3>Scene Tree</h3>
+    </aside>
+
+    <!-- CENTER: graph -->
+    <div class="graph-wrap" id="graphWrap">
+      <div class="graph" id="graph">
+        <svg class="edges" id="edgesSvg">
+          <defs>
+            <marker id="arr" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--fg-3)"/>
+            </marker>
+            <marker id="arr-hi" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--accent)"/>
+            </marker>
+            <marker id="arr-tab" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--el-water)"/>
+            </marker>
+            <marker id="arr-modal" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+              <path d="M0,0 L9,4.5 L0,9 Z" fill="var(--el-metal-fg)"/>
+            </marker>
+          </defs>
+        </svg>
+      </div>
+    </div>
+
+    <!-- RIGHT: inspector -->
+    <aside class="inspector" id="inspector"></aside>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="item"><div class="sw" style="background:var(--cream); border-color:var(--roast)"></div> Scene</div>
+  <div class="item"><div class="sw" style="background:var(--el-water-bg); border-color:var(--el-water)"></div> Modal</div>
+  <div class="item"><div class="sw" style="background:var(--el-wood-bg); border-color:var(--el-wood)"></div> Autoload</div>
+  <div class="item"><div class="sw" style="background:var(--roast)"></div> Entry</div>
+  <div class="item"><span style="color:var(--el-water); font-weight:800;">─</span> tab switch</div>
+  <div class="item"><span style="color:var(--el-metal-fg); font-weight:800;">╌</span> modal</div>
+  <div class="item"><span style="color:var(--fg-3); font-weight:800;">→</span> navigation</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// DATA: scenes + tree + edges
+// ═══════════════════════════════════════════════════════════════════════
+const NODES = {
+  entry: { x: 60,  y: 60,  kind: 'start',  icon: '▶',  title: 'Boot',
+    sub: 'scripts/Main.gd', path: 'res://Main.tscn', type: 'Node',
+    tokens: ['ROAST', 'CREAM'],
+    props: [['autoload', 'GameState, SaveLoad'], ['initial', 'PrologueScene']],
+    events: [
+      { tag: 'out', name: 'ready()', arrow: '→', target: 'prologue' },
+      { tag: 'sig', name: 'on_save_loaded', arrow: '→', target: 'shop' },
+    ],
+  },
+  prologue: { x: 300, y: 60, kind: 'scene', icon: '📜', title: 'PrologueScene',
+    sub: '5컷 내레이션 · 최초 1회',
+    path: 'res://scenes/Prologue.tscn', type: 'Control',
+    tokens: ['ROAST_DEEP', 'PAPER'],
+    props: [['skip_after', 'done once'], ['duration', '~90s'], ['music', 'bgm_intro.ogg']],
+    events: [
+      { tag: 'in',  name: 'show()' },
+      { tag: 'sig', name: 'prologue_finished', arrow: '→', target: 'character' },
+      { tag: 'out', name: 'on_skip', arrow: '→', target: 'character' },
+    ],
+  },
+  character: { x: 560, y: 60, kind: 'scene', icon: '🎭', title: 'CharacterCreate',
+    sub: '이름 · 12지신 · 오행',
+    path: 'res://scenes/CharacterCreate.tscn', type: 'Control',
+    tokens: ['ACCENT', 'EL_FIRE', 'EL_WOOD'],
+    props: [['zodiacs', '12'], ['elements', '5 (오행)'], ['validation', 'name ≥ 1']],
+    events: [
+      { tag: 'sig', name: 'player_created(dict)', arrow: '→', target: 'shop' },
+      { tag: 'out', name: 'PlayerState.set', arrow: '→', target: 'game-state' },
+    ],
+  },
+  shop: { x: 900, y: 260, kind: 'scene', icon: '🏪', title: 'ShopScene',
+    sub: '홈 · 기본 탭 · 이소메트릭',
+    path: 'res://scenes/Shop.tscn', type: 'Node2D',
+    tokens: ['CREAM', 'ACCENT', 'COIN', 'ENERGY'],
+    props: [['grid', '6×5'], ['autosave', '30s'], ['ticks', 'customer_spawner 10–30s']],
+    events: [
+      { tag: 'sig', name: 'customer_arrived', arrow: '→', target: 'order-slots' },
+      { tag: 'sig', name: 'level_up', arrow: '→', target: 'levelup-modal' },
+      { tag: 'in',  name: 'tap_furniture', arrow: '→', target: 'build-card' },
+    ],
+  },
+  workshop: { x: 1200, y: 60, kind: 'scene', icon: '🧪', title: 'WorkshopScene',
+    sub: '머지 보드 7×7',
+    path: 'res://scenes/Workshop.tscn', type: 'Control',
+    tokens: ['BOARD_CELL', 'BOARD_LOCKED', 'ROAST'],
+    props: [['cells', '49 (7×7)'], ['unlocked', 'derive from lv'], ['max_grade', '5']],
+    events: [
+      { tag: 'in',  name: 'drag_slime' },
+      { tag: 'out', name: 'merge()', arrow: '→', target: 'game-state' },
+      { tag: 'sig', name: 'max_grade_reached', arrow: '→', target: 'reward-modal' },
+    ],
+  },
+  dex: { x: 1200, y: 260, kind: 'scene', icon: '📚', title: 'DexScene',
+    sub: '도감 · 오행 상성',
+    path: 'res://scenes/Dex.tscn', type: 'Control',
+    tokens: ['EL_WOOD', 'EL_FIRE', 'EL_EARTH', 'EL_METAL', 'EL_WATER'],
+    props: [['slimes', '5 + 향후 확장'], ['affinity', '5×5 매트릭스']],
+    events: [
+      { tag: 'in', name: 'tap_slime', arrow: '→', target: 'slime-detail' },
+    ],
+  },
+  settings: { x: 1200, y: 460, kind: 'scene', icon: '⚙', title: 'SettingsScene',
+    sub: '프로필 · 음향 · 데이터',
+    path: 'res://scenes/Settings.tscn', type: 'Control',
+    tokens: ['CREAM', 'INK', 'FG_2'],
+    props: [['language', 'ko-KR'], ['audio', 'bgm, sfx, haptic']],
+    events: [
+      { tag: 'out', name: 'reset_game', arrow: '→', target: 'confirm-dialog' },
+    ],
+  },
+
+  // Modals
+  'levelup-modal': { x: 900, y: 480, kind: 'modal', icon: '⬆️', title: 'LevelUpModal',
+    sub: '해금 요약 · 자동 팝업',
+    path: 'res://scenes/modals/LevelUp.tscn', type: 'AcceptDialog',
+    tokens: ['ACCENT', 'COIN'],
+    props: [['trigger', 'exp ≥ threshold'], ['anim', 'out-back 0.48s']],
+    events: [{ tag: 'out', name: 'claim_rewards', arrow: '→', target: 'game-state' }],
+  },
+  'reward-modal': { x: 1500, y: 60, kind: 'modal', icon: '✨', title: 'RewardModal',
+    sub: '합성 · 주문 완료 축하',
+    path: 'res://scenes/modals/Reward.tscn', type: 'CenterContainer',
+    tokens: ['ACCENT', 'COIN', 'GEM'],
+    props: [['confetti', 'on'], ['haptic', 'light']],
+    events: [{ tag: 'out', name: 'close', arrow: '→', target: 'shop' }],
+  },
+  'slime-detail': { x: 1500, y: 260, kind: 'modal', icon: '🟢', title: 'SlimeDetailModal',
+    sub: '도감 상세 · 버프 설명',
+    path: 'res://scenes/modals/SlimeDetail.tscn', type: 'PopupPanel',
+    tokens: ['EL_WOOD_BG', 'EL_WOOD_FG'],
+    props: [['data', 'SlimeDB resource']],
+    events: [],
+  },
+  'confirm-dialog': { x: 1500, y: 460, kind: 'modal', icon: '⚠️', title: 'ConfirmDialog',
+    sub: '구매 · 리셋 확인',
+    path: 'res://scenes/modals/Confirm.tscn', type: 'ConfirmationDialog',
+    tokens: ['DANGER', 'ROAST'],
+    props: [['buttons', 'cancel / confirm']],
+    events: [{ tag: 'sig', name: 'confirmed', arrow: '→', target: 'game-state' }],
+  },
+  'order-slots': { x: 600, y: 460, kind: 'modal', icon: '🧾', title: 'OrderSlots',
+    sub: '대기 손님 3칸 · HUD 자식',
+    path: 'res://scenes/ui/OrderSlots.tscn', type: 'HBoxContainer',
+    tokens: ['EL_FIRE', 'EL_WATER', 'EL_WOOD'],
+    props: [['slots', '3'], ['fsm', 'per-order']],
+    events: [{ tag: 'in', name: 'drop_slime', arrow: '→', target: 'game-state' }],
+  },
+  'build-card': { x: 600, y: 260, kind: 'modal', icon: '🪑', title: 'BuildCard',
+    sub: '가구 배치 카드 (하단 고정)',
+    path: 'res://scenes/ui/BuildCard.tscn', type: 'PanelContainer',
+    tokens: ['CREAM', 'ROAST'],
+    props: [['position', 'bottom anchor'], ['cost', 'coin']],
+    events: [{ tag: 'out', name: 'place_furniture', arrow: '→', target: 'shop' }],
+  },
+
+  // Systems (autoloads)
+  'game-state': { x: 60, y: 260, kind: 'system', icon: '💾', title: 'GameState',
+    sub: 'autoload · 싱글턴',
+    path: 'res://autoload/GameState.gd', type: 'Node',
+    tokens: ['ROAST', 'CREAM_WARM'],
+    props: [['player', 'dict'], ['shop', 'dict'], ['board', '7×7 array'], ['signals', '12']],
+    events: [
+      { tag: 'sig', name: 'coin_changed', arrow: '→', target: 'shop' },
+      { tag: 'sig', name: 'energy_changed', arrow: '→', target: 'shop' },
+      { tag: 'sig', name: 'lv_changed', arrow: '→', target: 'levelup-modal' },
+    ],
+  },
+  'save-load': { x: 60, y: 460, kind: 'system', icon: '📦', title: 'SaveLoad',
+    sub: 'autoload · 저장소',
+    path: 'res://autoload/SaveLoad.gd', type: 'Node',
+    tokens: ['EL_WOOD', 'EL_WOOD_BG'],
+    props: [['interval', '30s'], ['format', 'user://save.json'], ['version', 1]],
+    events: [
+      { tag: 'in',  name: 'autosave_tick' },
+      { tag: 'out', name: 'save_loaded', arrow: '→', target: 'entry' },
+    ],
+  },
+  'audio-bus': { x: 60, y: 660, kind: 'system', icon: '🔊', title: 'AudioBus',
+    sub: 'autoload · BGM / SFX',
+    path: 'res://autoload/AudioBus.gd', type: 'Node',
+    tokens: ['FG_2'],
+    props: [['bgm', '3 tracks'], ['sfx_pool', '16 voices']],
+    events: [{ tag: 'in', name: 'play_sfx(id)' }],
+  },
+};
+
+// Edges: [from, to, label, style]
+const EDGES = [
+  ['entry', 'prologue', 'on_ready', ''],
+  ['prologue', 'character', 'finished', ''],
+  ['character', 'shop', 'player_created', ''],
+  // Tab switches (hub ↔ tabs)
+  ['shop', 'workshop', 'tap 작업실', 'tab'],
+  ['workshop', 'shop', 'tap 매장', 'tab'],
+  ['shop', 'dex', 'tap 도감', 'tab'],
+  ['dex', 'shop', 'tap 매장', 'tab'],
+  ['shop', 'settings', 'tap 설정', 'tab'],
+  ['settings', 'shop', 'tap 매장', 'tab'],
+  // Modals
+  ['shop', 'levelup-modal', 'on_level_up', 'modal'],
+  ['shop', 'build-card', 'tap_furniture', 'modal'],
+  ['shop', 'order-slots', 'customer_arrived', 'modal'],
+  ['workshop', 'reward-modal', 'max_grade', 'modal'],
+  ['dex', 'slime-detail', 'tap_slime', 'modal'],
+  ['settings', 'confirm-dialog', 'reset', 'modal'],
+  // State
+  ['character', 'game-state', 'set player', 'dashed'],
+  ['build-card', 'game-state', 'place()', 'dashed'],
+  ['order-slots', 'game-state', 'deliver()', 'dashed'],
+  ['workshop', 'game-state', 'merge()', 'dashed'],
+  ['game-state', 'shop', 'signal', 'dashed'],
+  ['game-state', 'save-load', 'autosave', 'dashed'],
+  ['save-load', 'entry', 'save_loaded', 'dashed'],
+  ['levelup-modal', 'game-state', 'claim', 'dashed'],
+  ['reward-modal', 'shop', 'close', ''],
+];
+
+// Tree structure (expanded by default)
+const TREE = [
+  { id: 'entry', label: 'Main', icon: '▶', type: 'Node',
+    children: [
+      { id: 'game-state', label: 'GameState', icon: '💾', type: 'autoload' },
+      { id: 'save-load',  label: 'SaveLoad',  icon: '📦', type: 'autoload' },
+      { id: 'audio-bus',  label: 'AudioBus',  icon: '🔊', type: 'autoload' },
+      { id: null, label: 'SceneRoot', icon: '🎬', type: 'Node', children: [
+        { id: 'prologue',  label: 'PrologueScene',  icon: '📜', type: 'Control' },
+        { id: 'character', label: 'CharacterCreate', icon: '🎭', type: 'Control' },
+        { id: 'shop',      label: 'ShopScene',      icon: '🏪', type: 'Node2D', children: [
+          { id: null, label: 'HUD', icon: '🎚', type: 'CanvasLayer', children: [
+            { id: 'order-slots', label: 'OrderSlots', icon: '🧾', type: 'HBox' },
+          ]},
+          { id: null, label: 'Isometric', icon: '🏗', type: 'Node2D' },
+          { id: 'build-card', label: 'BuildCard', icon: '🪑', type: 'Panel' },
+        ]},
+        { id: 'workshop', label: 'WorkshopScene', icon: '🧪', type: 'Control', children: [
+          { id: null, label: 'BoardGrid', icon: '🟨', type: 'GridContainer' },
+        ]},
+        { id: 'dex',      label: 'DexScene',      icon: '📚', type: 'Control' },
+        { id: 'settings', label: 'SettingsScene', icon: '⚙',  type: 'Control' },
+      ]},
+      { id: null, label: 'ModalLayer', icon: '📑', type: 'CanvasLayer', children: [
+        { id: 'levelup-modal',   label: 'LevelUpModal', icon: '⬆️', type: 'Accept' },
+        { id: 'reward-modal',    label: 'RewardModal',  icon: '✨', type: 'Center' },
+        { id: 'slime-detail',    label: 'SlimeDetail',  icon: '🟢', type: 'Popup' },
+        { id: 'confirm-dialog',  label: 'ConfirmDialog', icon: '⚠️', type: 'Confirm' },
+      ]},
+    ]
+  }
+];
+
+// Token colors (for inspector chips)
+const TOKEN_HEX = {
+  ROAST:'#6B3F2A', ROAST_DEEP:'#4A2A1C', CREAM:'#F7EFE2', CREAM_WARM:'#EFE3CC',
+  PAPER:'#FAF5EC', INK:'#1F1A17', ACCENT:'#C8383C', FG_1:'#1F1A17', FG_2:'#5A4E46',
+  EL_WOOD:'#4E9A30', EL_FIRE:'#C8383C', EL_EARTH:'#B8823A', EL_METAL:'#D4A64A', EL_WATER:'#3F7CA8',
+  EL_WOOD_BG:'#E3F3DA', EL_WOOD_FG:'#2E5A1E', EL_FIRE_BG:'#F8DEDF', EL_FIRE_FG:'#7A1F22',
+  EL_METAL_BG:'#F8EED2', EL_METAL_FG:'#7A5E14', EL_WATER_BG:'#DCEBF5', EL_WATER_FG:'#2C5A82',
+  BOARD_CELL:'#F3E8D2', BOARD_LOCKED:'#C9B896', COIN:'#D4A64A', GEM:'#7AA4C8',
+  ENERGY:'#E28A2B', DANGER:'#C8383C',
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// Render tree
+// ═══════════════════════════════════════════════════════════════════════
+const treeEl = document.getElementById('tree');
+function renderTree(nodes, parent) {
+  nodes.forEach(n => {
+    const row = document.createElement('div');
+    row.className = 'tnode' + (n.children ? '' : ' leaf');
+    if (n.id) row.dataset.id = n.id;
+    row.innerHTML = `<span class="caret">${n.children ? '▾' : ''}</span>` +
+      `<span class="ico">${n.icon}</span>` +
+      `<span class="lbl">${n.label}</span>` +
+      `<span class="type">${n.type || ''}</span>`;
+    parent.appendChild(row);
+    if (n.children) {
+      const kids = document.createElement('div');
+      kids.className = 'children';
+      parent.appendChild(kids);
+      renderTree(n.children, kids);
+      row.querySelector('.caret').addEventListener('click', e => {
+        e.stopPropagation();
+        kids.classList.toggle('collapsed');
+        row.querySelector('.caret').textContent = kids.classList.contains('collapsed') ? '▸' : '▾';
+      });
+    }
+  });
+}
+renderTree(TREE, treeEl);
+
+// ═══════════════════════════════════════════════════════════════════════
+// Render graph
+// ═══════════════════════════════════════════════════════════════════════
+const graph = document.getElementById('graph');
+const svg = document.getElementById('edgesSvg');
+Object.entries(NODES).forEach(([id, n]) => {
+  const el = document.createElement('div');
+  el.className = 'gnode ' + n.kind;
+  el.dataset.id = id;
+  el.style.left = n.x + 'px';
+  el.style.top = n.y + 'px';
+  el.innerHTML = `<div class="gicon">${n.icon}</div>
+    <div class="gtitle">${n.title}</div>
+    <div class="gsub">${n.sub}</div>`;
+  graph.appendChild(el);
+});
+
+// Draw edges
+function nodeAnchor(id) {
+  const el = graph.querySelector(`.gnode[data-id="${id}"]`);
+  const r = el.getBoundingClientRect();
+  const gr = graph.getBoundingClientRect();
+  return { x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop + el.offsetHeight / 2,
+    l: el.offsetLeft, t: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight };
+}
+
+function renderEdges() {
+  // clear old
+  svg.querySelectorAll('.edge, .edge-label, .edge-bg').forEach(el => el.remove());
+  EDGES.forEach(([from, to, label, style]) => {
+    const a = nodeAnchor(from), b = nodeAnchor(to);
+    // route: smooth bezier from edge → edge
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const mx = a.x + dx * 0.5;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('class', 'edge ' + (style || ''));
+    path.setAttribute('d', `M${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}`);
+    path.setAttribute('data-from', from);
+    path.setAttribute('data-to', to);
+    const marker = style === 'tab' ? 'arr-tab' : style === 'modal' ? 'arr-modal' : 'arr';
+    path.setAttribute('marker-end', `url(#${marker})`);
+    svg.appendChild(path);
+    if (label) {
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('class', 'edge-label');
+      text.setAttribute('x', mx);
+      text.setAttribute('y', (a.y + b.y) / 2 - 4);
+      text.setAttribute('text-anchor', 'middle');
+      text.textContent = label;
+      svg.appendChild(text);
+    }
+  });
+}
+renderEdges();
+
+// ═══════════════════════════════════════════════════════════════════════
+// Selection + sync
+// ═══════════════════════════════════════════════════════════════════════
+const inspector = document.getElementById('inspector');
+let selected = null;
+
+function select(id) {
+  selected = id;
+  // graph
+  document.querySelectorAll('.gnode').forEach(n => {
+    n.classList.remove('on', 'dim');
+    if (id) {
+      if (n.dataset.id === id) n.classList.add('on');
+    }
+  });
+  // edges
+  svg.querySelectorAll('.edge').forEach(e => {
+    e.classList.remove('hi');
+    if (id && (e.dataset.from === id || e.dataset.to === id)) {
+      e.classList.add('hi');
+    }
+  });
+  // tree
+  document.querySelectorAll('.tnode').forEach(t => {
+    t.classList.toggle('on', id && t.dataset.id === id);
+  });
+  // inspector
+  renderInspector(id);
+}
+
+function renderInspector(id) {
+  if (!id) { inspector.innerHTML = `<div class="insp-sec" style="color:var(--fg-2); font-size:13px; text-align:center; padding:40px 20px;">
+    👈 씬 트리나 노드를 클릭하면<br>상세 정보가 여기에 나타납니다.
+  </div>`; return; }
+  const n = NODES[id]; if (!n) return;
+  const incoming = EDGES.filter(e => e[1] === id);
+  const outgoing = EDGES.filter(e => e[0] === id);
+  inspector.innerHTML = `
+    <div class="insp-head">
+      <div class="ico">${n.icon}</div>
+      <h2>${n.title}</h2>
+      <div class="path">${n.path}</div>
+      <div class="path">: ${n.type}</div>
+    </div>
+    <div class="insp-sec">
+      <h4>Properties</h4>
+      ${n.props.map(([k, v]) => `<div class="kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('')}
+    </div>
+    <div class="insp-sec">
+      <h4>Design Tokens</h4>
+      <div>${n.tokens.map(t => `<span class="tok"><span class="sw" style="background:${TOKEN_HEX[t] || '#ccc'}"></span>${t}</span>`).join('')}</div>
+    </div>
+    <div class="insp-sec">
+      <h4>Signals & Events</h4>
+      ${n.events.length ? n.events.map(ev => `
+        <div class="evt">
+          <span class="tag ${ev.tag}">${ev.tag.toUpperCase()}</span>
+          <span style="flex:1;">${ev.name}</span>
+          ${ev.target ? `<span class="arrow">→</span><span class="target" data-jump="${ev.target}">${NODES[ev.target]?.title || ev.target}</span>` : ''}
+        </div>`).join('') : '<div style="color:var(--fg-3); font-size:12px;">없음</div>'}
+    </div>
+    <div class="insp-sec">
+      <h4>Incoming (${incoming.length})</h4>
+      ${incoming.length ? incoming.map(e => `
+        <div class="evt"><span class="target" data-jump="${e[0]}">${NODES[e[0]]?.title}</span>
+        <span class="arrow">─ ${e[2] || ''} →</span></div>`).join('') : '<div style="color:var(--fg-3); font-size:12px;">entry 노드</div>'}
+    </div>
+    <div class="insp-sec">
+      <h4>Outgoing (${outgoing.length})</h4>
+      ${outgoing.length ? outgoing.map(e => `
+        <div class="evt"><span class="arrow">→ ${e[2] || ''}</span>
+        <span class="target" data-jump="${e[1]}">${NODES[e[1]]?.title}</span></div>`).join('') : '<div style="color:var(--fg-3); font-size:12px;">terminal</div>'}
+    </div>`;
+  inspector.querySelectorAll('[data-jump]').forEach(el => {
+    el.addEventListener('click', () => select(el.dataset.jump));
+  });
+}
+
+// Bind clicks
+document.querySelectorAll('.gnode').forEach(el =>
+  el.addEventListener('click', () => select(el.dataset.id)));
+document.querySelectorAll('.tnode').forEach(el => {
+  if (el.dataset.id) el.addEventListener('click', () => {
+    select(el.dataset.id);
+    const g = graph.querySelector(`.gnode[data-id="${el.dataset.id}"]`);
+    if (g) g.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  });
+});
+
+document.getElementById('reset').addEventListener('click', () => select(null));
+document.getElementById('expand').addEventListener('click', () => {
+  document.querySelectorAll('.children').forEach(c => c.classList.remove('collapsed'));
+  document.querySelectorAll('.caret').forEach(c => { if (c.textContent === '▸') c.textContent = '▾'; });
+});
+
+// restore selection
+const saved = localStorage.getItem('bm-scenetree-sel');
+select(saved && NODES[saved] ? saved : 'shop');
+addEventListener('beforeunload', () => localStorage.setItem('bm-scenetree-sel', selected || ''));
+
+// pan
+const wrap = document.getElementById('graphWrap');
+let dragging = false, sx=0, sy=0, sl=0, st=0;
+wrap.addEventListener('mousedown', e => {
+  if (e.target.closest('.gnode')) return;
+  dragging = true; sx = e.clientX; sy = e.clientY; sl = wrap.scrollLeft; st = wrap.scrollTop;
+  wrap.style.cursor = 'grabbing';
+});
+addEventListener('mouseup', () => { dragging = false; wrap.style.cursor = ''; });
+addEventListener('mousemove', e => {
+  if (!dragging) return;
+  wrap.scrollLeft = sl - (e.clientX - sx);
+  wrap.scrollTop = st - (e.clientY - sy);
+});
+</script>
+</body>
+</html>
