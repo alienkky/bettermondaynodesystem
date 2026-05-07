@@ -82,8 +82,10 @@
   .rnode.marquee-hover{outline:2px dashed var(--roast);outline-offset:2px;}
   .rnode.ref{padding:0;overflow:hidden;border-color:var(--accent);border-width:3px;background:#fff;}
   .rnode.ref img{display:block;max-width:100%;pointer-events:none;}
-  .rnode.ref .caption{padding:6px 10px;font-size:11px;font-weight:700;color:var(--fg-2);background:var(--cream);border-top:1.5px solid var(--border-card);outline:none;}
-  .rnode.note{background:#FFF8D9;border-color:#D4B356;padding:10px 12px;min-width:160px;font-family:'Gaegu',var(--font-sans);font-weight:700;}
+  .rnode.ref .caption{padding:6px 10px 3px;font-size:11px;font-weight:700;color:var(--fg-2);background:var(--cream);border-top:1.5px solid var(--border-card);outline:none;}
+  .rnode.ref .ref-sub{padding:2px 10px 8px;font-size:11px;font-weight:400;color:var(--fg-3);background:var(--cream);line-height:1.45;white-space:pre-wrap;font-family:var(--font-sans);}
+  .rnode.ref .ref-sub:empty{display:none;}
+  .rnode.note{background:#FFF8D9;border-color:#D4B356;padding:10px 12px;min-width:160px;font-family:var(--font-sans);font-weight:700;}
   .rnode.note .body{font-size:14px;line-height:1.5;color:var(--ink);outline:none;white-space:pre-wrap;}
   .rnode.screen{border-color:var(--roast);border-width:3px;padding:10px 14px;min-width:160px;}
   .rnode.system{background:var(--el-wood-bg);border-color:var(--el-wood);padding:10px 14px;min-width:150px;}
@@ -463,6 +465,7 @@ function renderNode(n) {
     inner = `
       ${n.src ? `<img src="${n.src}" alt="">` : `<div style="padding:30px;text-align:center;color:var(--fg-3);font-size:12px;">이미지 없음<br>인스펙터에서 업로드</div>`}
       <div class="caption">${escapeHtml(n.title || 'Reference')}</div>
+      <div class="ref-sub">${escapeHtml(n.sub || '')}</div>
     `;
   } else if (n.kind === 'note') {
     inner = `<div class="body">${escapeHtml(n.body || '')}</div>`;
@@ -507,6 +510,8 @@ function patchNodeEl(n) {
   } else if (n.kind === 'ref') {
     const c = el.querySelector('.caption');
     if (c && !c.isContentEditable) c.textContent = n.title || 'Reference';
+    const rs = el.querySelector('.ref-sub');
+    if (rs) rs.textContent = n.sub || '';
   } else if (n.kind === 'group') {
     const lbl = el.querySelector('.group-label');
     if (lbl && !lbl.isContentEditable) lbl.textContent = n.title || 'GROUP';
@@ -1019,7 +1024,7 @@ function renderInspector() {
     insp.innerHTML = html;
     insp.querySelector('#fIcon')?.addEventListener('input', e => { n.icon = e.target.value; save(); patchNodeEl(n); });
     insp.querySelector('#fTitle')?.addEventListener('input', e => { n.title = e.target.value; save(); patchNodeEl(n); });
-    insp.querySelector('#fSub')?.addEventListener('input', e => { n.sub = e.target.value; save(); });
+    insp.querySelector('#fSub')?.addEventListener('input', e => { n.sub = e.target.value; save(); patchNodeEl(n); });
     insp.querySelector('#fBody')?.addEventListener('input', e => { n.body = e.target.value; save(); patchNodeEl(n); });
     insp.querySelector('#fGlyph')?.addEventListener('input', e => { n.glyph = e.target.value || '⭐'; save(); patchNodeEl(n); });
     insp.querySelector('#imgBtn')?.addEventListener('click', () => insp.querySelector('#imgInsp').click());
