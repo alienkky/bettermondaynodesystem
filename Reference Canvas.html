@@ -236,12 +236,12 @@
       <div class="canvas" id="canvas">
         <svg class="edges" id="edges">
           <defs>
-            <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 Z" fill="var(--roast)"/></marker>
-            <marker id="arr-sel" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 Z" fill="var(--accent)"/></marker>
-            <marker id="arr-start" markerWidth="10" markerHeight="10" refX="1" refY="5" orient="auto"><path d="M9,0 L0,5 L9,10 Z" fill="var(--roast)"/></marker>
-            <marker id="arr-start-sel" markerWidth="10" markerHeight="10" refX="1" refY="5" orient="auto"><path d="M9,0 L0,5 L9,10 Z" fill="var(--accent)"/></marker>
-            <marker id="dot" markerWidth="8" markerHeight="8" refX="4" refY="4"><circle cx="4" cy="4" r="3" fill="var(--roast)"/></marker>
-            <marker id="dot-sel" markerWidth="8" markerHeight="8" refX="4" refY="4"><circle cx="4" cy="4" r="3" fill="var(--accent)"/></marker>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,1 L7,4 L0,7 Z" fill="var(--roast)"/></marker>
+            <marker id="arr-sel" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,1 L7,4 L0,7 Z" fill="var(--accent)"/></marker>
+            <marker id="arr-start" markerWidth="8" markerHeight="8" refX="1" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M7,1 L0,4 L7,7 Z" fill="var(--roast)"/></marker>
+            <marker id="arr-start-sel" markerWidth="8" markerHeight="8" refX="1" refY="4" orient="auto" markerUnits="userSpaceOnUse"><path d="M7,1 L0,4 L7,7 Z" fill="var(--accent)"/></marker>
+            <marker id="dot" markerWidth="8" markerHeight="8" refX="4" refY="4" markerUnits="userSpaceOnUse"><circle cx="4" cy="4" r="3" fill="var(--roast)"/></marker>
+            <marker id="dot-sel" markerWidth="8" markerHeight="8" refX="4" refY="4" markerUnits="userSpaceOnUse"><circle cx="4" cy="4" r="3" fill="var(--accent)"/></marker>
           </defs>
         </svg>
       </div>
@@ -536,7 +536,7 @@ function renderEdges() {
     if (!fromEl || !toEl) return;
     const [ax, ay, bx, by, fs, ts] = routeEdge(from, fromEl, to, toEl, e);
     const cp1 = ctrlPt({x:ax,y:ay}, fs);
-    const cp2 = ctrlPt({x:bx,y:by}, OPP[ts]);
+    const cp2 = ctrlPt({x:bx,y:by}, ts);
     const d = `M${ax} ${ay} C ${cp1.x} ${cp1.y}, ${cp2.x} ${cp2.y}, ${bx} ${by}`;
     const isSel = selected?.type==='edge' && selected.id===e.id;
     const style = e.style || 'solid';
@@ -930,7 +930,7 @@ function startConnect(fromId, e) {
       tEl?.querySelector(`.port.${snapPort.side}`)?.classList.add('drop-target');
     }
     const cp1 = ctrlPt(fp, fromPortSide);
-    const cp2 = ctrlPt({x: tx, y: ty}, toSide ? OPP[toSide] : null);
+    const cp2 = ctrlPt({x: tx, y: ty}, toSide);
     temp.setAttribute('d', `M${fp.x} ${fp.y} C ${cp1.x} ${cp1.y}, ${cp2.x} ${cp2.y}, ${tx} ${ty}`);
   };
 
