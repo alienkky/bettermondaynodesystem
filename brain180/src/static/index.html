@@ -177,7 +177,7 @@ select:focus{outline:none;border-color:var(--g-mid)}
         </select>
       </div>
       <button class="btn btn-p" id="lensBtn" onclick="runLens()">🔍 저자 렌즈 추출 (LENS 분석)</button>
-      <button class="btn btn-o" onclick="loadDemo()">⚡ 데모 실행 — 마르쿠스 아우렐리우스</button>
+      <button class="btn btn-o" onclick="loadDemo()">⚡ 데모 실행 — 데카르트 『방법서설』</button>
       <div id="lensLoading" style="display:none"><div class="loading"><div class="spin"></div>뇌인지구조 추출 중…</div></div>
       <div id="lensOut" style="display:none"></div>
     </div>
@@ -240,42 +240,59 @@ select:focus{outline:none;border-color:var(--g-mid)}
 const S = { sessionId:null, lens:null, iq:90, verdicts:[], history:[] };
 
 // ═══════════════════════════════════════════════════════
-//  DEMO DATA  (마르쿠스 아우렐리우스 『명상록』)
+//  DEMO DATA  (데카르트 『방법서설』)
 // ═══════════════════════════════════════════════════════
 const DEMO = {
   session_id:'demo',
   author_lens:{
-    name:'마르쿠스 아우렐리우스', field:'철학', era:'고대',
-    thinking_pattern:'모든 현상을 통제 가능/불가능의 이분법으로 즉시 분류한 후, 통제 가능한 내면에만 에너지를 집중시킨다',
-    cognitive_style:'이분법적 분류 → 에너지 최적화',
-    core_assumption:'외부 세계가 아닌 내면의 반응이 삶의 질을 결정한다',
-    mental_model:'인간은 외부 사건의 피해자가 아니라 자신의 반응의 주인이다',
-    '4d_signature':'어떤 상황에서도 0.1초 만에 내 것 / 내 것이 아닌 것으로 자동 분류하는 이분법 렌즈',
-    genius_level:150
+    name:'르네 데카르트', field:'철학·수학', era:'근세',
+    thinking_pattern:'모든 기존 믿음을 방법적으로 의심하여 해체한 뒤, 의심 불가능한 유일한 사실(코기토)에서 출발해 확실성의 체계를 연역적으로 재건한다',
+    cognitive_style:'방법적 해체 → 불가침 기점 확보 → 연역적 재구성',
+    core_assumption:'명확하고 판명하게(명증하게) 인식되는 것만이 참이다',
+    mental_model:'의심할 수 없는 단 하나의 사실에서 모든 지식을 논리적으로 재건할 수 있다',
+    '4d_signature':'어떤 믿음이든 "이것을 의심할 수 있는가?"로 먼저 필터링한 뒤, 의심 불가능한 것에서만 지식 체계를 세우는 재건의 사고',
+    genius_level:180
   },
   nodes:[
-    {id:'n1',concept:'통제 불가',role:'contrast',   dimension:1,depth:1,description:'외부 세계, 타인, 사건 결과',author_emphasis:'에너지 낭비의 원천으로 규정하여 포기를 정당화'},
-    {id:'n2',concept:'통제 가능',role:'anchor',     dimension:4,depth:1,description:'자신의 생각, 반응, 의지',author_emphasis:'작지만 유일한 진짜 자유의 영역 — 절대적 강조'},
-    {id:'n3',concept:'에너지',   role:'bridge',     dimension:2,depth:2,description:'유한한 정신적 자원',author_emphasis:'희소 자원처럼 관리 — 물리학적 사고'},
-    {id:'n4',concept:'내면 자유',role:'conclusion', dimension:4,depth:3,description:'스토아 철학의 궁극 목표',author_emphasis:'외부 조건과 무관한 절대적 자유'},
+    {id:'n1',concept:'감각',     role:'contrast',   dimension:1,depth:1,
+     description:'시각·청각 등 외부 지각 — 불확실성의 원천',
+     author_emphasis:'한 번이라도 속인 것은 완전히 신뢰할 수 없다고 단호히 규정'},
+    {id:'n2',concept:'방법적 의심',role:'anchor',   dimension:4,depth:1,
+     description:'모든 믿음을 의도적·체계적으로 의심하는 인식론적 도구',
+     author_emphasis:'진리를 찾기 위한 방법 — 회의주의가 목적이 아닌 도구'},
+    {id:'n3',concept:'코기토',   role:'bridge',     dimension:4,depth:2,
+     description:'나는 생각한다 — 의심하는 행위 자체가 사유를 증명',
+     author_emphasis:'의심할 수 없는 유일한 사실 — 전체 체계의 아르키메데스적 기점'},
+    {id:'n4',concept:'명증성',   role:'bridge',     dimension:3,depth:2,
+     description:'명확하고 판명한 인식의 기준 — 참 지식의 필요조건',
+     author_emphasis:'코기토에서 추출한 진리 기준을 모든 지식에 적용'},
+    {id:'n5',concept:'존재 증명',role:'conclusion', dimension:4,depth:3,
+     description:'나는 존재한다 — 사유로부터 연역된 확실한 결론',
+     author_emphasis:'의심에서 출발해 의심할 수 없는 존재에 도달하는 역설적 귀결'},
   ],
   edges:[
-    {from:'n1',to:'n3',relation:'causes',     author_logic:'통제 불가에 집착 → 에너지 소진',dimension:3,strength:3},
-    {from:'n2',to:'n3',relation:'transforms', author_logic:'통제 가능에 집중 → 에너지 증폭', dimension:3,strength:3},
-    {from:'n3',to:'n4',relation:'causes',     author_logic:'올바른 에너지 배분 → 내면 자유',  dimension:2,strength:2},
-    {from:'n1',to:'n2',relation:'contradicts',author_logic:'이 혼동이 모든 불행의 근원',       dimension:4,strength:3},
+    {from:'n1',to:'n2',relation:'causes',     author_logic:'감각의 불확실성이 방법적 의심을 촉발', dimension:2,strength:2},
+    {from:'n2',to:'n3',relation:'transforms', author_logic:'의심 행위 자체가 사유하는 자아를 드러냄 — 의심이 코기토를 낳음', dimension:4,strength:3},
+    {from:'n3',to:'n4',relation:'supports',   author_logic:'코기토의 명증성에서 진리 기준을 추출', dimension:3,strength:2},
+    {from:'n3',to:'n5',relation:'causes',     author_logic:'생각함 → 고로 존재함 (코기토 에르고 숨)', dimension:4,strength:3},
+    {from:'n1',to:'n4',relation:'contradicts',author_logic:'감각은 명증성 기준을 충족하지 못함', dimension:3,strength:2},
+    {from:'n4',to:'n5',relation:'supports',   author_logic:'명증성이 존재 증명의 인식론적 보증', dimension:3,strength:1},
   ],
   cognitive_signature:{
-    unique_moves:['이분법으로 0.1초 즉시 판단','에너지를 희소 자원으로 관리','포기와 자유를 동일시'],
-    install_key:'어떤 상황에서든 즉시 내 것/내 것이 아닌 것으로 분류하는 2초 판단 습관 훈련'
+    unique_moves:[
+      '의심 자체를 의심하여 의심 불가능한 기점 발견',
+      '해체(회의)와 재건(연역)을 하나의 사이클로 묶음',
+      '가장 간단한 사실에서 가장 복잡한 체계를 연역'
+    ],
+    install_key:'어떤 믿음이든 "이것을 의심할 수 있는가?"를 먼저 물은 뒤, 의심 불가능한 것에서만 논리를 전개하는 훈련'
   },
   reverse_learning_path:{
-    step1_anchor:'n2 (통제 가능)',
-    step2_pattern:'n2 anchor에서 출발 → n3 bridge → n4 결론으로 흐름. n1은 n2의 대비쌍',
-    step3_question:'"나는 지금 통제할 수 있는 것에 에너지를 쓰고 있는가?"',
-    step4_reread:'모든 문장을 통제 가능/불가능으로 즉시 분류하며 읽기'
+    step1_anchor:'n2 (방법적 의심)',
+    step2_pattern:'n2 anchor에서 출발 → n3 코기토(bridge)를 거쳐 → n5 존재 증명(결론)으로 흐름. n1은 n2의 촉발 원인, n4는 n3에서 추출된 기준',
+    step3_question:'"데카르트는 왜 모든 것을 의심했는가? 의심의 목적이 진리를 얻는 것이라면, 의심 자체는 어떻게 의심하는가?"',
+    step4_reread:'각 문장에서 "데카르트는 지금 무언가를 의심하는가, 재건하는가?"를 구분하며 읽기'
   },
-  visualization_hint:{layout:'force',primary_color:'#4A6741',emphasis_nodes:['n2','n4']}
+  visualization_hint:{layout:'force',primary_color:'#2D4E7A',emphasis_nodes:['n2','n3','n5']}
 };
 
 // ═══════════════════════════════════════════════════════
@@ -431,8 +448,8 @@ async function runLens(){
 }
 
 function loadDemo(){
-  document.getElementById('txtIn').value='네가 통제할 수 없는 것에 에너지를 쏟지 마라. 네가 통제할 수 있는 것은 오직 네 생각과 반응뿐이다. 외부 사건이 너를 해치는 것이 아니라, 그것에 대한 너의 판단이 너를 해친다.';
-  document.getElementById('authorIn').value='마르쿠스 아우렐리우스, 로마 황제, 스토아 철학자';
+  document.getElementById('txtIn').value='나는 지금까지 가장 참이라고 받아들였던 모든 것을 감각으로부터 얻었다. 그런데 나는 감각이 때로 우리를 속인다는 것을 경험했다. 따라서 단 한 번이라도 나를 속인 것들을 완전히 신뢰하지 않는 것이 현명하다. 내가 모든 것을 의심하더라도, 의심하는 나 자신이 존재한다는 것만은 의심할 수 없다. 나는 생각한다, 고로 나는 존재한다.';
+  document.getElementById('authorIn').value='르네 데카르트, 17세기 프랑스 철학자·수학자, 방법서설·성찰';
   applyLens(DEMO);
 }
 
@@ -474,13 +491,16 @@ async function runCoupling(){
     if(S.sessionId==='demo'){
       await delay(1200);
       r={
-        coupling_score:{lens_fit:72,node_activation:65,edge_reproduction:48,genius_capture:22,total:52,iq_equivalent:118},
+        coupling_score:{lens_fit:68,node_activation:60,edge_reproduction:44,genius_capture:18,total:48,iq_equivalent:114},
         activated_nodes:['n1','n2'],
-        missing_nodes:[{id:'n4',concept:'내면 자유',why_critical:'결론 노드'}],
-        gap_from_author:'이분법 렌즈는 착용했으나 에너지→내면 자유 연결 논리 누락',
-        well_coupled_moments:['"통제할 수 있는/없는 것" 구분 사용'],
-        off_lens_moments:['결론에서 일반적 자기계발 언어 사용'],
-        next_question:'저자에게 내면의 자유는 어떻게 달성되는가?'
+        missing_nodes:[
+          {id:'n3',concept:'코기토',why_critical:'전체 체계의 아르키메데스적 기점 — 이것 없이는 n5 도달 불가'},
+          {id:'n5',concept:'존재 증명',why_critical:'데카르트의 최종 결론 — 코기토에서 연역된 귀결'}
+        ],
+        gap_from_author:'감각의 불확실성은 언급했으나, 의심 자체를 도구로 전환하는 데카르트의 핵심 전략이 누락됨',
+        well_coupled_moments:['"감각이 불확실하다"는 n1 인식은 저자 렌즈와 일치'],
+        off_lens_moments:['결론을 일반적인 회의주의로 마무리 — 데카르트는 회의주의자가 아닌 재건주의자'],
+        next_question:'"데카르트에게 의심은 목적인가, 도구인가? 의심이 도구라면 무엇을 위한 도구인가?"'
       };
     }else{
       const res=await fetch('/api/coupling',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -525,12 +545,14 @@ async function verify(){
     let r;
     if(S.sessionId==='demo'){
       await delay(500);
-      const hasKey=sent.includes('통제')||sent.includes('반응')||sent.includes('에너지');
-      const hasFull=hasKey&&(sent.includes('가능')||sent.includes('불가'));
-      const v=hasFull?'correct':hasKey?'partial':'off_lens';
-      r={verdict:v,signal:hasFull?'✓':hasKey?'△':'↗',
-         brief_feedback:hasFull?'완벽해요!':hasKey?'더 깊이!':'저자의 눈으로!',
-         node_hit:hasFull?'n2':hasKey?'n3':null,dimension_hit:hasFull?4:hasKey?2:1,special_event:null};
+      const hasD1=sent.includes('감각')||sent.includes('경험')||sent.includes('불확실');
+      const hasD2=sent.includes('의심')||sent.includes('회의')||sent.includes('방법');
+      const hasD4=hasD2&&(sent.includes('코기토')||sent.includes('생각한다')||sent.includes('존재')||sent.includes('확실'));
+      const v=hasD4?'correct':hasD2?'partial':hasD1?'partial':'off_lens';
+      r={verdict:v,signal:hasD4?'✓':hasD2||hasD1?'△':'↗',
+         brief_feedback:hasD4?'코기토 포착!':hasD2?'더 깊이!':hasD1?'렌즈를 더':'데카르트의 눈으로!',
+         node_hit:hasD4?'n3':hasD2?'n2':hasD1?'n1':null,
+         dimension_hit:hasD4?4:hasD2?3:hasD1?2:1,special_event:null};
     }else{
       const res=await fetch('/api/speech/verify',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({session_id:S.sessionId,sentence:sent,
@@ -576,20 +598,24 @@ async function runFeedback(){
     if(S.sessionId==='demo'){
       await delay(1500);
       r={
-        diagnosis:{current_iq_equivalent:128,previous_iq:S.iq,delta_iq:38,
-          dimension_scores:{d1_content:83,d2_structure:72,d3_relation:56,d4_pattern:28},
-          dormant_nodes:[{id:'n4',concept:'내면 자유',why_critical:'결론 노드 — 저자의 목표 상태'}],
-          student_pattern:'이분법 렌즈를 일부 착용했으나 에너지-자유 연결 논리 미형성',
-          biggest_gap:'4차원: 모든 판단을 0.1초 이내 이분법으로 자동 분류하는 인지 습관 미형성'},
-        upgraded_model:{nodes_to_install:[{id:'n4',install_method:'에너지 배분 → 내면 자유 연결을 의식적으로 반복'}],
-          lens_adjustment:'"통제 가능/불가능"을 첫 번째 판단 필터로 자동화',
-          '4d_upgrade_key':'불만 상황마다 즉시 "이것이 내 통제권 안에 있는가?"를 먼저 물을 것'},
+        diagnosis:{current_iq_equivalent:122,previous_iq:S.iq,delta_iq:32,
+          dimension_scores:{d1_content:80,d2_structure:65,d3_relation:48,d4_pattern:20},
+          dormant_nodes:[
+            {id:'n3',concept:'코기토',why_critical:'데카르트 전체 체계의 핵심 기점'},
+            {id:'n5',concept:'존재 증명',why_critical:'의심에서 존재로의 연역 — 4차원 패턴의 정수'}
+          ],
+          student_pattern:'감각의 불확실성(n1)은 인식했으나, 의심을 도구로 전환하는 데카르트의 재건 사고가 아닌 일반 회의주의 패턴으로 설명함',
+          biggest_gap:'4차원: 의심이 파괴가 아닌 재건의 도구라는 데카르트만의 역설적 사고 전략 미포착'},
+        upgraded_model:{
+          nodes_to_install:[{id:'n3',install_method:'"내가 지금 이 생각을 하고 있다"는 행위 자체가 증거라는 사고 훈련'}],
+          lens_adjustment:'"이것을 의심할 수 있는가?"를 모든 믿음의 첫 필터로 자동화',
+          '4d_upgrade_key':'회의(해체)와 코기토(재건 기점)를 하나의 연속 동작으로 인식하는 훈련'},
         next_training:{method:'reverse_reading',
-          instruction:'그래프의 n2(통제 가능) 노드를 먼저 보고, 저자의 이분법 렌즈를 착용한 뒤 원문을 역방향으로 다시 읽어보세요',
-          estimated_sessions:3},
-        brainshot_report:{stage:'발사',stage_progress_percent:55,trajectory:'상승 중',
-          session_iq_history:[90,128],projected_sessions_to_180:9,
-          message:'이분법 렌즈 착용 성공! n4(내면 자유) 연결 강화로 궤도 진입이 가능합니다.'}
+          instruction:'그래프에서 n2(방법적 의심) → n3(코기토) → n5(존재 증명) 흐름을 먼저 눈에 새긴 후, "데카르트는 지금 해체하는가, 재건하는가?"를 구분하며 원문을 다시 읽어보세요',
+          estimated_sessions:4},
+        brainshot_report:{stage:'발사 준비',stage_progress_percent:40,trajectory:'상승 중',
+          session_iq_history:[90,122],projected_sessions_to_180:11,
+          message:'감각 불확실성(n1) 인식에 성공했습니다! 이제 코기토(n3)의 역설적 힘 — 의심 자체가 존재를 증명한다는 데카르트의 4차원 사고를 포착해보세요.'}
       };
     }else{
       const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
