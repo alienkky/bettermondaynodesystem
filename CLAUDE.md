@@ -1,246 +1,219 @@
-# BetterMonday — Godot 4.x 프로젝트
+# BetterMonday — 노드 디자인 시스템 (기획용 캔버스 툴)
 
-> Claude Code가 이 프로젝트에서 일할 때 항상 읽어야 할 규칙과 컨텍스트.
-> 모든 UI 작업은 이 문서의 규칙을 따른다. 어기면 리뷰에서 전부 반려.
+> 디자이너가 AI 작업에 앞서 **구조와 디자인 레퍼런스를 시각적으로 기획**하기 위한 단일 HTML 캔버스 툴.
+> Claude Code가 이 프로젝트에서 작업할 때 항상 읽어야 할 규칙과 컨텍스트.
 
 ---
 
-## 프로젝트 개요
+## 이 프로젝트의 정체
 
-**BetterMonday** — "한국의 미 × 오행 슬라임 × 카페 경영" 모바일 캐주얼 시뮬레이션.
+**노드 디자인 시스템** — AI에게 무언가를 요청하기 전에, 만들고 싶은 것의 **구조·관계·레퍼런스·플로우**를 캔버스 위에서 먼저 정리하는 디자이너 전용 **사전 기획 도구**.
 
-- **엔진**: Godot 4.x (GDScript)
-- **타겟**: iOS / Android (세로 모드)
-- **장르**: 카페 경영 + 머지 + 수집
-- **테마**: 단청, 고려청자, 한지 질감의 따뜻한 색감 + 오행 오브 시스템
+### 핵심 사용 흐름
+
+1. 디자이너가 머릿속의 아이디어를 캔버스 위에서 시각화 (노드 + 연결선 + 레퍼런스)
+2. 구조가 명확해지면 그것을 근거로 AI(Claude, GPT 등)에게 정제된 프롬프트로 요청
+3. AI 결과가 캔버스의 기획 의도와 맞는지 다시 캔버스에서 검증
+
+> "AI에게 잘 시키려면, 먼저 내가 뭘 만들고 싶은지 시각적으로 알아야 한다."
+
+### 왜 캔버스인가
+
+- **선형 텍스트로는 표현 안 되는 것이 많다** — 노드 간 관계, 화면 흐름, 레퍼런스 군집
+- **AI는 잘 구조화된 프롬프트일수록 잘 답한다** — 캔버스가 그 구조의 단초
+- **사고 정리 자체가 디자이너의 일** — 캔버스 작성이 곧 기획 행위
+
+---
+
+## 도구 구성
+
+| 캔버스 | 역할 |
+|---|---|
+| `Reference Canvas` | 자유 노드 배치 — 레퍼런스 이미지·텍스트·아이디어를 시각적으로 군집화 |
+| `Flow Editor` (`Game Flow Editor.html`) | 화면/상태 플로우 작성 — 단계와 분기를 다이어그램으로 |
+| `Flow Diagrams` (`Game Flow Diagrams.html`) | 작성된 플로우의 뷰어 (읽기 중심) |
+| `Scene Tree + Flow Dashboard` | 구조 트리와 플로우를 한 화면에서 검토 |
+
+> 파일명의 `Game ...`은 초기 사용처(게임 기획)에서 유래한 명명 — 도구 자체는 게임 외 어떤 기획에도 사용 가능.
+
+### 통합 진입점
+
+`BetterMonday 노드 디자인 시스템.html` — 위 네 가지를 묶은 단일 HTML 번들. Railway 배포로 브라우저에서 바로 접근.
+
+---
+
+## 기술 스택
+
+- **단일 HTML 번들**: 커스텀 번들러로 자산을 JSON 매니페스트에 인라인 후 base64+gzip 압축
+- **서버**: Express.js 정적 서빙 (`server.js`)
+- **배포**: Railway (`railway.json`)
+- **개별 캔버스**: 각각 `.html` 단일 파일, 외부 빌드 없이 작동
+- **저장**: 브라우저 `localStorage` / `IndexedDB`
+- **디자인 토큰**: `colors_and_type.css` 단일 출처
 
 ---
 
 ## 폴더 구조
 
 ```
-res://
-├── autoload/              # 싱글턴 (GameState, SaveLoad, AudioBus)
-├── scripts/
-│   ├── ui/
-│   │   └── DesignTokens.gd    # ⭐ 모든 디자인 토큰의 단일 출처
-│   ├── systems/               # 게임 시스템 (merge, order, affinity)
-│   └── tools/                 # 에디터 툴 스크립트
-├── scenes/
-│   ├── main/                  # Main, Prologue, CharacterCreate
-│   ├── shop/                  # ShopScene + 하위 HUD
-│   ├── workshop/              # 머지 보드
-│   ├── dex/                   # 도감
-│   ├── settings/              # 설정
-│   └── modals/                # LevelUp, Reward, Confirm 등
-├── assets/
-│   ├── sprites/               # PNG 스프라이트
-│   ├── fonts/                 # ttf / otf
-│   └── audio/                 # ogg
-├── resources/
-│   └── theme/default.tres     # Godot Theme (DesignTokens에서 생성)
-└── docs/
-    └── design/
-        ├── tokens.md          # 사람이 읽는 토큰 레퍼런스
-        └── colors_and_type.css # 웹 프리뷰 (Godot은 안 씀)
+bettermondaynodesystem/
+├── BetterMonday 노드 디자인 시스템.html   # 메인 번들 (배포용 단일 파일)
+├── Reference Canvas.html                   # 노드 캔버스 (소스)
+├── Game Flow Editor.html                   # 플로우 에디터 (소스)
+├── Game Flow Diagrams.html                 # 플로우 뷰어 (소스)
+├── Scene Tree + Flow Dashboard.html        # 구조+플로우 통합 (소스)
+├── canvas-interact.js                      # 캔버스 공통 인터랙션
+├── colors_and_type.css                     # 디자인 토큰
+├── server.js                               # Express 서버
+├── package.json / railway.json
+└── final/                                  # 보존된 산출물 / 아카이브
 ```
 
 ---
 
-## 🔒 디자인 시스템 규칙 (절대 준수)
+## 🔒 작업 원칙 (절대 준수)
 
-### 1. 색은 반드시 `DesignTokens` 상수만 사용
+### 1. 캔버스의 단순함을 지킨다
+- 디자이너의 사고 흐름이 항상 우선. UI는 최소한.
+- 자동화·AI 통합은 **선택적**으로만 — 핵심은 사용자가 직접 정리하는 행위.
+
+### 2. 단일 파일 원칙
+- 각 캔버스 `.html`은 **외부 빌드/설치 없이 더블클릭만으로 작동**해야 한다.
+- 라이브러리는 CDN 의존이 아닌 인라인 임베드.
+
+### 3. 번들 파일은 직접 편집 금지
+- `BetterMonday 노드 디자인 시스템.html`은 커스텀 번들러로 생성된 13MB 단일 파일.
+- 직접 텍스트 수정 시 `<script type="__bundler/template">` 안의 JSON 문자열이 깨질 위험 — 실제로 `Unterminated string in JSON at position 83477` 사고 발생 이력 있음.
+- **수정 필요 시**: 소스 캔버스(`Reference Canvas.html` 등)를 먼저 고치고 → 재번들 → 배포.
+
+### 4. 데이터는 사용자 로컬에
+- 작업물은 모두 `localStorage` / `IndexedDB`로 보존.
+- 키 충돌 방지를 위해 캔버스별 prefix 사용 (예: `bm-ref-canvas`).
+- 클라우드 동기화는 향후 옵션.
+
+### 5. 디자인 토큰만 사용
+- 색·폰트 크기·간격·반경은 `colors_and_type.css`의 CSS 변수만 참조.
+- raw 값(hex, px 매직 넘버) 직접 사용 금지.
 
 ❌ **금지**
-```gdscript
-$Label.add_theme_color_override("font_color", Color("C8383C"))
-$Panel.modulate = Color(0.78, 0.22, 0.23)
-var bg = Color.from_string("#6B3F2A", Color.WHITE)
+```html
+<div style="background: #6B3F2A; padding: 16px; font-size: 14px;">
 ```
 
 ✅ **올바름**
-```gdscript
-$Label.add_theme_color_override("font_color", DesignTokens.ACCENT)
-$Panel.modulate = DesignTokens.ROAST
+```html
+<div style="background: var(--roast); padding: var(--sp-3); font-size: var(--ts-body);">
 ```
 
-### 2. 오행 관련 UI는 헬퍼 함수 사용
-
-❌ **금지**
-```gdscript
-if element == "fire":
-    label.modulate = Color("C8383C")
-elif element == "water":
-    label.modulate = Color("3F7CA8")
-```
-
-✅ **올바름**
-```gdscript
-var c = DesignTokens.element_colors(element)
-label.modulate = c.main
-bg_panel.modulate = c.bg
-fg_label.add_theme_color_override("font_color", c.fg)
-glyph_label.text = c.glyph
-```
-
-### 3. 폰트 크기는 타이포 스케일 사용
-
-❌ **금지**
-```gdscript
-label.add_theme_font_size_override("font_size", 14)
-label.add_theme_font_size_override("font_size", 28)
-```
-
-✅ **올바름**
-```gdscript
-label.add_theme_font_size_override("font_size", DesignTokens.TS_BODY)
-title.add_theme_font_size_override("font_size", DesignTokens.TS_TITLE)
-hero.add_theme_font_size_override("font_size", DesignTokens.TS_HERO)
-```
-
-### 4. 간격·반경·그림자도 토큰 사용
-
-❌ **금지**
-```gdscript
-vbox.add_theme_constant_override("separation", 12)
-panel_sb.corner_radius_top_left = 16
-```
-
-✅ **올바름**
-```gdscript
-vbox.add_theme_constant_override("separation", DesignTokens.SP_3)
-panel_sb.corner_radius_top_left = DesignTokens.R_LG
-```
-
-### 5. 새 색이 필요하면 먼저 토큰 추가
-
-한 번도 쓴 적 없는 색이 필요하다면:
-1. 사용자에게 먼저 물어본다 ("이 색을 디자인 시스템에 추가해도 될까요?")
-2. 승인되면 `DesignTokens.gd`에 상수 추가
-3. 그 다음 그 상수를 참조해서 사용
-
-**절대** 시나리오 파일 안에서 raw Color() 만들어 쓰지 말 것.
+### 6. 캔버스 간 데이터 모델 분리
+- 각 캔버스는 독립된 저장 키와 데이터 스키마를 가짐.
+- 캔버스 간 직접 의존 없이 export/import 인터페이스로만 통신.
 
 ---
 
 ## 🛠 커밋 전 체크리스트
 
-모든 커밋 전에 스스로 실행:
-
 ```bash
-# 1. 하드코딩된 Color 리터럴 찾기
-grep -rn 'Color("' scenes/ scripts/ | grep -v DesignTokens.gd
+# 1. 번들 JSON 무결성 (가장 중요)
+python3 -c "
+import json
+with open('BetterMonday 노드 디자인 시스템.html', encoding='utf-8') as f:
+    c = f.read()
+for tag in ['__bundler/manifest', '__bundler/template', '__bundler/ext_resources']:
+    s = c.find(f'<script type=\"{tag}\">')
+    e = c.find('</script>', s)
+    body = c[s + len(f'<script type=\"{tag}\">'):e].strip()
+    try: json.loads(body); print(f'{tag}: OK')
+    except Exception as ex: print(f'{tag}: BROKEN — {ex}')
+"
 
-# 2. 하드코딩된 font_size 찾기
-grep -rn 'font_size.*=.*[0-9]' scenes/ scripts/ | grep -v DesignTokens.gd
+# 2. 외부 CDN 의존성 검사 (단일 파일 원칙 위반)
+grep -n 'src="https://' *.html
 
-# 3. 매직 넘버 간격 찾기
-grep -rn 'separation.*=.*[0-9]' scenes/ scripts/ | grep -v DesignTokens.gd
+# 3. 하드코딩된 색상값 검사
+grep -n '#[0-9a-fA-F]\{3,6\}' *.html | grep -v colors_and_type.css
+
+# 4. 매직 넘버 폰트 크기 검사
+grep -n 'font-size:[^v;]*[0-9]\+px' *.html
 ```
-
-→ 결과가 나오면 DesignTokens 참조로 교체.
 
 ---
 
 ## 📋 작업 패턴
 
-### 패턴 A — 씬 하나 리팩터
+### 패턴 A — 새 캔버스 추가
+1. 가장 가까운 기존 캔버스 HTML 복제 (예: `Reference Canvas.html`)
+2. `colors_and_type.css` 인라인 또는 `<link>` 참조
+3. `canvas-interact.js`의 공통 인터랙션(드래그·확대·연결) 재사용
+4. localStorage 키에 새 prefix 부여
+5. `file://`로 직접 열어 작동 검증
 
-"@scenes/shop/Shop.tscn 와 @scripts/shop/Shop.gd 의 색·폰트·간격을
-DesignTokens 상수로 전부 교체해줘. 바꾸기 전에 raw 값 목록을 먼저 보여줘."
+### 패턴 B — 기존 캔버스 기능 추가
+1. 해당 소스 `.html`만 수정 (번들은 건드리지 않음)
+2. 데이터 스키마 변경 시 마이그레이션 코드 포함 (`if (legacy) { ...migrate... }`)
+3. 변경 후 번들 재생성이 필요한지 명시적으로 결정
 
-### 패턴 B — 새 UI 컴포넌트
+### 패턴 C — 디자인 토큰 변경
+1. `colors_and_type.css`만 수정
+2. 모든 캔버스에서 시각적 회귀 확인
+3. 번들 재생성
 
-1. 와이어프레임/요구사항 확인
-2. `scripts/ui/<컴포넌트>.gd` 생성
-3. `_ready()` 안에서 모든 스타일을 DesignTokens 참조로 바인딩
-4. `tokens.md` 확인해서 어떤 토큰이 가장 의미에 맞는지 선택
-5. 완성 후 커밋 전 체크리스트 실행
-
-### 패턴 C — Theme 리소스 빌더
-
-Godot의 `Theme` 리소스는 에디터에서 수동 편집하면 토큰 참조가 깨짐.
-대신 `scripts/tools/build_theme.gd` 에디터 툴 스크립트로
-DesignTokens → Theme 을 코드로 생성:
-
-```gdscript
-@tool
-extends EditorScript
-
-func _run():
-    var theme = Theme.new()
-    theme.set_color("font_color", "Label", DesignTokens.INK)
-    theme.set_color("font_color", "Button", DesignTokens.ROAST)
-    theme.set_constant("separation", "VBoxContainer", DesignTokens.SP_3)
-    # ... 모든 기본 컨트롤 바인딩
-    ResourceSaver.save(theme, "res://resources/theme/default.tres")
-```
-
-토큰이 바뀔 때마다 이 스크립트 재실행.
-
-### 패턴 D — 오디오/이펙트
-
-모션 토큰도 사용:
-```gdscript
-tween.tween_property(node, "scale", Vector2.ONE, DesignTokens.D_FAST)
-    .set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-```
+### 패턴 D — 번들 재생성
+1. 소스 캔버스 수정 완료
+2. 번들러 스크립트로 재생성 (스크립트 위치/명령은 향후 추가 예정)
+3. 재생성 직후 커밋 전 체크리스트 1번 (JSON 무결성) 필수 실행
+4. 배포는 Railway 자동 (`git push origin main`)
 
 ---
 
-## 🚫 자주 저지르는 실수
+## 🚫 자주 하는 실수
 
 | 실수 | 올바른 방법 |
 |---|---|
-| `.tscn` 파일 안에서 색 직접 편집 | 코드로 `_ready()`에서 바인딩 |
-| DesignTokens 상수를 변수에 복사해놓고 그 변수만 여기저기 씀 | 원본 상수를 계속 참조 (디버깅 용이) |
-| 오행 색을 if/else로 하드코딩 | `element_colors()` 헬퍼 사용 |
-| 새 색이 필요해서 그냥 추가해버림 | 먼저 사용자에게 확인 |
-| "일단 임시로" 매직넘버 쓰고 TODO | 처음부터 토큰 쓰기. 없으면 추가 후 쓰기 |
+| 번들 HTML을 직접 텍스트 편집 | 소스 HTML 수정 후 재번들 |
+| 외부 CDN 라이브러리 의존성 추가 | 인라인 임베드 |
+| raw 색상/폰트 크기 사용 | `colors_and_type.css` 변수 |
+| 자동 저장 없이 새로고침 가정 | localStorage 즉시 저장 보장 |
+| "이 도구는 게임용"이라 가정 | 범용 기획 도구로 다룬다 |
+| 캔버스 간 데이터를 직접 공유 | export/import로만 통신 |
 
 ---
 
 ## 🎯 Claude Code에게 작업 지시할 때 좋은 프롬프트 예시
 
 ```
-@scripts/shop/Shop.gd 파일에서 하드코딩된 색상과 폰트 크기를
-찾아서 목록으로 보여줘. 그 다음 DesignTokens 상수 중 어떤 게
-가장 의미상 맞는지 매핑 제안해줘. 내가 승인하면 교체 실행.
+Reference Canvas에 "그룹 라벨" 기능을 추가해줘.
+- 여러 노드를 드래그로 묶고, 라벨 + 색상을 부여
+- 색상은 colors_and_type.css의 element 토큰 중에서만 선택
+- 저장은 기존 localStorage 키 bm-ref-canvas에 group[] 필드 추가
+- 기존 데이터와의 마이그레이션 코드 포함
+- 단일 HTML 파일만 수정 (번들은 건드리지 말 것)
 ```
 
 ```
-OrderSlot이라는 새 UI 컴포넌트를 scripts/ui/OrderSlot.gd 에 만들어줘.
-- HBoxContainer 기반
-- 자식: CustomerIcon (TextureRect), OrderLabel (Label), TimerBar (ProgressBar)
-- 색, 폰트, 간격 전부 DesignTokens 참조
-- 주문 원소(fire/water/...)에 따라 element_colors() 헬퍼로 테두리 색 바꿈
-- 타이머 종료 임박 시 D_FAST duration으로 shake 애니메이션
+모든 캔버스를 훑어서 colors_and_type.css 변수가 아닌
+raw 색상값/폰트크기가 쓰인 곳을 목록으로 보여줘.
+파일명:줄번호:원본값 형식으로.
 ```
 
 ```
-프로젝트 전체를 훑어서 Color() 리터럴이나 font_size 매직 넘버가
-남아있는 파일 리스트를 docs/design/audit.md 로 저장해줘.
-각 항목에 파일:줄번호:원본값 포함.
+번들 재생성용 Python 스크립트를 만들어줘.
+- 입력: 소스 캔버스 .html 파일 목록
+- 출력: BetterMonday 노드 디자인 시스템.html
+- </script>는 반드시 <\/script>로 이스케이프
+- 매니페스트/템플릿/외부리소스 3개 JSON 블록을 정확히 생성
+- 생성 후 JSON.parse가 모두 통과하는지 자체 검증
 ```
 
 ---
 
-## 토큰 퀵 레퍼런스
+## 명명 유래
 
-상세는 `docs/design/tokens.md` 참조.
-
-**브랜드**: `ROAST`, `ROAST_DEEP`, `CREAM`, `CREAM_WARM`, `INK`, `ACCENT`, `PAPER`
-**오행**: `EL_WOOD`, `EL_FIRE`, `EL_EARTH`, `EL_METAL`, `EL_WATER` (+`_BG`, `_FG`)
-**화폐**: `COIN`, `GEM`, `ENERGY`
-**보드**: `BOARD_CELL`, `BOARD_LOCKED`, `BOARD_HILITE`
-**타이포**: `TS_CAPTION`, `TS_BODY`, `TS_TITLE`, `TS_HERO`
-**간격**: `SP_1`..`SP_6` (4·8·12·16·24·32)
-**반경**: `R_SM`, `R_MD`, `R_LG`, `R_XL`, `R_PILL`
-**모션**: `D_FAST`, `D_MED`, `D_SLOW` (초 단위)
-
-**헬퍼**: `DesignTokens.element_colors("fire" | "water" | "wood" | "metal" | "earth")`
-→ `{main, bg, fg, glyph, label}` 딕셔너리 반환
+- **BetterMonday** — 사용자(디자이너 alienkky)의 작업 브랜드명.
+- **노드 디자인 시스템** — 노드 기반 캔버스 + 디자인 토큰 시스템.
+- 일부 파일명의 `Game`은 초기 도입처(게임 기획)에서 유래 — 도구는 어떤 분야 기획에도 사용 가능.
 
 ---
 
-_이 문서를 수정할 때는 팀 전체에 공지. Claude Code는 매 세션 시작 시 이 파일을 다시 읽는다._
+_도구는 기획을 위한 보조 수단이며, 사고의 명확성이 항상 우선한다._
+_이 문서는 도구의 컨셉이 진화함에 따라 지속 업데이트._

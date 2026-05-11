@@ -1,219 +1,145 @@
-# BetterMonday Coffee Tycoon — Design System
+# BetterMonday — 노드 디자인 시스템
 
-> **베러먼데이커피 타이쿤** · 먼데이 커피 머지 게임
-> 캐주얼 타이쿤 + 머지 합성 + 12지신 수집 · Godot 4 · 모바일 9:16 (390×844)
-
-"당신은 베러먼데이커피 매장의 첫 점주다. 손님을 응대하고, 음료를 만들고, 매장을 키운다. 놀다 보면 어느새 베러먼데이가 되어 있다."
+> **AI 작업 전에, 먼저 캔버스에서 정리한다.**
+> 디자이너가 구조·관계·레퍼런스·플로우를 시각적으로 기획하는 단일 HTML 캔버스 툴.
 
 ---
 
-## What this is
+## 이게 뭔가요
 
-This design system captures the visual, typographic, and brand language of **BetterMonday Coffee Tycoon** — a Korean casual merge-tycoon mobile game developed solo in Godot 4 by 김기영. The game blends three loops: **drag-merge** (7×7 board), **customer service** (12 zodiac characters with 5-element 오행 affinity), and **furniture building** (27-piece shop completion).
+요즘 디자이너의 작업은 절반 이상이 **AI에게 무엇을 어떻게 시킬지 정리하는 일**입니다.
+하지만 머릿속 아이디어를 곧장 텍스트 프롬프트로 옮기면 — 관계가 빠지고, 맥락이 흐려지고, AI는 엉뚱한 결과를 냅니다.
 
-Core emotion target: **"뭔가 모으고 키우는 성취감"** — the satisfaction of collecting and growing.
+**노드 디자인 시스템**은 그 사이에 들어가는 도구입니다.
 
-## Sources used
+```
+[머릿속 아이디어]
+       ↓
+   [캔버스 기획]  ← 이 도구가 다루는 영역
+       ↓
+   [정제된 프롬프트]
+       ↓
+   [AI 작업물]
+       ↓
+   [캔버스 기준으로 검증]
+```
 
-- **GitHub repo** · `alienkky/mondaycoffee-merge-tycoon@main`
-  - `CLAUDE.md` — project charter (Korean)
-  - `bettermonday-coffee-gdd.md` — Game Design Document v2.4
-  - `bettermonday-o2o-technical-design.md` — O2O technical design
-  - `resources/data/balance.json` — menus, customers, slimes, elements balance
-  - `icon.svg` — Godot default only; no game art in repo yet
-- **Note:** The repo is at MVP stage — no finalized sprite art, UI theme, or fonts exist. This design system is grounded in the **written visual direction** in the GDD (3등신 cell-shaded Korean zodiac characters, modern café uniforms, 베먼 brand colors, 단청 accent tones) and extrapolates a complete visual language from those constraints.
-
-## Products represented
-
-One product: the **mobile game** (iOS/Android + HTML5 web build). All UI is portrait 390×844. There is one UI kit: `ui_kits/game/`.
+- 노드와 연결선으로 **구조**를 그리고
+- 자유 캔버스에 **레퍼런스**를 군집화하고
+- 다이어그램으로 **플로우**를 정리한 뒤
+- 그 시각화를 바탕으로 AI에게 명확한 요청을 보낸다.
 
 ---
 
-## Index
+## 누구를 위한 도구
 
-| File / Folder | Purpose |
+- 작업 시작 전 늘 머리부터 정리해야 마음이 놓이는 디자이너
+- AI 도구를 자주 쓰지만, 매번 결과가 산만하다고 느끼는 사람
+- 클라이언트/팀과 공유할 "기획 자체"를 시각화하고 싶은 사람
+- 게임·앱·웹·브랜딩·콘텐츠 — **분야 무관**
+
+---
+
+## 도구 구성
+
+| 캔버스 | 무엇을 하는가 |
 |---|---|
-| `README.md` | This file — brand context, foundations, manifest |
-| `SKILL.md` | Agent Skill manifest (Claude Code compatible) |
-| `colors_and_type.css` | CSS variables for the full color + type system |
-| `fonts/` | Pretendard webfont OTFs (Thin–Black) |
-| `assets/` | Logos, zodiac + element + slime icons, textures |
-| `preview/` | Design-system preview cards (shown in Design System tab) |
-| `ui_kits/game/` | Interactive UI kit — main shop, merge board, character create, etc. |
+| **Reference Canvas** | 자유 노드 배치. 레퍼런스 이미지·메모·아이디어를 시각적으로 군집화 |
+| **Flow Editor** | 화면·상태·단계의 흐름을 다이어그램으로 작성 |
+| **Flow Diagrams** | 작성된 플로우를 깔끔하게 검토 (읽기 중심) |
+| **Scene Tree + Flow Dashboard** | 구조 트리와 플로우를 한 화면에서 검토 |
+
+모두 한 곳에서 쓰려면 → `BetterMonday 노드 디자인 시스템.html` (통합 번들)
+하나만 빠르게 쓰려면 → 각 `.html` 파일 더블클릭
 
 ---
 
-## Content Fundamentals
+## 실행
 
-The game is written primarily in **Korean**, with English as a secondary language for menu items and technical labels. Voice is **warm, low-pressure, slightly whimsical** — a café owner talking to a first-time customer, not a game barking at a player.
+### 로컬
 
-### Tone
+```bash
+# 정적 서버로 띄우기
+npm install
+npm start
+# → http://localhost:3000
+```
 
-- **감정 먼저, 설명 나중** — lead with feeling, never explain. "이 손님은 불(火) 성향이에요. 잘 맞으면 특별한 반응이 생겨요!" instead of "+50% tip bonus on matching element."
-- **베먼 철학은 안 보이게 녹아있음** — brand philosophy is dissolved, never announced. Level-up popups quietly surface a line from the 8 principles.
-- **점주님** (jeomju-nim, "owner") is how NPCs address the player. Not "플레이어", not "user".
-- **하나의 감정 목표** — "뭔가 모으고 키우는 성취감." If a line doesn't support *collecting-and-growing*, cut it.
+또는 각 `.html` 파일을 브라우저에서 직접 열기 (외부 빌드 불필요).
 
-### Casing & punctuation
+### 배포 (Railway)
 
-- Korean body text uses no period at end of short UI strings ("가구를 배치해볼까요"), period on narrative lines ("베러먼데이는 그렇게 시작되었다.").
-- English menu names are **Title Case**: "Cafe Latte", "Lemon Ade".
-- Numbers for currency use commas: `4,500원`.
-- Exclamation marks are reserved for slime dialogue ("저는 아로마 슬라임이에요!") — the player voice stays calm.
-
-### I vs you
-
-- NPCs use **점주님 / {이름}님** when speaking to the player.
-- Slime dialogue uses first person + 에요/예요 endings ("음료 품질을 높여드릴게요 ✨").
-- Narration during prologue is **third-person omniscient** — "그때 한 사람이 생각했다."
-
-### Emoji & unicode
-
-- **Element icons** use emoji as first-class glyphs: 🌿 목 / 🔥 화 / ⛰️ 토 / 🪙 금 / 💧 수. These are canonical and appear in both UI chrome and copy.
-- **Zodiac** uses the 12 animal emoji: 🐀 🐂 🐅 🐇 🐉 🐍 🐎 🐏 🐒 🐓 🐕 🐗.
-- **Currency**: 💰 coin, 💙 gem, ☕ 베먼 크레딧.
-- **Sparkle ✨** is allowed in slime / reward moments only — never in chrome.
-- No smileys, no shrug, no 🔥-as-enthusiasm. Emoji are semantic tokens, not decoration.
-
-### Example strings
-
-> "점주님, 안녕하세요! 베러먼데이에 오신 걸 환영합니다."
-> "이제 가구를 배치해서 상점을 하나씩 완성해볼까요?"
-> "상품은 '작업실'에서 재료를 합쳐서 만들 수 있어요."
-> "{이름}님이 없는 동안 손님 12명이 다녀갔어요."
-> "🔥 공명! 같은 원소의 손님이에요."
+`git push origin main` → Railway 자동 배포.
+배포 URL: `bettermondaynodesystem-production.up.railway.app`
 
 ---
 
-## Visual Foundations
+## 폴더 구조
 
-The GDD specifies a distinct aesthetic: **3등신 셀쉐이딩 2D 한국 캐릭터**, modern café uniforms (shirt + apron, beige/navy), toned-down Korean color palette (먹색 ink-black + 단청 temple-painting accents), K-drama miniature feel. References: 펭귄 베이커리, 빵빵이의 일상, Animal Crossing, Persona 5 cell-shading.
+```
+bettermondaynodesystem/
+├── BetterMonday 노드 디자인 시스템.html    # 통합 번들 (배포본)
+├── Reference Canvas.html                    # 노드 캔버스 (소스)
+├── Game Flow Editor.html                    # 플로우 에디터 (소스)
+├── Game Flow Diagrams.html                  # 플로우 뷰어 (소스)
+├── Scene Tree + Flow Dashboard.html         # 구조+플로우 통합 (소스)
+├── canvas-interact.js                       # 공통 캔버스 인터랙션
+├── colors_and_type.css                      # 디자인 토큰 (색·타이포·간격)
+├── server.js                                # Express 정적 서버
+├── package.json / railway.json
+├── final/                                   # 보존된 산출물
+├── CLAUDE.md                                # Claude Code용 규칙
+└── SKILL.md                                 # Skill 매니페스트
+```
 
-### Color vibe
-
-**Warm, grounded, Korean-modern.** Think roasted espresso + aged oak + temple-red accent + one single cold blue (water element / gem currency) to keep the palette from going too brown. **Not** the typical coffee-app "brown gradient" trope — colors are **flat and paper-like**, never glossy. Imagery leans **warm-neutral with slight grain**, never blue-cool, never pure B&W.
-
-### Colors
-
-Anchor token is **Roast Brown `#6B3F2A`** (espresso) paired with **Cream `#F7EFE2`** (latte foam / oat milk) as the two workhorses. Accents:
-
-- **Dancheong Red `#C8383C`** — 단청 temple red, used for alerts / fire element / rush hour.
-- **Celadon `#6ABF45` / `#3E7A4E`** — 청자 celadon, wood element / success.
-- **Ink `#1F1A17`** — 먹색, text + strong borders.
-- **Sky `#8FB8D6`** — water element / gem currency / cold accents.
-- **Gold `#D4A64A`** — coin, resonance highlight.
-
-See `colors_and_type.css` for the full token set including semantic mappings.
-
-### Type
-
-Single family, Korean + Latin:
-
-- **Pretendard** — all UI chrome, body, dialogue, numbers. Weights 400 / 500 / 600 / 700 / 800 / 900 loaded as local OTF files.
-
-Display numbers and titles use Pretendard 800 with tight tracking (−0.02em). Body is 500. Buttons 700 + 1pt letter-spacing. Dialogue is 500–600 at 15–20px with −0.005 to −0.01em tracking for a warm, grounded feel without resorting to handwriting.
-
-### Spacing
-
-8pt grid. Mobile tap targets ≥ 44px. Card padding 16px, section padding 24px, safe-area bottom 32px for the nav bar.
-
-### Backgrounds
-
-- **Main shop** — isometric aerial view, soft paper texture, warm ambient light (not full-bleed photograph).
-- **Merge board** — flat cream surface with subtle grid ruled in Roast Brown at 12% opacity. No gradient.
-- **Dialog / prologue** — sepia paper texture with ink-pen vignette, a nod to 1950s Korean newsreel title cards.
-- **Modal / overlay** — Ink at 72% opacity, no blur (Godot mobile perf), rounded 16px card underneath.
-
-We do **not** use:
-- Bluish-purple gradients (forbidden)
-- Glassmorphism / heavy blur
-- Generic "coffee shop photo" hero backgrounds
-- Neon or high-saturation gradients
-
-### Animation
-
-**Calm, bouncy, short.** Nothing over 320ms for UI. Entry/exit uses `cubic-bezier(0.34, 1.56, 0.64, 1)` (mild overshoot). Coin pops use scale + opacity, 180ms. Merge fusion uses a single sparkle burst + scale pulse. Element reactions get a one-shot ring (황금 resonance / 초록 synergy / 붉은 challenge / 흰빛 harmony) — each ~400ms, no loops. No idle-breathing on chrome; only characters idle-bob.
-
-### Hover states (web build only)
-
-- Primary buttons: brightness 1.05, no color change.
-- Cards: Roast Brown border fades in at 60% opacity.
-- Icons: scale 1.05.
-
-### Press states
-
-- Shrink to 0.96 scale, 80ms spring.
-- Buttons add a 2px inset-shadow bottom (pressed physical feel).
-- No color change on press — too twitchy for mobile.
-
-### Borders
-
-Two border widths only: **1px** (hairlines between list rows) and **2px** (card / button outlines). Border color is always the card's fg at 18% opacity, or `--ink` at 12% for neutrals. Occasionally 3px Dancheong Red on alert banners.
-
-### Shadows
-
-One shadow system — "paper-lift":
-- **sm** · `0 1px 2px rgba(31, 26, 23, 0.08)` — list rows
-- **md** · `0 4px 12px rgba(31, 26, 23, 0.10)` — cards, popovers
-- **lg** · `0 12px 32px rgba(31, 26, 23, 0.14)` — modals, furniture-unlock celebration
-
-No neon glow. No inset shadows except the press state. No double-shadow tricks.
-
-### Protection / capsule
-
-Text over imagery uses a **solid Cream capsule** (not a gradient scrim). Capsules are 999px radius, 4–6px padding, subtle `md` shadow. This is more honest than a gradient protection and reads instantly at mobile sizes.
-
-### Transparency & blur
-
-- Used sparingly. Modal backdrop only. No backdrop-filter blur (Godot mobile perf).
-- Element ring effects use 40% opacity additive layers for the burst, but the element icon itself is always 100%.
-
-### Imagery mood
-
-Warm, handcrafted, slight paper grain. If we had illustrated backgrounds, they'd feel like **Studio Ghibli interiors crossed with 1960s Korean 만화방 (manga cafe) prints**. Not photorealistic. Not kawaii. Not vector-clean. Warm neutrals + one pop of 단청 red.
-
-### Corner radii
-
-- **2px** — tokens, element chips (reads as "technical")
-- **8px** — buttons, small cards
-- **16px** — main cards, modals
-- **999px** — capsules (currency pills, element badges)
-
-### Card anatomy
-
-Cards are **Cream-filled**, 16px radius, 2px Ink-12% border, `md` shadow. Card header uses Pretendard 800 at 18px in Roast. Card body uses Pretendard 500 at 14px in Ink. Interactive cards gain a 3px Dancheong Red left-stripe when selected (this IS an approved use of colored-stripe — it's a state, not a static decoration).
-
-### Layout rules
-
-- Top HUD is fixed 56px — level, energy, coin, gem — single row.
-- Bottom nav is fixed 72px with safe-area padding — Shop / Workshop / Collection / Menu.
-- Everything else scrolls within the middle zone.
-- Modal sheets rise from the bottom on mobile, center on web.
+> `Game Flow ...` 이름의 `Game`은 초기 사용처에서 유래한 명명일 뿐, 도구는 범용입니다.
 
 ---
 
-## Iconography
+## 데이터 저장
 
-The repo ships **no custom icon set**. For this design system we adopt a layered approach matching the GDD's "flat cell-shaded" direction:
+- 모든 작업물은 **브라우저 로컬에만** 저장 (`localStorage` / `IndexedDB`)
+- 서버로 전송되는 사용자 데이터 없음
+- 캔버스별로 다른 저장 키를 써서 충돌 방지
 
-- **Primary system** — **Lucide** via CDN for UI chrome (back arrows, settings, X-close, menu, chevrons, coin/gem pills). 2px stroke, 24px base. This is a **substitution** — the repo has no icon font yet. Flag to creator for review.
-- **Element icons (오행)** — Unicode emoji (🌿 🔥 ⛰️ 🪙 💧). These are canonical per the GDD and balance.json, not a substitution.
-- **Zodiac icons (12지신)** — Unicode emoji (🐀 🐂 🐅 🐇 🐉 🐍 🐎 🐏 🐒 🐓 🐕 🐗) as MVP placeholder. Final version will be 3등신 셀쉐이딩 portraits — commissioned art per the GDD (400–600만원 budget).
-- **Slime icons** — Custom flat SVG stored in `assets/slimes/` — generated from the 5 slime color tokens in `balance.json` (aroma/creamy/bubble/caramel/matcha). These are authored here since the repo is at color-box placeholder stage.
-- **Currency** — Emoji (💰 coin, 💙 gem, ☕ credit) match the GDD voice. In high-fidelity chrome we also have custom SVG coin/gem tokens in `assets/currency/`.
-
-**Usage rules:**
-- Never mix icon styles in one component. Chrome uses Lucide only; copy uses emoji only.
-- Emoji are rendered at 1.2em in running text, 24px in chips.
-- Icon color in chrome defaults to `--fg-2` (Ink-60%); active state snaps to `--brand`.
+내보내기/가져오기로 다른 기기·브라우저와 공유 가능 (JSON).
 
 ---
 
-## Notes & substitutions
+## 디자인 토큰
 
-**Flagged for user review:**
+`colors_and_type.css`가 색·타이포·간격·반경·그림자의 단일 출처입니다.
+- 색: 따뜻한 갈색 + 크림 + 단청 레드 + 청자 톤 (warm-neutral)
+- 타이포: Pretendard 9 weights
+- 간격: 8pt grid
+- 반경: 2 / 8 / 16 / 999
 
-1. **Fonts** — Pretendard 9-weight (Thin–Black) is the only UI typeface, loaded as local OTF files uploaded by the user. Dialogue uses Pretendard 500–600 rather than a handwriting face per brand direction.
-2. **Icon system** — Lucide via CDN, chosen as the closest match to the GDD's "flat, modern, Korean-café" direction. If the final game uses a bespoke icon set or another library, please point me at it.
-3. **Zodiac portraits** — Emoji placeholders used per the GDD's own MVP guidance ("MVP는 색깔 박스 + 띠 라벨로 기능 검증"). Final illustrated assets are out of scope here.
-4. **Logo** — No brand mark exists in the repo. A wordmark + typographic logo treatment is authored in `assets/logo/` as a starting point, not a final identity.
+토큰 변경은 `colors_and_type.css`만 수정하면 모든 캔버스에 반영됩니다.
+
+---
+
+## 사용 철학
+
+1. **사고 정리가 먼저, 도구는 다음** — 화면이 단순한 이유.
+2. **AI는 자동 정리가 아니다** — 정리해서 보내야 정리된 답이 온다.
+3. **시각화 자체가 디자인이다** — 캔버스에 그리는 행위 = 사고를 명확화하는 행위.
+4. **분야는 가리지 않는다** — 게임·앱·웹·콘텐츠 무엇이든 구조가 있다면 다 적용됨.
+
+---
+
+## 알려진 이슈 & 노트
+
+- 번들 HTML(`BetterMonday 노드 디자인 시스템.html`)을 직접 텍스트 편집하면
+  내부 JSON 매니페스트가 깨질 수 있음 — 소스 캔버스를 수정 후 재번들 권장.
+- 캔버스 작업물은 브라우저 로컬 저장이므로, 시크릿 모드/캐시 삭제 시 사라짐 — 정기적으로 export 권장.
+
+---
+
+## 명명
+
+- **BetterMonday** — 디자이너 alienkky의 작업 브랜드.
+- **노드 디자인 시스템** — 노드 기반 캔버스 + 디자인 토큰의 합성.
+
+---
+
+_이 도구는 "AI 시대의 디자이너 작업 흐름"이라는 문제의식에서 만들어졌습니다._
