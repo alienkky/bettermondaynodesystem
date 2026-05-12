@@ -1,0 +1,420 @@
+/* =========================================================================
+   FIGMA-LIKE THEME OVERRIDE
+   Loads after colors_and_type.css. Overrides the warm-paper look with
+   Figma's dark sidebars + light canvas + Inter typography.
+   Structural HTML is unchanged — only visuals are remapped.
+   ========================================================================= */
+
+:root {
+  /* Figma surface palette */
+  --fg-toolbar:        #2C2C2C;
+  --fg-toolbar-deep:   #1E1E1E;
+  --fg-divider:        #383838;
+  --fg-border-dark:    #444444;
+  --fg-input-dark:     #1E1E1E;
+  --fg-canvas:         #E5E5E5;
+  --fg-canvas-line:    rgba(0, 0, 0, 0.08);
+
+  /* Text on dark */
+  --fg-on-dark:        #FFFFFF;
+  --fg-on-dark-2:      #B3B3B3;
+  --fg-on-dark-3:      #757575;
+
+  /* Brand blue */
+  --fg-blue:           #0D99FF;
+  --fg-blue-hover:     #007BE5;
+  --fg-blue-soft:      rgba(13, 153, 255, 0.18);
+
+  /* Re-map design tokens used in node bodies (kept colorful for legibility) */
+  --paper: var(--fg-canvas);
+}
+
+html, body {
+  font-family: 'Inter', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+  background: var(--fg-canvas) !important;
+  color: var(--fg-on-dark) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------- Top toolbar ---------- */
+.bar {
+  height: 40px !important;
+  background: var(--fg-toolbar) !important;
+  border-bottom: 1px solid var(--fg-divider) !important;
+  padding: 0 10px !important;
+  gap: 6px !important;
+  color: var(--fg-on-dark) !important;
+}
+.brand {
+  color: var(--fg-on-dark) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  letter-spacing: -0.005em !important;
+}
+.hint {
+  color: var(--fg-on-dark-2) !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+}
+.dot {
+  background: var(--fg-divider) !important;
+  width: 4px !important;
+  height: 4px !important;
+}
+.sep {
+  background: var(--fg-divider) !important;
+  width: 1px !important;
+  height: 18px !important;
+  margin: 0 4px !important;
+}
+
+.bar .btn {
+  background: transparent !important;
+  color: var(--fg-on-dark) !important;
+  border: 1px solid transparent !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  padding: 5px 10px !important;
+  border-radius: 4px !important;
+  height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  transition: background 100ms ease, border-color 100ms ease;
+}
+.bar .btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+.bar .btn:disabled {
+  opacity: 0.35 !important;
+  background: transparent !important;
+}
+.bar .btn:disabled:hover {
+  background: transparent !important;
+}
+.bar .btn.primary {
+  background: var(--fg-blue) !important;
+  color: #fff !important;
+  border-color: var(--fg-blue) !important;
+}
+.bar .btn.primary:hover {
+  background: var(--fg-blue-hover) !important;
+  border-color: var(--fg-blue-hover) !important;
+}
+.bar .btn.danger {
+  color: #FF5C5C !important;
+}
+#fileStatus { color: var(--fg-on-dark-2) !important; }
+
+/* ---------- Layout — slightly tighter sidebars ---------- */
+.main {
+  grid-template-columns: 240px 1fr 260px !important;
+}
+
+/* ---------- Left palette / layers ---------- */
+.palette {
+  background: var(--fg-toolbar) !important;
+  border-right: 1px solid var(--fg-divider) !important;
+  color: var(--fg-on-dark) !important;
+  padding: 12px 10px !important;
+}
+.palette h3 {
+  color: var(--fg-on-dark-2) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  margin: 0 0 8px !important;
+  padding-bottom: 6px !important;
+  border-bottom: 1px solid var(--fg-divider) !important;
+}
+.palette h3:not(:first-child) {
+  margin-top: 14px !important;
+}
+
+.pitem {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid transparent !important;
+  color: var(--fg-on-dark) !important;
+  border-radius: 4px !important;
+  padding: 7px 10px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  margin-bottom: 3px !important;
+  gap: 8px !important;
+  transition: background 100ms ease;
+}
+.pitem:hover {
+  background: rgba(255, 255, 255, 0.10) !important;
+}
+.pitem .ico {
+  font-size: 14px !important;
+  filter: grayscale(0.2);
+}
+
+/* Variant tints — keep a subtle left-edge color but neutral fill */
+.pitem.ref      { border-left: 3px solid #FF5C5C !important; }
+.pitem.note     { border-left: 3px solid #FFC93C !important; }
+.pitem.screen   { border-left: 3px solid var(--fg-blue) !important; }
+.pitem.system   { border-left: 3px solid #14AE5C !important; }
+.pitem.decision { border-left: 3px solid #B36BFF !important; }
+.pitem.group    { border-left: 3px dashed var(--fg-on-dark-3) !important; }
+
+.pitem.icon {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-left: none !important;
+  padding: 8px 4px !important;
+  text-align: center !important;
+  justify-content: center !important;
+}
+.pitem.icon:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.icon-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 4px !important;
+  margin-bottom: 8px !important;
+}
+
+.dropzone {
+  border: 1.5px dashed var(--fg-border-dark) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: var(--fg-on-dark-2) !important;
+  border-radius: 4px !important;
+  padding: 14px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  margin-top: 10px !important;
+}
+.dropzone:hover {
+  background: var(--fg-blue-soft) !important;
+  color: var(--fg-blue) !important;
+  border-color: var(--fg-blue) !important;
+}
+
+/* ---------- Canvas ---------- */
+.canvas-wrap {
+  background:
+    radial-gradient(circle at 1px 1px, var(--fg-canvas-line) 1px, transparent 1px) 0 0 / 24px 24px,
+    var(--fg-canvas) !important;
+}
+
+/* ---------- Right inspector ---------- */
+.insp {
+  background: var(--fg-toolbar) !important;
+  border-left: 1px solid var(--fg-divider) !important;
+  color: var(--fg-on-dark) !important;
+  padding: 14px 12px !important;
+}
+.insp h4 {
+  color: var(--fg-on-dark-2) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  margin: 0 0 10px !important;
+  padding-bottom: 6px !important;
+  border-bottom: 1px solid var(--fg-divider) !important;
+}
+.insp .row {
+  margin-bottom: 10px !important;
+}
+.insp label {
+  color: var(--fg-on-dark-2) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  margin-bottom: 4px !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+.insp input,
+.insp select,
+.insp textarea {
+  background: var(--fg-input-dark) !important;
+  color: var(--fg-on-dark) !important;
+  border: 1px solid var(--fg-border-dark) !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  padding: 6px 8px !important;
+  font-family: inherit !important;
+}
+.insp input:focus,
+.insp select:focus,
+.insp textarea:focus {
+  border-color: var(--fg-blue) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px var(--fg-blue) !important;
+}
+.insp textarea {
+  font-family: inherit !important;
+  font-size: 12px !important;
+}
+.insp .empty {
+  color: var(--fg-on-dark-2) !important;
+  font-size: 11px !important;
+  line-height: 1.7 !important;
+  padding: 28px 0 !important;
+}
+
+.insp .btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--fg-on-dark) !important;
+  border: 1px solid transparent !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  padding: 6px 10px !important;
+}
+.insp .btn:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+.insp .btn.primary {
+  background: var(--fg-blue) !important;
+  color: #fff !important;
+  border-color: var(--fg-blue) !important;
+}
+.insp .btn.primary:hover {
+  background: var(--fg-blue-hover) !important;
+}
+.insp .btn.danger {
+  color: #FF5C5C !important;
+}
+.insp .edge-style button,
+.insp .arrow-grid button {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--fg-on-dark) !important;
+  border: 1px solid transparent !important;
+  border-radius: 3px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  padding: 6px 4px !important;
+}
+.insp .edge-style button:hover,
+.insp .arrow-grid button:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+.insp .edge-style button.on,
+.insp .arrow-grid button.on {
+  background: var(--fg-blue) !important;
+  color: #fff !important;
+  border-color: var(--fg-blue) !important;
+}
+.insp .color-grid .sw {
+  box-shadow: 0 0 0 1px var(--fg-divider) !important;
+}
+.insp .color-grid .sw.on {
+  border-color: var(--fg-toolbar) !important;
+  box-shadow: 0 0 0 2px var(--fg-blue) !important;
+}
+.insp .brief {
+  background: var(--fg-input-dark) !important;
+  border: 1px solid var(--fg-divider) !important;
+  color: var(--fg-on-dark) !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
+  line-height: 1.7 !important;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace !important;
+}
+
+/* ---------- Nodes — selection uses Figma blue ---------- */
+.rnode.selected {
+  outline: 2px solid var(--fg-blue) !important;
+  outline-offset: 1px !important;
+  box-shadow: 0 0 0 1px var(--fg-blue), 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+  animation: none !important;
+}
+.rnode.selected::before {
+  border-color: var(--fg-blue) !important;
+  opacity: 0.5 !important;
+}
+.rnode.dragging {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25), 0 0 0 2px var(--fg-blue) !important;
+}
+.rnode.marquee-hover {
+  outline-color: var(--fg-blue) !important;
+}
+.rnode.connect-target {
+  outline: 2px dashed var(--fg-blue) !important;
+}
+.rnode.connect-target .port,
+.rnode .port:hover,
+.rnode .port.drop-target {
+  background: var(--fg-blue) !important;
+  border-color: var(--fg-blue) !important;
+}
+.rnode.selected .port {
+  background: var(--fg-blue) !important;
+  border-color: var(--fg-blue) !important;
+  box-shadow: 0 0 0 3px var(--fg-blue-soft) !important;
+}
+.rnode .port {
+  border-width: 2px !important;
+  border-color: var(--fg-blue) !important;
+  background: #fff !important;
+}
+.rnode .del {
+  background: #FF5C5C !important;
+  color: #fff !important;
+  border-color: var(--fg-toolbar) !important;
+}
+
+/* ---------- Edges — Figma blue when selected ---------- */
+.edge {
+  stroke: #555 !important;
+  stroke-width: 1.6 !important;
+}
+.edge.selected {
+  stroke: var(--fg-blue) !important;
+  filter: drop-shadow(0 0 4px var(--fg-blue-soft)) !important;
+  stroke-width: 2.6 !important;
+}
+.edge.thick { stroke-width: 2.8 !important; }
+.edge.thick.selected { stroke-width: 3.6 !important; }
+.temp-edge { stroke: var(--fg-blue) !important; }
+.edge-label-bg { fill: var(--fg-canvas) !important; }
+.edge-label { fill: #222 !important; }
+.guide { stroke: var(--fg-blue) !important; opacity: 0.7 !important; }
+
+.box-select {
+  border: 1px dashed var(--fg-blue) !important;
+  background: var(--fg-blue-soft) !important;
+}
+
+/* ---------- Zoom indicator & toast ---------- */
+.zoom {
+  background: var(--fg-toolbar) !important;
+  color: var(--fg-on-dark) !important;
+  border: 1px solid var(--fg-divider) !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  padding: 4px 10px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+.toast {
+  background: var(--fg-toolbar-deep) !important;
+  color: var(--fg-on-dark) !important;
+  border: 1px solid var(--fg-divider) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.30) !important;
+}
+
+/* ---------- Scrollbars in dark sidebars ---------- */
+.palette::-webkit-scrollbar,
+.insp::-webkit-scrollbar { width: 10px; }
+.palette::-webkit-scrollbar-track,
+.insp::-webkit-scrollbar-track { background: transparent; }
+.palette::-webkit-scrollbar-thumb,
+.insp::-webkit-scrollbar-thumb {
+  background: var(--fg-divider);
+  border-radius: 999px;
+  border: 2px solid var(--fg-toolbar);
+}
+.palette::-webkit-scrollbar-thumb:hover,
+.insp::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-border-dark);
+}
