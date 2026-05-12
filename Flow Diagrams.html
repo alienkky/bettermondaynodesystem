@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>BetterMonday — Scene Tree + Flow</title>
+<title>BetterMonday — Flow Diagrams</title>
 <link rel="stylesheet" href="colors_and_type.css">
 <style id="extras">
   /* Smart-align guides */
@@ -124,7 +124,7 @@
 <body>
 <div class="app">
   <div class="bar">
-    <div class="brand">🌲 Scene Tree · Flow Dashboard</div>
+    <div class="brand">🔀 Flow Diagrams · 진행 플로우</div>
     <div class="dot"></div>
     <button class="btn" id="newBtn">New</button>
     <button class="btn" id="saveBtn">💾 Save</button>
@@ -138,7 +138,7 @@
     <button class="btn" id="zoomIn">+</button>
     <button class="btn" id="zoomOut">−</button>
     <div style="flex:1"></div>
-    <span class="hint">씬 트리 · autoload · 모달 레이어 · 드래그 · 포트 연결 · dbl-click 편집</span>
+    <span class="hint">진행 플로우 · 튜토리얼 → 본편 → 엔드콘텐츠 · 드래그 · 포트 연결 · dbl-click 편집</span>
   </div>
 
   <div class="main">
@@ -208,327 +208,21 @@ let graph = load() || defaultGraph();
 let selected = null;
 let selectedIds = new Set(); // multi-selection of node ids
 let zoom = 1, pan = { x: 0, y: 0 };
-let nextId = Number(localStorage.getItem('bm-scenetree-nextid') || 100);
+let nextId = Number(localStorage.getItem('bm-gameflow-nextid') || 100);
 const SNAP = 6; // px snap threshold (in canvas coords)
 
 function defaultGraph() {
   return {
-    "nodes": [
-      {
-        "id": "g1",
-        "kind": "group",
-        "title": "AUTOLOAD · 싱글턴",
-        "x": 40,
-        "y": 60,
-        "w": 300,
-        "h": 480
-      },
-      {
-        "id": "a1",
-        "kind": "system",
-        "icon": "💾",
-        "title": "GameState",
-        "sub": "res://autoload/GameState.gd",
-        "x": 70,
-        "y": 130
-      },
-      {
-        "id": "a2",
-        "kind": "system",
-        "icon": "📦",
-        "title": "SaveLoad",
-        "sub": "user://save.json · 30s",
-        "x": 70,
-        "y": 260
-      },
-      {
-        "id": "a3",
-        "kind": "system",
-        "icon": "🔊",
-        "title": "AudioBus",
-        "sub": "BGM 3 · SFX 16",
-        "x": 70,
-        "y": 390
-      },
-      {
-        "id": "b1",
-        "kind": "decision",
-        "title": "▶ Main",
-        "sub": "res://Main.tscn",
-        "x": 400,
-        "y": 80
-      },
-      {
-        "id": "s1",
-        "kind": "screen",
-        "icon": "📜",
-        "title": "PrologueScene",
-        "sub": "5컷 · 최초 1회",
-        "x": 400,
-        "y": 220
-      },
-      {
-        "id": "s2",
-        "kind": "screen",
-        "icon": "🎭",
-        "title": "CharacterCreate",
-        "sub": "이름 · 12지신 · 오행",
-        "x": 660,
-        "y": 220
-      },
-      {
-        "id": "s3",
-        "kind": "screen",
-        "icon": "🏪",
-        "title": "ShopScene",
-        "sub": "홈 · 기본 탭 · Node2D",
-        "x": 920,
-        "y": 380
-      },
-      {
-        "id": "g2",
-        "kind": "group",
-        "title": "TAB SCENES · hub에서 스위치",
-        "x": 1200,
-        "y": 120,
-        "w": 380,
-        "h": 580
-      },
-      {
-        "id": "s4",
-        "kind": "screen",
-        "icon": "🧪",
-        "title": "WorkshopScene",
-        "sub": "7×7 머지 보드",
-        "x": 1230,
-        "y": 180
-      },
-      {
-        "id": "s5",
-        "kind": "screen",
-        "icon": "📚",
-        "title": "DexScene",
-        "sub": "도감 · 상성 매트릭스",
-        "x": 1230,
-        "y": 340
-      },
-      {
-        "id": "s6",
-        "kind": "screen",
-        "icon": "⚙",
-        "title": "SettingsScene",
-        "sub": "프로필 · 음향",
-        "x": 1230,
-        "y": 500
-      },
-      {
-        "id": "g3",
-        "kind": "group",
-        "title": "MODAL LAYER · CanvasLayer",
-        "x": 1620,
-        "y": 120,
-        "w": 360,
-        "h": 760
-      },
-      {
-        "id": "m1",
-        "kind": "screen",
-        "icon": "⬆️",
-        "title": "LevelUpModal",
-        "sub": "AcceptDialog · 자동",
-        "x": 1650,
-        "y": 180
-      },
-      {
-        "id": "m2",
-        "kind": "screen",
-        "icon": "✨",
-        "title": "RewardModal",
-        "sub": "머지 5등급 축하",
-        "x": 1650,
-        "y": 320
-      },
-      {
-        "id": "m3",
-        "kind": "screen",
-        "icon": "🟢",
-        "title": "SlimeDetailModal",
-        "sub": "도감 상세 · PopupPanel",
-        "x": 1650,
-        "y": 460
-      },
-      {
-        "id": "m4",
-        "kind": "screen",
-        "icon": "⚠️",
-        "title": "ConfirmDialog",
-        "sub": "구매 · 리셋",
-        "x": 1650,
-        "y": 600
-      },
-      {
-        "id": "m5",
-        "kind": "screen",
-        "icon": "🧾",
-        "title": "OrderSlots",
-        "sub": "HUD child · HBox",
-        "x": 1650,
-        "y": 740
-      },
-      {
-        "id": "n1",
-        "kind": "note",
-        "body": "HUD · Isometric · BuildCard\n(ShopScene children)",
-        "x": 920,
-        "y": 540
-      }
-    ],
-    "edges": [
-      {
-        "id": "e1",
-        "from": "b1",
-        "to": "s1",
-        "label": "on_ready",
-        "style": "solid",
-        "arrow": "end"
-      },
-      {
-        "id": "e2",
-        "from": "s1",
-        "to": "s2",
-        "label": "prologue_finished",
-        "style": "solid",
-        "arrow": "end"
-      },
-      {
-        "id": "e3",
-        "from": "s2",
-        "to": "s3",
-        "label": "player_created",
-        "style": "solid",
-        "arrow": "end"
-      },
-      {
-        "id": "e4",
-        "from": "s3",
-        "to": "s4",
-        "label": "tap 작업실",
-        "style": "solid",
-        "arrow": "both"
-      },
-      {
-        "id": "e5",
-        "from": "s3",
-        "to": "s5",
-        "label": "tap 도감",
-        "style": "solid",
-        "arrow": "both"
-      },
-      {
-        "id": "e6",
-        "from": "s3",
-        "to": "s6",
-        "label": "tap 설정",
-        "style": "solid",
-        "arrow": "both"
-      },
-      {
-        "id": "e7",
-        "from": "s3",
-        "to": "m1",
-        "label": "level_up",
-        "style": "dashed",
-        "arrow": "end"
-      },
-      {
-        "id": "e8",
-        "from": "s4",
-        "to": "m2",
-        "label": "max_grade",
-        "style": "dashed",
-        "arrow": "end"
-      },
-      {
-        "id": "e9",
-        "from": "s5",
-        "to": "m3",
-        "label": "tap_slime",
-        "style": "dashed",
-        "arrow": "end"
-      },
-      {
-        "id": "ea",
-        "from": "s6",
-        "to": "m4",
-        "label": "reset",
-        "style": "dashed",
-        "arrow": "end"
-      },
-      {
-        "id": "eb",
-        "from": "s3",
-        "to": "m5",
-        "label": "customer_arrived",
-        "style": "dashed",
-        "arrow": "end"
-      },
-      {
-        "id": "ec",
-        "from": "s2",
-        "to": "a1",
-        "label": "set player",
-        "style": "dotted",
-        "arrow": "end"
-      },
-      {
-        "id": "ed",
-        "from": "s4",
-        "to": "a1",
-        "label": "merge()",
-        "style": "dotted",
-        "arrow": "end"
-      },
-      {
-        "id": "ee",
-        "from": "m5",
-        "to": "a1",
-        "label": "deliver()",
-        "style": "dotted",
-        "arrow": "end"
-      },
-      {
-        "id": "ef",
-        "from": "a1",
-        "to": "a2",
-        "label": "autosave",
-        "style": "dotted",
-        "arrow": "end"
-      },
-      {
-        "id": "eg",
-        "from": "a2",
-        "to": "b1",
-        "label": "save_loaded",
-        "style": "dotted",
-        "arrow": "end"
-      },
-      {
-        "id": "eh",
-        "from": "a1",
-        "to": "s3",
-        "label": "signals",
-        "style": "dotted",
-        "arrow": "end"
-      }
-    ]
+    nodes: [],
+    edges: [],
   };
 }
 
-function uid() { const id = 'n' + (nextId++); localStorage.setItem('bm-scenetree-nextid', nextId); return id; }
-function uidE() { const id = 'e' + (nextId++); localStorage.setItem('bm-scenetree-nextid', nextId); return id; }
+function uid() { const id = 'n' + (nextId++); localStorage.setItem('bm-gameflow-nextid', nextId); return id; }
+function uidE() { const id = 'e' + (nextId++); localStorage.setItem('bm-gameflow-nextid', nextId); return id; }
 
-function save() { localStorage.setItem('bm-scenetree-canvas', JSON.stringify(graph)); }
-function load() { try { return JSON.parse(localStorage.getItem('bm-scenetree-canvas')); } catch { return null; } }
+function save() { localStorage.setItem('bm-gameflow-canvas', JSON.stringify(graph)); }
+function load() { try { return JSON.parse(localStorage.getItem('bm-gameflow-canvas')); } catch { return null; } }
 
 // ============================================================
 // RENDER
@@ -981,7 +675,7 @@ function select(type, id) { selected = { type, id }; render(); }
 function renderInspector() {
   const insp = document.getElementById('insp');
   if (!selected) {
-    insp.innerHTML = `<div class="empty">👈 노드/엣지 선택 시 속성 표시<br><br>씬 구조와 autoload 연결을<br>대시보드처럼 편집하세요.<br><br>완성 후 <b>Generate Brief</b>로<br>아키텍처 문서 생성.</div>`;
+    insp.innerHTML = `<div class="empty">👈 노드/엣지 선택 시 속성 표시<br><br>전체 게임 진행 플로우를<br>자유롭게 편집하세요.<br><br>완성 후 <b>Generate Brief</b>로<br>설계 문서 생성.</div>`;
     return;
   }
   if (selected.type === 'node') {
@@ -1300,7 +994,7 @@ document.getElementById('zoomOut').addEventListener('click', () => { zoom = Math
 
 function exportJSON() {
   const blob = new Blob([JSON.stringify(graph, null, 2)], { type:'application/json' });
-  downloadBlob(blob, 'scene_tree.json'); toast('⬇ JSON');
+  downloadBlob(blob, 'game_flow.json'); toast('⬇ JSON');
 }
 function downloadBlob(blob, name) {
   const a = document.createElement('a');
@@ -1327,9 +1021,9 @@ function fit() {
 // ============================================================
 function generateBrief() {
   const lines = [];
-  lines.push('# BetterMonday — Scene Tree & Flow Brief');
+  lines.push('# Flow Diagrams — Brief');
   lines.push('');
-  lines.push('> Auto-generated from BetterMonday — Scene Tree + Flow. Paste into VSCode Claude Code.');
+  lines.push('> Auto-generated from Flow Diagrams. Paste into your AI of choice.');
   lines.push('');
   lines.push('## 1. References');
   graph.nodes.filter(n => n.kind === 'ref').forEach((n, i) => {
@@ -1366,12 +1060,11 @@ function generateBrief() {
   lines.push('');
   lines.push('## 7. Instruction for Claude Code');
   lines.push('');
-  lines.push('위 레퍼런스와 노트를 바탕으로, BetterMonday Coffee Tycoon의 다음 구현을 진행해주세요:');
-  lines.push('1. 각 Screen을 Godot Scene(.tscn)으로 스캐폴딩');
-  lines.push('2. 각 System을 scripts/systems/ 아래 .gd 로 생성');
-  lines.push('3. 씬 간 전환은 Connections 목록 그대로 반영 (signal 또는 SceneManager)');
-  lines.push('4. 색·폰트·간격은 DesignTokens 상수만 사용 (CLAUDE.md 규칙 준수)');
-  lines.push('5. 구현 전에 설계 상 애매한 부분 질문해주세요');
+  lines.push('위 캔버스 정리 내용을 바탕으로 다음 작업을 진행해주세요:');
+  lines.push('1. 각 항목의 의도·관계를 먼저 요약');
+  lines.push('2. 모호한 부분이 있으면 구현 전에 질문');
+  lines.push('3. 결과물은 캔버스의 구조·연결과 일관되게 유지');
+  lines.push('4. 시각·텍스트 톤은 동봉된 디자인 토큰/원칙(있다면)에 따른다');
 
   const text = lines.join('\n');
   // Show in modal-like inspector
@@ -1390,7 +1083,7 @@ function generateBrief() {
   });
   document.getElementById('dlBriefBtn').addEventListener('click', () => {
     const blob = new Blob([text], { type:'text/markdown' });
-    downloadBlob(blob, 'scene_tree_brief.md'); toast('⬇ brief.md');
+    downloadBlob(blob, 'flow_brief.md'); toast('⬇ brief.md');
   });
 }
 

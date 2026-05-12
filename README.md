@@ -47,7 +47,7 @@
 | **Reference Canvas** | 자유 노드 배치. 레퍼런스 이미지·메모·아이디어를 시각적으로 군집화 |
 | **Flow Editor** | 화면·상태·단계의 흐름을 다이어그램으로 작성 |
 | **Flow Diagrams** | 작성된 플로우를 깔끔하게 검토 (읽기 중심) |
-| **Scene Tree + Flow Dashboard** | 구조 트리와 플로우를 한 화면에서 검토 |
+| **Structure + Flow Dashboard** | 구조 트리와 플로우를 한 화면에서 검토 |
 
 모두 한 곳에서 쓰려면 → `BetterMonday 노드 디자인 시스템.html` (통합 번들)
 하나만 빠르게 쓰려면 → 각 `.html` 파일 더블클릭
@@ -80,9 +80,9 @@ npm start
 bettermondaynodesystem/
 ├── BetterMonday 노드 디자인 시스템.html    # 통합 번들 (배포본)
 ├── Reference Canvas.html                    # 노드 캔버스 (소스)
-├── Game Flow Editor.html                    # 플로우 에디터 (소스)
-├── Game Flow Diagrams.html                  # 플로우 뷰어 (소스)
-├── Scene Tree + Flow Dashboard.html         # 구조+플로우 통합 (소스)
+├── Flow Editor.html                         # 플로우 에디터 (소스)
+├── Flow Diagrams.html                       # 플로우 뷰어 (소스)
+├── Structure + Flow Dashboard.html          # 구조+플로우 통합 (소스)
 ├── canvas-interact.js                       # 공통 캔버스 인터랙션
 ├── colors_and_type.css                      # 디자인 토큰 (색·타이포·간격)
 ├── server.js                                # Express 정적 서버
@@ -92,7 +92,7 @@ bettermondaynodesystem/
 └── SKILL.md                                 # Skill 매니페스트
 ```
 
-> `Game Flow ...` 이름의 `Game`은 초기 사용처에서 유래한 명명일 뿐, 도구는 범용입니다.
+> 파일명은 범용 키워드(Flow / Structure)로 통일됨. 초기에는 `Game Flow ...`로 명명돼 있었음.
 
 ---
 

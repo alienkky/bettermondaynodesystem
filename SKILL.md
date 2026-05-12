@@ -1,6 +1,6 @@
 ---
 name: bettermonday-node-design-system
-description: Use this skill to work on BetterMonday Node Design System — a general-purpose, designer-facing planning canvas tool that helps designers structure their thinking (nodes, relationships, references, flows) BEFORE handing it to an AI. The tool is a collection of single-file HTML canvases bundled into one deployable HTML. Includes a custom bundler, shared interaction layer, and a single design-token source. Use this skill when modifying any canvas (Reference Canvas, Flow Editor, Flow Diagrams, Scene Tree + Flow Dashboard), the bundle, the design tokens, or the deployment.
+description: Use this skill to work on BetterMonday Node Design System — a general-purpose, designer-facing planning canvas tool that helps designers structure their thinking (nodes, relationships, references, flows) BEFORE handing it to an AI. The tool is a collection of single-file HTML canvases bundled into one deployable HTML. Includes a custom bundler, shared interaction layer, and a single design-token source. Use this skill when modifying any canvas (Reference Canvas, Flow Editor, Flow Diagrams, Structure + Flow Dashboard), the bundle, the design tokens, or the deployment.
 user-invocable: true
 ---
 
@@ -13,14 +13,14 @@ Read `CLAUDE.md` and `README.md` for full context before making changes. They de
 
 - `BetterMonday 노드 디자인 시스템.html` — the deployable bundle (~13MB single file). Generated, not edited by hand.
 - `Reference Canvas.html` — free-form node canvas (drag, group, connect references). Source file.
-- `Game Flow Editor.html` — flow diagram editor. Source file.
-- `Game Flow Diagrams.html` — flow viewer (read-focused). Source file.
-- `Scene Tree + Flow Dashboard.html` — combined structure-tree + flow view. Source file.
+- `Flow Editor.html` — flow diagram editor. Source file.
+- `Flow Diagrams.html` — flow viewer (read-focused). Source file.
+- `Structure + Flow Dashboard.html` — combined structure-tree + flow view. Source file.
 - `canvas-interact.js` — shared drag/zoom/connect interaction logic used by canvases.
 - `colors_and_type.css` — the single source of truth for design tokens (colors, type scale, spacing, radii, shadows). Always reference these via CSS variables.
 - `server.js` — Express static-file server for Railway deployment.
 
-> The `Game ...` prefix on some files is historical naming; the tool is general-purpose.
+> Filenames are now normalized to generic keywords (Flow / Structure). The tool is general-purpose.
 
 ## When invoked
 

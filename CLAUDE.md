@@ -30,11 +30,11 @@
 | 캔버스 | 역할 |
 |---|---|
 | `Reference Canvas` | 자유 노드 배치 — 레퍼런스 이미지·텍스트·아이디어를 시각적으로 군집화 |
-| `Flow Editor` (`Game Flow Editor.html`) | 화면/상태 플로우 작성 — 단계와 분기를 다이어그램으로 |
-| `Flow Diagrams` (`Game Flow Diagrams.html`) | 작성된 플로우의 뷰어 (읽기 중심) |
-| `Scene Tree + Flow Dashboard` | 구조 트리와 플로우를 한 화면에서 검토 |
+| `Flow Editor` (`Flow Editor.html`) | 화면/상태 플로우 작성 — 단계와 분기를 다이어그램으로 |
+| `Flow Diagrams` (`Flow Diagrams.html`) | 작성된 플로우의 뷰어 (읽기 중심) |
+| `Structure + Flow Dashboard` (`Structure + Flow Dashboard.html`) | 구조 트리와 플로우를 한 화면에서 검토 |
 
-> 파일명의 `Game ...`은 초기 사용처(게임 기획)에서 유래한 명명 — 도구 자체는 게임 외 어떤 기획에도 사용 가능.
+> 파일명은 범용 키워드로 통일됨 (`Flow Editor`, `Flow Diagrams`, `Structure + Flow Dashboard`). 초기에는 `Game Flow ...` / `Scene Tree ...`로 명명돼 있었음.
 
 ### 통합 진입점
 
@@ -59,9 +59,9 @@
 bettermondaynodesystem/
 ├── BetterMonday 노드 디자인 시스템.html   # 메인 번들 (배포용 단일 파일)
 ├── Reference Canvas.html                   # 노드 캔버스 (소스)
-├── Game Flow Editor.html                   # 플로우 에디터 (소스)
-├── Game Flow Diagrams.html                 # 플로우 뷰어 (소스)
-├── Scene Tree + Flow Dashboard.html        # 구조+플로우 통합 (소스)
+├── Flow Editor.html                        # 플로우 에디터 (소스)
+├── Flow Diagrams.html                      # 플로우 뷰어 (소스)
+├── Structure + Flow Dashboard.html         # 구조+플로우 통합 (소스)
 ├── canvas-interact.js                      # 캔버스 공통 인터랙션
 ├── colors_and_type.css                     # 디자인 토큰
 ├── server.js                               # Express 서버
@@ -211,7 +211,7 @@ raw 색상값/폰트크기가 쓰인 곳을 목록으로 보여줘.
 
 - **BetterMonday** — 사용자(디자이너 alienkky)의 작업 브랜드명.
 - **노드 디자인 시스템** — 노드 기반 캔버스 + 디자인 토큰 시스템.
-- 일부 파일명의 `Game`은 초기 도입처(게임 기획)에서 유래 — 도구는 어떤 분야 기획에도 사용 가능.
+- 초기 파일명에 `Game` 접두가 있었으나 범용 도구로 자리잡으며 제거됨 (히스토리는 git에 보존).
 
 ---
 

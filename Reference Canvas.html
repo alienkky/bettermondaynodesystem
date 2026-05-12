@@ -277,19 +277,8 @@ const SNAP = 6; // px snap threshold (in canvas coords)
 
 function defaultGraph() {
   return {
-    nodes: [
-      { id:'n1', kind:'group', title:'REFERENCE', sub:'', x:60, y:60, w:560, h:520 },
-      { id:'n2', kind:'note', title:'', sub:'', body:'여기에 게임 캡쳐를 드롭하고\n옆에 설명을 달아주세요!\n\n연결해서 우리 게임 구상으로 이어가요.', x:100, y:150, w:220 },
-      { id:'n3', kind:'group', title:'OUR GAME', sub:'', x:700, y:60, w:560, h:520 },
-      { id:'n4', kind:'screen', title:'Shop', sub:'홈 화면 · 카페 뷰', x:740, y:150 },
-      { id:'n5', kind:'screen', title:'Workshop', sub:'머지 보드', x:740, y:260 },
-      { id:'n6', kind:'system', title:'OrderSystem', sub:'주문 타이머', x:960, y:150 },
-    ],
-    edges: [
-      { id:'e1', from:'n2', to:'n4', label:'참고하여', style:'' },
-      { id:'e2', from:'n4', to:'n5', label:'tab', style:'' },
-      { id:'e3', from:'n4', to:'n6', label:'spawn', style:'dashed' },
-    ],
+    nodes: [],
+    edges: [],
   };
 }
 
@@ -1443,9 +1432,9 @@ function fit() {
 // ============================================================
 function generateBrief() {
   const lines = [];
-  lines.push('# BetterMonday — Game Brief from Reference Canvas');
+  lines.push('# Reference Canvas — Brief');
   lines.push('');
-  lines.push('> Auto-generated from Reference Canvas. Paste into VSCode Claude Code.');
+  lines.push('> Auto-generated from Reference Canvas. Paste into your AI of choice.');
   lines.push('');
   lines.push('## 1. References');
   graph.nodes.filter(n => n.kind === 'ref').forEach((n, i) => {
@@ -1482,12 +1471,11 @@ function generateBrief() {
   lines.push('');
   lines.push('## 7. Instruction for Claude Code');
   lines.push('');
-  lines.push('위 레퍼런스와 노트를 바탕으로, BetterMonday Coffee Tycoon의 다음 구현을 진행해주세요:');
-  lines.push('1. 각 Screen을 Godot Scene(.tscn)으로 스캐폴딩');
-  lines.push('2. 각 System을 scripts/systems/ 아래 .gd 로 생성');
-  lines.push('3. 씬 간 전환은 Connections 목록 그대로 반영 (signal 또는 SceneManager)');
-  lines.push('4. 색·폰트·간격은 DesignTokens 상수만 사용 (CLAUDE.md 규칙 준수)');
-  lines.push('5. 구현 전에 설계 상 애매한 부분 질문해주세요');
+  lines.push('위 캔버스 정리 내용을 바탕으로 다음 작업을 진행해주세요:');
+  lines.push('1. 각 항목의 의도·관계를 먼저 요약');
+  lines.push('2. 모호한 부분이 있으면 구현 전에 질문');
+  lines.push('3. 결과물은 캔버스의 구조·연결과 일관되게 유지');
+  lines.push('4. 시각·텍스트 톤은 동봉된 디자인 토큰/원칙(있다면)에 따른다');
 
   const text = lines.join('\n');
   // Show in modal-like inspector
@@ -1506,7 +1494,7 @@ function generateBrief() {
   });
   document.getElementById('dlBriefBtn').addEventListener('click', () => {
     const blob = new Blob([text], { type:'text/markdown' });
-    downloadBlob(blob, 'game_brief.md'); toast('⬇ brief.md');
+    downloadBlob(blob, 'brief.md'); toast('⬇ brief.md');
   });
 }
 

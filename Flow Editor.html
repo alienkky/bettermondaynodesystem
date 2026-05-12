@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>BetterMonday — Game Flow Editor</title>
+<title>BetterMonday — Flow Editor</title>
 <link rel="stylesheet" href="colors_and_type.css">
 <style id="extras">
   /* Smart-align guides */
@@ -126,7 +126,7 @@
 <body>
 <div class="app">
   <div class="bar">
-    <div class="brand">🎬 Game Flow Editor · 씬 그래프</div>
+    <div class="brand">🎬 Flow Editor · 화면·상태 그래프</div>
     <div class="dot"></div>
     <button class="btn" id="newBtn">New</button>
     <button class="btn" id="saveBtn">💾 Save</button>
@@ -143,7 +143,7 @@
     <button class="btn" id="zoomIn">+</button>
     <button class="btn" id="zoomOut">−</button>
     <div style="flex:1"></div>
-    <span class="hint">Godot 씬 그래프 · autoload · 모달 · 드래그 · 포트 연결 · dbl-click 편집</span>
+    <span class="hint">화면·상태 그래프 · 드래그 · 포트 연결 · dbl-click 편집</span>
   </div>
 
   <div class="main">
@@ -218,188 +218,8 @@ const SNAP = 6; // px snap threshold (in canvas coords)
 
 function defaultGraph() {
   return {
-    "nodes": [
-      {
-        "id": "n1",
-        "kind": "decision",
-        "title": "▶ Boot",
-        "sub": "앱 실행",
-        "x": 80,
-        "y": 300
-      },
-      {
-        "id": "n2",
-        "kind": "screen",
-        "icon": "📜",
-        "title": "Prologue",
-        "sub": "최초 1회",
-        "x": 280,
-        "y": 300
-      },
-      {
-        "id": "n3",
-        "kind": "screen",
-        "icon": "🎭",
-        "title": "CharacterCreate",
-        "sub": "이름 · 12지신",
-        "x": 500,
-        "y": 300
-      },
-      {
-        "id": "n4",
-        "kind": "screen",
-        "icon": "🏪",
-        "title": "Shop",
-        "sub": "홈 허브",
-        "x": 760,
-        "y": 300
-      },
-      {
-        "id": "n5",
-        "kind": "screen",
-        "icon": "🧪",
-        "title": "Workshop",
-        "sub": "머지 보드",
-        "x": 1020,
-        "y": 160
-      },
-      {
-        "id": "n6",
-        "kind": "screen",
-        "icon": "📚",
-        "title": "Dex",
-        "sub": "도감",
-        "x": 1020,
-        "y": 300
-      },
-      {
-        "id": "n7",
-        "kind": "screen",
-        "icon": "⚙",
-        "title": "Settings",
-        "sub": "설정",
-        "x": 1020,
-        "y": 440
-      },
-      {
-        "id": "n8",
-        "kind": "screen",
-        "icon": "⬆️",
-        "title": "LevelUp Modal",
-        "sub": "자동 팝업",
-        "x": 760,
-        "y": 500
-      },
-      {
-        "id": "n9",
-        "kind": "system",
-        "icon": "💾",
-        "title": "GameState",
-        "sub": "autoload",
-        "x": 80,
-        "y": 500
-      },
-      {
-        "id": "na",
-        "kind": "system",
-        "icon": "📦",
-        "title": "SaveLoad",
-        "sub": "autoload · user://save.json",
-        "x": 280,
-        "y": 500
-      },
-      {
-        "id": "nb",
-        "kind": "system",
-        "icon": "🔊",
-        "title": "AudioBus",
-        "sub": "autoload · BGM/SFX",
-        "x": 500,
-        "y": 500
-      }
-    ],
-    "edges": [
-      {
-        "id": "e1",
-        "from": "n1",
-        "to": "n2",
-        "label": "on_ready",
-        "style": "solid",
-        "arrow": "end"
-      },
-      {
-        "id": "e2",
-        "from": "n2",
-        "to": "n3",
-        "label": "finished",
-        "style": "solid",
-        "arrow": "end"
-      },
-      {
-        "id": "e3",
-        "from": "n3",
-        "to": "n4",
-        "label": "created",
-        "style": "solid",
-        "arrow": "end"
-      },
-      {
-        "id": "e4",
-        "from": "n4",
-        "to": "n5",
-        "label": "tab",
-        "style": "solid",
-        "arrow": "both"
-      },
-      {
-        "id": "e5",
-        "from": "n4",
-        "to": "n6",
-        "label": "tab",
-        "style": "solid",
-        "arrow": "both"
-      },
-      {
-        "id": "e6",
-        "from": "n4",
-        "to": "n7",
-        "label": "tab",
-        "style": "solid",
-        "arrow": "both"
-      },
-      {
-        "id": "e7",
-        "from": "n4",
-        "to": "n8",
-        "label": "level_up",
-        "style": "dashed",
-        "arrow": "end"
-      },
-      {
-        "id": "e8",
-        "from": "n4",
-        "to": "n9",
-        "label": "state",
-        "style": "dashed",
-        "arrow": "end"
-      },
-      {
-        "id": "e9",
-        "from": "n9",
-        "to": "na",
-        "label": "autosave",
-        "style": "dashed",
-        "arrow": "end"
-      },
-      {
-        "id": "ea",
-        "from": "na",
-        "to": "n1",
-        "label": "save_loaded",
-        "style": "dashed",
-        "arrow": "end"
-      }
-    ]
+    nodes: [],
+    edges: [],
   };
 }
 
@@ -923,7 +743,7 @@ function select(type, id) { selected = { type, id }; render(); }
 function renderInspector() {
   const insp = document.getElementById('insp');
   if (!selected) {
-    insp.innerHTML = `<div class="empty">👈 노드/엣지 선택 시 속성 표시<br><br>Godot 씬과 autoload를<br>노드로 편집하세요.<br><br>완성 후 <b>Generate Brief</b>로<br>구현 지시서 생성.</div>`;
+    insp.innerHTML = `<div class="empty">👈 노드/엣지 선택 시 속성 표시<br><br>화면·상태·시스템을<br>노드로 편집하세요.<br><br>완성 후 <b>Generate Brief</b>로<br>AI용 지시서 생성.</div>`;
     return;
   }
   if (selected.type === 'node') {
@@ -1275,9 +1095,9 @@ function fit() {
 // ============================================================
 function generateBrief() {
   const lines = [];
-  lines.push('# BetterMonday — Scene Graph Brief');
+  lines.push('# Flow Editor — Brief');
   lines.push('');
-  lines.push('> Auto-generated from BetterMonday — Game Flow Editor. Paste into VSCode Claude Code.');
+  lines.push('> Auto-generated from Flow Editor. Paste into your AI of choice.');
   lines.push('');
   lines.push('## 1. References');
   graph.nodes.filter(n => n.kind === 'ref').forEach((n, i) => {
@@ -1314,12 +1134,11 @@ function generateBrief() {
   lines.push('');
   lines.push('## 7. Instruction for Claude Code');
   lines.push('');
-  lines.push('위 레퍼런스와 노트를 바탕으로, BetterMonday Coffee Tycoon의 다음 구현을 진행해주세요:');
-  lines.push('1. 각 Screen을 Godot Scene(.tscn)으로 스캐폴딩');
-  lines.push('2. 각 System을 scripts/systems/ 아래 .gd 로 생성');
-  lines.push('3. 씬 간 전환은 Connections 목록 그대로 반영 (signal 또는 SceneManager)');
-  lines.push('4. 색·폰트·간격은 DesignTokens 상수만 사용 (CLAUDE.md 규칙 준수)');
-  lines.push('5. 구현 전에 설계 상 애매한 부분 질문해주세요');
+  lines.push('위 캔버스 정리 내용을 바탕으로 다음 작업을 진행해주세요:');
+  lines.push('1. 각 항목의 의도·관계를 먼저 요약');
+  lines.push('2. 모호한 부분이 있으면 구현 전에 질문');
+  lines.push('3. 결과물은 캔버스의 구조·연결과 일관되게 유지');
+  lines.push('4. 시각·텍스트 톤은 동봉된 디자인 토큰/원칙(있다면)에 따른다');
 
   const text = lines.join('\n');
   // Show in modal-like inspector
