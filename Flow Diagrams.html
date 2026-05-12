@@ -159,9 +159,9 @@
 
       <h3 style="margin-top:18px;">Tips</h3>
       <div style="font-size:11px;color:var(--fg-2);line-height:1.8;">
-        <b>🖼</b> 게임 레퍼런스 캡쳐 붙여넣기<br>
+        <b>🖼</b> 레퍼런스 캡쳐 붙여넣기<br>
         <b>📝</b> 스티키로 설명/감상 적기<br>
-        <b>📱</b> 우리 게임 화면 구상<br>
+        <b>📱</b> 우리 화면 구상<br>
         <b>⚙</b> 시스템/룰<br>
         <b>◇</b> 분기 조건<br>
         <b>▭</b> 섹션 묶음<br><br>
@@ -196,7 +196,7 @@
 // MODEL
 // ============================================================
 const KIND_INFO = {
-  ref:      { title:'Reference', sub:'게임 캡쳐' },
+  ref:      { title:'Reference', sub:'캡쳐 이미지' },
   note:     { title:'Note', sub:'설명/감상' },
   screen:   { title:'Screen', sub:'화면 구상' },
   system:   { title:'System', sub:'룰/매커닉' },
@@ -675,7 +675,7 @@ function select(type, id) { selected = { type, id }; render(); }
 function renderInspector() {
   const insp = document.getElementById('insp');
   if (!selected) {
-    insp.innerHTML = `<div class="empty">👈 노드/엣지 선택 시 속성 표시<br><br>전체 게임 진행 플로우를<br>자유롭게 편집하세요.<br><br>완성 후 <b>Generate Brief</b>로<br>설계 문서 생성.</div>`;
+    insp.innerHTML = `<div class="empty">👈 노드/엣지 선택 시 속성 표시<br><br>전체 진행 플로우를<br>자유롭게 편집하세요.<br><br>완성 후 <b>Generate Brief</b>로<br>설계 문서 생성.</div>`;
     return;
   }
   if (selected.type === 'node') {
