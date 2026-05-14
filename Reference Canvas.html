@@ -157,6 +157,7 @@
   .toast{position:fixed;top:64px;left:50%;transform:translateX(-50%);background:var(--roast);color:var(--cream);padding:8px 18px;border-radius:999px;font-size:12px;font-weight:700;box-shadow:var(--sh-lg);z-index:200;opacity:0;pointer-events:none;transition:opacity 200ms;}
   .toast.show{opacity:1;}
 </style>
+<script src="touch-input.js" defer></script>
 </head>
 <body>
 <div class="app">
@@ -634,7 +635,7 @@ function bindNode(el, n) {
   const delEl = el.querySelector('.del');
   const resizeEl = el.querySelector('.resize');
 
-  el.addEventListener('mousedown', e => {
+  el.addEventListener('pointerdown', e => {
     if (e.target.classList.contains('port')) return;
     if (e.target.classList.contains('del')) return;
     if (e.target.classList.contains('resize')) return;
@@ -678,11 +679,11 @@ function bindNode(el, n) {
   delEl?.addEventListener('click', e => { e.stopPropagation(); deleteNode(n.id); });
 
   el.querySelectorAll('.port').forEach(p => {
-    p.addEventListener('mousedown', e => { e.stopPropagation(); startConnect(n.id, e); });
+    p.addEventListener('pointerdown', e => { e.stopPropagation(); startConnect(n.id, e); });
   });
 
   if (resizeEl) {
-    resizeEl.addEventListener('mousedown', e => {
+    resizeEl.addEventListener('pointerdown', e => {
       e.stopPropagation();
       const sx = e.clientX, sy = e.clientY;
       const ow = el.offsetWidth, oh = el.offsetHeight;
@@ -695,9 +696,9 @@ function bindNode(el, n) {
         el.style.height = n.h + 'px';
         renderEdges();
       };
-      const onUp = () => { removeEventListener('mousemove', onMove); removeEventListener('mouseup', onUp); save(); };
-      addEventListener('mousemove', onMove);
-      addEventListener('mouseup', onUp);
+      const onUp = () => { removeEventListener('pointermove', onMove); removeEventListener('pointerup', onUp); save(); };
+      addEventListener('pointermove', onMove);
+      addEventListener('pointerup', onUp);
     });
   }
 }
@@ -854,15 +855,15 @@ function startNodeDrag(e, n, el) {
     renderEdges();
   };
   const onUp = () => {
-    removeEventListener('mousemove', onMove);
-    removeEventListener('mouseup', onUp);
+    removeEventListener('pointermove', onMove);
+    removeEventListener('pointerup', onUp);
     canvas.querySelectorAll('.rnode.group.drop-in').forEach(x => x.classList.remove('drop-in'));
     canvas.querySelectorAll('.rnode.dragging').forEach(x => x.classList.remove('dragging'));
     clearGuides();
     save();
   };
-  addEventListener('mousemove', onMove);
-  addEventListener('mouseup', onUp);
+  addEventListener('pointermove', onMove);
+  addEventListener('pointerup', onUp);
 }
 
 // ===== Smart-align guides =====
@@ -925,8 +926,8 @@ function startConnect(fromId, e) {
   };
 
   const onUp = ev => {
-    removeEventListener('mousemove', onMove);
-    removeEventListener('mouseup', onUp);
+    removeEventListener('pointermove', onMove);
+    removeEventListener('pointerup', onUp);
     temp.remove(); clearHover();
     if (hoverTarget && hoverTarget.id !== fromId) {
       commit();
@@ -938,8 +939,8 @@ function startConnect(fromId, e) {
     }
   };
 
-  addEventListener('mousemove', onMove);
-  addEventListener('mouseup', onUp);
+  addEventListener('pointermove', onMove);
+  addEventListener('pointerup', onUp);
 }
 
 // Find a non-group node whose rect contains the canvas point (topmost by draw order)
@@ -1285,7 +1286,7 @@ addEventListener('keydown', e => {
   if ((e.ctrlKey||e.metaKey) && e.key === 's') { e.preventDefault(); exportJSON(); }
 });
 addEventListener('keyup', e => { if (e.code === 'Space') { space = false; wrap.style.cursor = ''; } });
-wrap.addEventListener('mousedown', e => {
+wrap.addEventListener('pointerdown', e => {
   if (e.target.closest('.rnode')) return;
   if (e.target.classList.contains('edge-hit')) return;
   // Pan with middle-mouse or space+drag
@@ -1293,8 +1294,8 @@ wrap.addEventListener('mousedown', e => {
     const sx=e.clientX, sy=e.clientY, opx=pan.x, opy=pan.y;
     wrap.style.cursor='grabbing';
     const onMove = ev => { pan.x = opx + (ev.clientX-sx); pan.y = opy + (ev.clientY-sy); applyTransform(); };
-    const onUp = () => { removeEventListener('mousemove', onMove); removeEventListener('mouseup', onUp); wrap.style.cursor = space?'grab':''; };
-    addEventListener('mousemove', onMove); addEventListener('mouseup', onUp);
+    const onUp = () => { removeEventListener('pointermove', onMove); removeEventListener('pointerup', onUp); wrap.style.cursor = space?'grab':''; };
+    addEventListener('pointermove', onMove); addEventListener('pointerup', onUp);
     return;
   }
   // Left-click on empty canvas → box-select
@@ -1341,14 +1342,14 @@ function startBoxSelect(e, additive) {
     });
   };
   const onUp = () => {
-    removeEventListener('mousemove', onMove);
-    removeEventListener('mouseup', onUp);
+    removeEventListener('pointermove', onMove);
+    removeEventListener('pointerup', onUp);
     boxEl.remove();
     selected = selectedIds.size ? { type: 'node', id: [...selectedIds][0] } : null;
     renderInspector();
   };
-  addEventListener('mousemove', onMove);
-  addEventListener('mouseup', onUp);
+  addEventListener('pointermove', onMove);
+  addEventListener('pointerup', onUp);
 }
 wrap.addEventListener('wheel', e => {
   e.preventDefault();
@@ -1545,6 +1546,11 @@ function toast(msg) {
   t.textContent = msg; t.classList.add('show');
   clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1400);
 }
+
+// --- touch-input.js bridge hooks (exposes pan/zoom to the touch shim) ---
+window.__panBy = function(dx, dy) { pan.x += dx; pan.y += dy; applyTransform(); };
+window.__getZoom = function() { return zoom; };
+
 </script>
 </body>
 </html>

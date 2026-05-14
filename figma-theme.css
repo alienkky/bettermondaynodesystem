@@ -403,6 +403,77 @@ html, body {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.30) !important;
 }
 
+/* ---------- Touch / Pen support ---------- */
+/* Disable browser scroll/zoom inside the working area so pointer events
+   can drive pan, drag, and pinch. */
+.canvas-wrap,
+.canvas-wrap *,
+.pitem,
+.dropzone,
+.rnode,
+.rnode * {
+  touch-action: none !important;
+}
+/* Inspector inputs need normal text selection / scroll */
+.insp input,
+.insp textarea,
+.insp select,
+.insp .brief {
+  touch-action: auto !important;
+}
+/* Bigger touch hit areas (port and delete button) on coarse pointers */
+@media (pointer: coarse) {
+  .rnode .port {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  .rnode .port.n { top: -12px !important; }
+  .rnode .port.s { bottom: -12px !important; }
+  .rnode .port.e { right: -12px !important; }
+  .rnode .port.w { left: -12px !important; }
+  .rnode.selected .port,
+  .rnode .port { opacity: 1 !important; }  /* always show on touch */
+  .rnode .del {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 16px !important;
+    top: -14px !important;
+    right: -14px !important;
+  }
+  .rnode .resize {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .bar .btn {
+    min-height: 32px !important;
+    padding: 6px 12px !important;
+  }
+  .pitem {
+    padding: 10px 12px !important;
+    min-height: 36px !important;
+  }
+  .pitem.icon {
+    padding: 12px 4px !important;
+    font-size: 22px !important;
+  }
+  .insp input,
+  .insp select,
+  .insp textarea {
+    padding: 8px 10px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Drag ghost element for palette pointer-drag (touch/pen) */
+.pitem.dragging-ghost {
+  position: fixed !important;
+  pointer-events: none !important;
+  opacity: 0.85 !important;
+  z-index: 10000 !important;
+  transform: rotate(-2deg) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
 /* ---------- Scrollbars in dark sidebars ---------- */
 .palette::-webkit-scrollbar,
 .insp::-webkit-scrollbar { width: 10px; }
