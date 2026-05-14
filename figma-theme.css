@@ -45,6 +45,14 @@ html, body {
   padding: 0 10px !important;
   gap: 6px !important;
   color: var(--fg-on-dark) !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  flex-wrap: nowrap !important;
+}
+.bar::-webkit-scrollbar { height: 0 !important; display: none !important; }
+.bar { scrollbar-width: none; }
+.brand {
+  white-space: nowrap !important;
 }
 .brand {
   color: var(--fg-on-dark) !important;
@@ -80,6 +88,8 @@ html, body {
   height: 28px !important;
   display: inline-flex !important;
   align-items: center !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
   transition: background 100ms ease, border-color 100ms ease;
 }
 .bar .btn:hover {
@@ -488,4 +498,163 @@ html, body {
 .palette::-webkit-scrollbar-thumb:hover,
 .insp::-webkit-scrollbar-thumb:hover {
   background: var(--fg-border-dark);
+}
+
+/* =========================================================================
+   DENSITY VARIANTS — controlled by settings.js (body.dens-compact|normal|comfy)
+   ========================================================================= */
+/* COMPACT */
+body.dens-compact .bar { height: 36px !important; }
+body.dens-compact .bar .btn {
+  font-size: 11px !important;
+  padding: 3px 7px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+}
+body.dens-compact .brand { font-size: 11px !important; }
+body.dens-compact .hint { font-size: 10px !important; }
+body.dens-compact .palette { padding: 8px 6px !important; }
+body.dens-compact .pitem {
+  font-size: 11px !important;
+  padding: 5px 8px !important;
+  min-height: 28px !important;
+}
+body.dens-compact .pitem .ico { font-size: 12px !important; }
+body.dens-compact .insp { padding: 10px 8px !important; }
+body.dens-compact .insp h4 { font-size: 9px !important; }
+body.dens-compact .insp label { font-size: 10px !important; }
+body.dens-compact .insp input,
+body.dens-compact .insp select,
+body.dens-compact .insp textarea {
+  padding: 5px 7px !important;
+  font-size: 11px !important;
+}
+body.dens-compact .palette h3 { font-size: 9px !important; }
+body.dens-compact .main {
+  grid-template-columns: 210px 1fr 230px !important;
+}
+
+/* COMFY (large) */
+body.dens-comfy .bar { height: 48px !important; }
+body.dens-comfy .bar .btn {
+  font-size: 14px !important;
+  padding: 8px 14px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+}
+body.dens-comfy .brand { font-size: 14px !important; }
+body.dens-comfy .hint { font-size: 12px !important; }
+body.dens-comfy .palette { padding: 16px 14px !important; }
+body.dens-comfy .pitem {
+  font-size: 14px !important;
+  padding: 10px 14px !important;
+  min-height: 40px !important;
+}
+body.dens-comfy .pitem .ico { font-size: 16px !important; }
+body.dens-comfy .insp { padding: 18px 16px !important; }
+body.dens-comfy .insp h4 { font-size: 11px !important; }
+body.dens-comfy .insp label { font-size: 12px !important; }
+body.dens-comfy .insp input,
+body.dens-comfy .insp select,
+body.dens-comfy .insp textarea {
+  padding: 9px 12px !important;
+  font-size: 14px !important;
+}
+body.dens-comfy .palette h3 { font-size: 11px !important; }
+body.dens-comfy .main {
+  grid-template-columns: 264px 1fr 290px !important;
+}
+
+/* Hide hint when disabled in settings */
+body.hide-hint .bar .hint { display: none !important; }
+
+/* =========================================================================
+   SETTINGS POPOVER (rendered by settings.js)
+   ========================================================================= */
+.settings-panel {
+  position: fixed;
+  background: var(--fg-toolbar);
+  border: 1px solid var(--fg-divider);
+  border-radius: 8px;
+  padding: 14px 14px 12px;
+  min-width: 260px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  color: var(--fg-on-dark);
+  font-size: 12px;
+  font-family: inherit;
+}
+.settings-header {
+  font-weight: 600;
+  font-size: 10px;
+  color: var(--fg-on-dark-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--fg-divider);
+  margin-bottom: 12px;
+}
+.settings-row { margin-bottom: 12px; }
+.settings-row > label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--fg-on-dark-2);
+  font-size: 11px;
+  font-weight: 500;
+}
+.settings-checkrow {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  margin: 0 !important;
+  font-size: 12px;
+  color: var(--fg-on-dark) !important;
+  cursor: pointer;
+}
+.settings-checkrow input[type="checkbox"] {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--fg-blue);
+  cursor: pointer;
+}
+.settings-segmented {
+  display: flex;
+  gap: 4px;
+  background: var(--fg-toolbar-deep);
+  padding: 3px;
+  border-radius: 5px;
+}
+.settings-segmented button {
+  flex: 1;
+  background: transparent;
+  color: var(--fg-on-dark-2);
+  border: none;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 100ms ease, color 100ms ease;
+}
+.settings-segmented button:hover { color: var(--fg-on-dark); }
+.settings-segmented button.on {
+  background: var(--fg-blue);
+  color: #fff;
+}
+.settings-reset {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--fg-on-dark-2) !important;
+  border: 1px solid transparent !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  padding: 8px 10px !important;
+  border-radius: 4px !important;
+  cursor: pointer;
+}
+.settings-reset:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: var(--fg-on-dark) !important;
 }
