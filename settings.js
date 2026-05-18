@@ -6,7 +6,7 @@
   'use strict';
 
   const PREF_KEY = 'bm-ui-prefs';
-  const DEFAULTS = { density: 'normal', showHint: true };
+  const DEFAULTS = { density: 'normal', showHint: true, theme: 'dark' };
 
   let prefs = Object.assign({}, DEFAULTS);
 
@@ -23,6 +23,8 @@
     document.body.classList.remove('dens-compact', 'dens-normal', 'dens-comfy');
     document.body.classList.add('dens-' + prefs.density);
     document.body.classList.toggle('hide-hint', !prefs.showHint);
+    document.body.classList.remove('theme-light', 'theme-dark');
+    document.body.classList.add('theme-' + prefs.theme);
   }
 
   function injectButton() {
@@ -65,6 +67,13 @@
     panelEl.innerHTML = `
       <div class="settings-header">설정</div>
       <div class="settings-row">
+        <label>테마</label>
+        <div class="settings-segmented" data-group="theme">
+          <button data-value="light" class="${prefs.theme==='light'?'on':''}">일반모드</button>
+          <button data-value="dark"  class="${prefs.theme==='dark' ?'on':''}">다크모드</button>
+        </div>
+      </div>
+      <div class="settings-row">
         <label>UI 크기</label>
         <div class="settings-segmented" data-group="density">
           <button data-value="compact" class="${prefs.density==='compact'?'on':''}">작게</button>
@@ -96,6 +105,16 @@
         persist(); apply();
         panelEl.querySelectorAll('[data-group="density"] button').forEach((b) =>
           b.classList.toggle('on', b.dataset.value === prefs.density)
+        );
+      });
+    });
+
+    panelEl.querySelectorAll('[data-group="theme"] button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        prefs.theme = btn.dataset.value;
+        persist(); apply();
+        panelEl.querySelectorAll('[data-group="theme"] button').forEach((b) =>
+          b.classList.toggle('on', b.dataset.value === prefs.theme)
         );
       });
     });

@@ -658,3 +658,56 @@ body.hide-hint .bar .hint { display: none !important; }
   background: rgba(255, 255, 255, 0.12) !important;
   color: var(--fg-on-dark) !important;
 }
+
+/* =========================================================================
+   LIGHT THEME — controlled by settings.js (body.theme-light)
+   Remaps the Figma dark-sidebar palette to a light-surface variant.
+   All structural rules above continue to apply unchanged.
+   ========================================================================= */
+body.theme-light {
+  --fg-toolbar:        #FFFFFF;
+  --fg-toolbar-deep:   #F5F5F5;
+  --fg-divider:        #E6E6E6;
+  --fg-border-dark:    #D9D9D9;
+  --fg-input-dark:     #FFFFFF;
+  --fg-canvas:         #F5F5F5;
+  --fg-canvas-line:    rgba(0, 0, 0, 0.08);
+
+  --fg-on-dark:        #1E1E1E;
+  --fg-on-dark-2:      #6B6B6B;
+  --fg-on-dark-3:      #B3B3B3;
+}
+
+/* Tint surfaces — invert white-on-dark hovers to black-on-light */
+body.theme-light .bar .btn:hover        { background: rgba(0, 0, 0, 0.06) !important; }
+body.theme-light .pitem                 { background: rgba(0, 0, 0, 0.04) !important; }
+body.theme-light .pitem:hover           { background: rgba(0, 0, 0, 0.07) !important; }
+body.theme-light .pitem.icon            { background: rgba(0, 0, 0, 0.04) !important; }
+body.theme-light .pitem.icon:hover      { background: rgba(0, 0, 0, 0.08) !important; }
+body.theme-light .dropzone              { background: rgba(0, 0, 0, 0.03) !important; }
+body.theme-light .insp .btn             { background: rgba(0, 0, 0, 0.05) !important; }
+body.theme-light .insp .btn:hover       { background: rgba(0, 0, 0, 0.09) !important; }
+body.theme-light .insp .edge-style button,
+body.theme-light .insp .arrow-grid button       { background: rgba(0, 0, 0, 0.04) !important; }
+body.theme-light .insp .edge-style button:hover,
+body.theme-light .insp .arrow-grid button:hover { background: rgba(0, 0, 0, 0.08) !important; }
+body.theme-light .settings-reset                { background: rgba(0, 0, 0, 0.04) !important; }
+body.theme-light .settings-reset:hover          { background: rgba(0, 0, 0, 0.08) !important; }
+
+/* Light-mode-specific tweaks for elements whose contrast assumptions flip */
+body.theme-light .edge { stroke: #8C8C8C !important; }
+body.theme-light .rnode .del { border-color: #FFFFFF !important; }
+body.theme-light .toast {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+body.theme-light .zoom {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+body.theme-light .settings-panel {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15) !important;
+}
+body.theme-light .palette::-webkit-scrollbar-thumb,
+body.theme-light .insp::-webkit-scrollbar-thumb {
+  background: var(--fg-border-dark);
+  border-color: var(--fg-toolbar);
+}
