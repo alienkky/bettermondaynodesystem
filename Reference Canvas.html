@@ -87,7 +87,8 @@
   .rnode.ref .ref-sub{padding:2px 10px 8px;font-size:11px;font-weight:400;color:var(--fg-3);background:var(--cream);line-height:1.45;white-space:pre-wrap;font-family:var(--font-sans);}
   .rnode.ref .ref-sub:empty{display:none;}
   .rnode.note{background:#FFF8D9;border-color:#D4B356;padding:10px 12px;min-width:160px;font-family:var(--font-sans);font-weight:700;}
-  .rnode.note .body{font-size:14px;line-height:1.5;color:var(--ink);outline:none;white-space:pre-wrap;}
+  .rnode.note .body{font-size:14px;line-height:1.5;color:var(--ink);outline:none;white-space:pre-wrap;min-height:1.5em;min-width:140px;}
+  .rnode.note .body:empty:not(:focus)::before{content:'메모를 입력하세요';color:var(--fg-3);opacity:0.55;pointer-events:none;}
   .rnode.screen{border-color:var(--roast);border-width:3px;padding:10px 14px;min-width:160px;}
   .rnode.system{background:var(--el-wood-bg);border-color:var(--el-wood);padding:10px 14px;min-width:150px;}
   .rnode.decision{background:#fff;padding:10px 18px;min-width:140px;text-align:center;border-radius:20px;}
@@ -1109,8 +1110,12 @@ wrap.addEventListener('drop', e => {
   if (kind === 'icon') { n.glyph = e.dataTransfer.getData('glyph') || '⭐'; n.x = Math.round(x-28); n.y = Math.round(y-28); }
   commit(); graph.nodes.push(n); select('node', n.id); save(); render();
   if (kind === 'note') {
-    const body = canvas.querySelector(`.rnode[data-id="${n.id}"] .body`);
-    if (body) makeEditable(body, v => { n.body = v; save(); renderInspector(); }, true);
+    // Defer to next frame so the browser finishes its drag teardown before
+    // we steal focus — otherwise focus() inside the drop handler is undone.
+    requestAnimationFrame(() => {
+      const body = canvas.querySelector(`.rnode[data-id="${n.id}"] .body`);
+      if (body) makeEditable(body, v => { n.body = v; save(); renderInspector(); }, true);
+    });
   }
 });
 
