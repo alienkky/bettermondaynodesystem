@@ -13,6 +13,7 @@
   --gold:#F5C842;--red:#C44B4B;--blue:#4A7CB0;
   --ink:#1a1a1a;--muted:#888;
   --shadow:0 2px 12px rgba(0,0,0,.08);
+  --border:#e0dbd0;--border2:#e8e4d8;
 }
 body{font-family:'Pretendard','Noto Sans KR',system-ui,sans-serif;background:var(--bg);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden}
 
@@ -42,8 +43,8 @@ header{background:var(--g-dark);color:#fff;padding:10px 20px;display:flex;align-
 .graph-hint p{font-size:13px}
 
 /* ── Control panel ── */
-.ctrl{width:400px;display:flex;flex-direction:column;background:var(--card);border-left:1px solid #e8e4d8;overflow:hidden}
-.tabs{display:flex;border-bottom:2px solid #e8e4d8;flex-shrink:0}
+.ctrl{width:400px;display:flex;flex-direction:column;background:var(--card);border-left:1px solid var(--border2);overflow:hidden}
+.tabs{display:flex;border-bottom:2px solid var(--border2);flex-shrink:0}
 .tab{flex:1;padding:11px 4px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--muted);transition:color .2s,border-color .2s}
 .tab.active{color:var(--g-dark);border-bottom-color:var(--g-dark)}
 .pane{display:none;flex:1;flex-direction:column;gap:10px;padding:14px;overflow-y:auto}
@@ -51,9 +52,9 @@ header{background:var(--g-dark);color:#fff;padding:10px 20px;display:flex;align-
 
 /* ── Form elements ── */
 .lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g-mid);margin-bottom:3px}
-textarea,input[type=text]{width:100%;border:1.5px solid #e0dbd0;border-radius:7px;padding:8px 10px;font-size:12px;font-family:inherit;background:var(--bg);transition:border-color .2s;resize:vertical}
+textarea,input[type=text]{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-size:12px;font-family:inherit;background:var(--bg);color:var(--ink);transition:border-color .2s;resize:vertical}
 textarea:focus,input[type=text]:focus{outline:none;border-color:var(--g-mid)}
-select{width:100%;border:1.5px solid #e0dbd0;border-radius:7px;padding:7px 10px;font-size:12px;background:var(--bg);font-family:inherit}
+select{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;background:var(--bg);color:var(--ink);font-family:inherit}
 select:focus{outline:none;border-color:var(--g-mid)}
 .row{display:flex;gap:8px}
 
@@ -68,7 +69,7 @@ select:focus{outline:none;border-color:var(--g-mid)}
 .scard{background:var(--bg);border-radius:7px;padding:9px 11px}
 .scard-lbl{font-size:10px;color:var(--muted);margin-bottom:3px}
 .scard-val{font-size:19px;font-weight:800;color:var(--g-dark)}
-.sbar{height:4px;background:#e0dbd0;border-radius:2px;margin-top:5px;overflow:hidden}
+.sbar{height:4px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden}
 .sbar-fill{height:100%;border-radius:2px;transition:width .8s ease}
 .score-total{background:linear-gradient(135deg,var(--g-dark),#1a3516);color:#fff;border-radius:8px;padding:12px;text-align:center}
 .score-total .iq-eq{font-size:30px;font-weight:800;color:var(--gold)}
@@ -112,6 +113,45 @@ select:focus{outline:none;border-color:var(--g-mid)}
 /* ── Scrollbar ── */
 .pane::-webkit-scrollbar,.vstream::-webkit-scrollbar{width:3px}
 .pane::-webkit-scrollbar-thumb,.vstream::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
+
+/* ── Dark mode ── */
+body.dark{
+  --bg:#12151c;--paper:#1a1d26;--card:#1e2230;
+  --ink:#e2dfd6;--muted:#8a8a9a;
+  --shadow:0 2px 12px rgba(0,0,0,.5);
+  --border:rgba(255,255,255,.1);--border2:rgba(255,255,255,.1);
+}
+body.dark .dim-legend{background:rgba(28,32,46,.95)}
+body.dark .lens-box{background:linear-gradient(135deg,#182818,#162420);border-color:var(--g-mid)}
+body.dark .rev-guide{background:#1e1b0d;border-color:#5a4820}
+body.dark .ok{background:#182818;color:#8FAF89;border-color:#2D5A27}
+body.dark .warn{background:#28200e;color:#d4a017;border-color:#5a4820}
+body.dark .err{background:#281010;color:#e88;border-color:#5a1818}
+body.dark .vitem{border-bottom-color:rgba(255,255,255,.05)}
+body.dark .score-total{background:linear-gradient(135deg,#1a3516,#0e1e0c)}
+body.dark .brainshot{background:linear-gradient(135deg,#1a3516,#0e1e0c)}
+body.dark .sbar{background:rgba(255,255,255,.1)}
+body.dark .scard{background:rgba(255,255,255,.04)}
+body.dark .info-sec{background:rgba(255,255,255,.04)}
+body.dark .graph-hint{color:var(--g-mid)}
+
+/* ── Theme toggle button ── */
+.theme-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;
+  border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;
+  gap:5px;font-family:inherit;transition:background .2s;flex-shrink:0}
+.theme-btn:hover{background:rgba(255,255,255,.22)}
+
+/* ── Settings pane ── */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;
+  border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:12px;font-weight:600;color:var(--ink)}
+.setting-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.toggle-wrap{display:flex;gap:6px}
+.mode-pill{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;
+  border:1.5px solid var(--border);background:transparent;color:var(--muted);
+  font-family:inherit;transition:all .2s}
+.mode-pill.active{background:var(--g-dark);color:#fff;border-color:var(--g-dark)}
 </style>
 </head>
 <body>
@@ -126,6 +166,7 @@ select:focus{outline:none;border-color:var(--g-mid)}
     </div>
     <div class="iq-num" id="iqNum">90</div>
   </div>
+  <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️ 라이트</button>
 </header>
 
 <div class="main">
@@ -153,6 +194,7 @@ select:focus{outline:none;border-color:var(--g-mid)}
       <div class="tab" onclick="tab('coupling')">② Coupling</div>
       <div class="tab" onclick="tab('speech')">③ Speech</div>
       <div class="tab" onclick="tab('feedback')">④ Feedback</div>
+      <div class="tab" onclick="tab('settings')">⚙️</div>
     </div>
 
     <!-- LENS -->
@@ -226,6 +268,21 @@ select:focus{outline:none;border-color:var(--g-mid)}
         <div id="fLoading" style="display:none"><div class="loading"><div class="spin"></div>4차원 분석 중…</div></div>
         <div id="fOut" style="display:none"></div>
       </div>
+    <!-- Settings -->
+    <div class="pane" id="p-settings">
+      <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">화면 설정</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">테마</div>
+          <div class="setting-sub">그래프 배경 및 전체 색상 모드</div>
+        </div>
+        <div class="toggle-wrap">
+          <button class="mode-pill active" id="pillLight" onclick="setTheme('light')">☀️ 화이트</button>
+          <button class="mode-pill" id="pillDark" onclick="setTheme('dark')">🌙 다크</button>
+        </div>
+      </div>
+    </div>
+
     </div>
 
   </div>
@@ -299,10 +356,25 @@ const DEMO = {
 //  TAB
 // ═══════════════════════════════════════════════════════
 function tab(name){
-  const names=['lens','coupling','speech','feedback'];
+  const names=['lens','coupling','speech','feedback','settings'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.getElementById('p-'+name).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════════════
+function setTheme(mode){
+  const isDark = mode === 'dark';
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('themeBtn').textContent = isDark ? '🌙 다크' : '☀️ 라이트';
+  document.getElementById('pillLight').classList.toggle('active', !isDark);
+  document.getElementById('pillDark').classList.toggle('active', isDark);
+  localStorage.setItem('brain180-theme', mode);
+}
+function toggleTheme(){
+  setTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -676,6 +748,7 @@ function unlockFeedback(){
 
 // ─── Init ───
 setIq(90);
+setTheme(localStorage.getItem('brain180-theme') || 'light');
 </script>
 </body>
 </html>
