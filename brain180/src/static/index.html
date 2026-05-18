@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brain180 — 뇌인지구조 시각화</title>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f2ea;--paper:#fff8ee;--card:#fff;
+  --g-dark:#2D5A27;--g-mid:#4A7C59;--g-light:#8FAF89;
+  --gold:#F5C842;--red:#C44B4B;--blue:#4A7CB0;
+  --ink:#1a1a1a;--muted:#888;
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+  --border:#e0dbd0;--border2:#e8e4d8;
+}
+body{font-family:'Pretendard','Noto Sans KR',system-ui,sans-serif;background:var(--bg);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Header ── */
+header{background:var(--g-dark);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.logo{font-size:18px;font-weight:800;letter-spacing:-.5px}.logo span{color:var(--gold)}
+.stage-badge{padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(245,200,66,.2);border:1px solid var(--gold);color:var(--gold)}
+.iq-wrap{display:flex;align-items:center;gap:10px;margin-left:auto}
+.iq-num{font-size:26px;font-weight:800;color:var(--gold);min-width:38px;text-align:right}
+.iq-bar-col{display:flex;flex-direction:column;gap:3px}
+.iq-lbl{display:flex;justify-content:space-between;font-size:10px;opacity:.6;width:200px}
+.iq-bar{width:200px;height:7px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden}
+.iq-fill{height:100%;background:linear-gradient(90deg,var(--g-light),var(--gold));border-radius:4px;transition:width .8s ease;width:0%}
+
+/* ── Layout ── */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* ── Graph panel ── */
+.graph-panel{flex:1;background:var(--paper);position:relative;overflow:hidden}
+.graph-panel svg{width:100%;height:100%}
+.dim-legend{position:absolute;top:12px;left:12px;background:rgba(255,255,255,.92);border-radius:8px;padding:10px 12px;font-size:11px;box-shadow:var(--shadow)}
+.dim-legend h5{font-size:11px;font-weight:700;color:#444;margin-bottom:6px}
+.dim-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.dim-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.graph-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:var(--g-light);pointer-events:none}
+.graph-hint .ico{font-size:56px;margin-bottom:8px}
+.graph-hint p{font-size:13px}
+
+/* ── Control panel ── */
+.ctrl{width:400px;display:flex;flex-direction:column;background:var(--card);border-left:1px solid var(--border2);overflow:hidden}
+.tabs{display:flex;border-bottom:2px solid var(--border2);flex-shrink:0}
+.tab{flex:1;padding:11px 4px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--muted);transition:color .2s,border-color .2s}
+.tab.active{color:var(--g-dark);border-bottom-color:var(--g-dark)}
+.pane{display:none;flex:1;flex-direction:column;gap:10px;padding:14px;overflow-y:auto}
+.pane.active{display:flex}
+
+/* ── Form elements ── */
+.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g-mid);margin-bottom:3px}
+textarea,input[type=text]{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-size:12px;font-family:inherit;background:var(--bg);color:var(--ink);transition:border-color .2s;resize:vertical}
+textarea:focus,input[type=text]:focus{outline:none;border-color:var(--g-mid)}
+select{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;background:var(--bg);color:var(--ink);font-family:inherit}
+select:focus{outline:none;border-color:var(--g-mid)}
+.row{display:flex;gap:8px}
+
+/* ── Buttons ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:inherit;width:100%}
+.btn-p{background:var(--g-dark);color:#fff}.btn-p:hover{background:#1d3d19}.btn-p:disabled{background:#aaa;cursor:not-allowed}
+.btn-o{background:transparent;color:var(--g-mid);border:1.5px solid var(--g-mid)}.btn-o:hover{background:rgba(74,124,89,.1)}
+.btn-sm{padding:6px 10px;font-size:11px;width:auto;flex-shrink:0}
+
+/* ── Score ── */
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.scard{background:var(--bg);border-radius:7px;padding:9px 11px}
+.scard-lbl{font-size:10px;color:var(--muted);margin-bottom:3px}
+.scard-val{font-size:19px;font-weight:800;color:var(--g-dark)}
+.sbar{height:4px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:2px;transition:width .8s ease}
+.score-total{background:linear-gradient(135deg,var(--g-dark),#1a3516);color:#fff;border-radius:8px;padding:12px;text-align:center}
+.score-total .iq-eq{font-size:30px;font-weight:800;color:var(--gold)}
+.score-total small{font-size:10px;opacity:.8}
+
+/* ── Verdict stream ── */
+.vstream{background:var(--bg);border-radius:7px;padding:9px;max-height:150px;overflow-y:auto;font-size:11px}
+.vitem{display:flex;gap:7px;align-items:flex-start;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+.vsig{font-size:13px;flex-shrink:0;width:18px}
+.vtext{color:#555;flex:1}
+.vfb{font-weight:700;font-size:10px}
+.sc{color:#2D9949}.sp{color:#D4A017}.si{color:var(--red)}.sl{color:var(--blue)}
+
+/* ── Info boxes ── */
+.lens-box{background:linear-gradient(135deg,#f0f7f0,#e8f4ea);border:1px solid var(--g-light);border-radius:8px;padding:11px;font-size:11px;line-height:1.6}
+.lens-author{font-size:13px;font-weight:700;color:var(--g-dark);margin-bottom:5px}
+.lens-4d{background:rgba(245,200,66,.15);border:1px solid #e8d07a;border-radius:4px;padding:4px 8px;font-size:10px;font-weight:700;color:#7a5c00;margin-top:5px}
+.rev-guide{background:#fff8ee;border:1px solid #e8d07a;border-radius:8px;padding:11px;font-size:11px;line-height:1.6}
+.rev-guide h4{color:#8B6914;font-size:11px;font-weight:700;margin-bottom:7px}
+.rev-step{display:flex;gap:7px;margin-bottom:5px;align-items:flex-start}
+.rev-num{background:#e8d07a;color:#5a4209;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.info-sec{background:var(--bg);border-radius:7px;padding:10px;font-size:11px;line-height:1.6}
+.info-sec h4{font-size:11px;font-weight:700;color:var(--g-dark);margin-bottom:5px}
+.brainshot{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--g-dark),#1a3516);color:#fff;border-radius:8px;padding:12px}
+.bs-icon{font-size:26px}
+.bs-name{font-size:13px;font-weight:700;color:var(--gold)}
+.bs-prog{font-size:10px;opacity:.8;margin-top:2px}
+.alert{padding:8px 11px;border-radius:6px;font-size:11px}
+.ok{background:#e8f4ea;color:var(--g-dark);border:1px solid var(--g-light)}
+.warn{background:#fff8e0;color:#7a5c00;border:1px solid #e8d07a}
+.err{background:#fee;color:#933;border:1px solid #fcc}
+
+/* ── Loading ── */
+.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;color:var(--g-mid);font-size:12px}
+.spin{width:18px;height:18px;border:2px solid var(--g-light);border-top-color:var(--g-dark);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Tooltip ── */
+.tip{position:fixed;background:rgba(0,0,0,.88);color:#fff;padding:7px 10px;border-radius:6px;font-size:11px;pointer-events:none;max-width:200px;line-height:1.5;z-index:200;display:none}
+
+/* ── Scrollbar ── */
+.pane::-webkit-scrollbar,.vstream::-webkit-scrollbar{width:3px}
+.pane::-webkit-scrollbar-thumb,.vstream::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
+
+/* ── Dark mode ── */
+body.dark{
+  --bg:#12151c;--paper:#1a1d26;--card:#1e2230;
+  --ink:#e2dfd6;--muted:#8a8a9a;
+  --shadow:0 2px 12px rgba(0,0,0,.5);
+  --border:rgba(255,255,255,.1);--border2:rgba(255,255,255,.1);
+}
+body.dark .dim-legend{background:rgba(28,32,46,.95)}
+body.dark .lens-box{background:linear-gradient(135deg,#182818,#162420);border-color:var(--g-mid)}
+body.dark .rev-guide{background:#1e1b0d;border-color:#5a4820}
+body.dark .ok{background:#182818;color:#8FAF89;border-color:#2D5A27}
+body.dark .warn{background:#28200e;color:#d4a017;border-color:#5a4820}
+body.dark .err{background:#281010;color:#e88;border-color:#5a1818}
+body.dark .vitem{border-bottom-color:rgba(255,255,255,.05)}
+body.dark .score-total{background:linear-gradient(135deg,#1a3516,#0e1e0c)}
+body.dark .brainshot{background:linear-gradient(135deg,#1a3516,#0e1e0c)}
+body.dark .sbar{background:rgba(255,255,255,.1)}
+body.dark .scard{background:rgba(255,255,255,.04)}
+body.dark .info-sec{background:rgba(255,255,255,.04)}
+body.dark .graph-hint{color:var(--g-mid)}
+
+/* ── Theme toggle button ── */
+.theme-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;
+  border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;
+  gap:5px;font-family:inherit;transition:background .2s;flex-shrink:0}
+.theme-btn:hover{background:rgba(255,255,255,.22)}
+
+/* ── Settings pane ── */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;
+  border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:12px;font-weight:600;color:var(--ink)}
+.setting-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.toggle-wrap{display:flex;gap:6px}
+.mode-pill{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;
+  border:1.5px solid var(--border);background:transparent;color:var(--muted);
+  font-family:inherit;transition:all .2s}
+.mode-pill.active{background:var(--g-dark);color:#fff;border-color:var(--g-dark)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Brain<span>180</span> <span style="font-size:11px;opacity:.6;font-weight:400">뇌인지구조 시각화</span></div>
+  <div class="stage-badge" id="stageLabel">🌱 착수</div>
+  <div class="iq-wrap">
+    <div class="iq-bar-col">
+      <div class="iq-lbl"><span>IQ 90</span><span>150</span><span>180</span></div>
+      <div class="iq-bar"><div class="iq-fill" id="iqFill"></div></div>
+    </div>
+    <div class="iq-num" id="iqNum">90</div>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️ 라이트</button>
+</header>
+
+<div class="main">
+
+  <!-- ── Graph ── -->
+  <div class="graph-panel">
+    <svg id="graph"></svg>
+    <div class="dim-legend">
+      <h5>4차원 레이어</h5>
+      <div class="dim-row"><div class="dim-dot" style="background:#999"></div>1차원 내용</div>
+      <div class="dim-row"><div class="dim-dot" style="background:#4A7C59"></div>2차원 구조</div>
+      <div class="dim-row"><div class="dim-dot" style="background:#4A7CB0"></div>3차원 관계망</div>
+      <div class="dim-row"><div class="dim-dot" style="background:#F5C842;box-shadow:0 0 4px #F5C842"></div>4차원 천재 패턴 ✨</div>
+    </div>
+    <div class="graph-hint" id="hint">
+      <div class="ico">🧠</div>
+      <p>텍스트를 입력하고<br>LENS 분석을 시작하거나<br>데모를 실행하세요</p>
+    </div>
+  </div>
+
+  <!-- ── Controls ── -->
+  <div class="ctrl">
+    <div class="tabs">
+      <div class="tab active" onclick="tab('lens')">① LENS</div>
+      <div class="tab" onclick="tab('coupling')">② Coupling</div>
+      <div class="tab" onclick="tab('speech')">③ Speech</div>
+      <div class="tab" onclick="tab('feedback')">④ Feedback</div>
+      <div class="tab" onclick="tab('settings')">⚙️</div>
+    </div>
+
+    <!-- LENS -->
+    <div class="pane active" id="p-lens">
+      <div>
+        <div class="lbl">고전 텍스트</div>
+        <textarea id="txtIn" rows="5" placeholder="천재 저자의 고전 문장을 입력하세요.
+
+예: 마르쿠스 아우렐리우스, 니체, 칸트,
+    노자, 아인슈타인, 공자 등"></textarea>
+      </div>
+      <div>
+        <div class="lbl">저자 정보 (선택)</div>
+        <input type="text" id="authorIn" placeholder="예: 마르쿠스 아우렐리우스, 스토아 철학">
+      </div>
+      <div>
+        <div class="lbl">목표 IQ</div>
+        <select id="iqSel">
+          <option value="90">90 — 평재 (기본)</option>
+          <option value="150" selected>150 — 영재</option>
+          <option value="180">180 — 천재</option>
+        </select>
+      </div>
+      <button class="btn btn-p" id="lensBtn" onclick="runLens()">🔍 저자 렌즈 추출 (LENS 분석)</button>
+      <button class="btn btn-o" onclick="loadDemo()">⚡ 데모 실행 — 데카르트 『방법서설』</button>
+      <div id="lensLoading" style="display:none"><div class="loading"><div class="spin"></div>뇌인지구조 추출 중…</div></div>
+      <div id="lensOut" style="display:none"></div>
+    </div>
+
+    <!-- Coupling -->
+    <div class="pane" id="p-coupling">
+      <div id="c-lock" class="alert warn">먼저 LENS 분석을 완료해주세요.</div>
+      <div id="c-form" style="display:none;flex-direction:column;gap:10px">
+        <div>
+          <div class="lbl">저자의 렌즈로 텍스트 설명</div>
+          <textarea id="couplingTxt" rows="7" placeholder="저자가 어떻게 생각했는지, 저자의 눈으로 설명해보세요.
+
+핵심: 내용 요약이 아니라
+저자의 사고 방식 자체를 재현하세요."></textarea>
+        </div>
+        <button class="btn btn-p" onclick="runCoupling()">🔗 커플링 평가</button>
+        <div id="cLoading" style="display:none"><div class="loading"><div class="spin"></div>커플링 평가 중…</div></div>
+        <div id="cOut" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Speech -->
+    <div class="pane" id="p-speech">
+      <div id="s-lock" class="alert warn">먼저 LENS 분석을 완료해주세요.</div>
+      <div id="s-form" style="display:none;flex-direction:column;gap:10px">
+        <div class="alert ok">문장을 하나씩 입력하고 Enter — 실시간으로 저자 렌즈 착용 여부를 검증합니다.</div>
+        <div>
+          <div class="lbl">문장 입력</div>
+          <div class="row" style="align-items:center">
+            <input type="text" id="sentIn" placeholder="한 문장씩 입력…" onkeydown="if(event.key==='Enter')verify()">
+            <button class="btn btn-p btn-sm" onclick="verify()">검증</button>
+          </div>
+        </div>
+        <div>
+          <div class="lbl">실시간 판정 <span id="verdictCnt" style="font-weight:400;color:var(--muted)"></span></div>
+          <div class="vstream" id="vstream"><div style="color:#aaa;text-align:center;padding:16px">판정 대기 중…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="pane" id="p-feedback">
+      <div id="f-lock" class="alert warn">Coupling 평가 후 피드백을 받을 수 있습니다.</div>
+      <div id="f-form" style="display:none;flex-direction:column;gap:10px">
+        <button class="btn btn-p" onclick="runFeedback()">📊 4차원 종합 피드백 받기</button>
+        <div id="fLoading" style="display:none"><div class="loading"><div class="spin"></div>4차원 분석 중…</div></div>
+        <div id="fOut" style="display:none"></div>
+      </div>
+    <!-- Settings -->
+    <div class="pane" id="p-settings">
+      <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">화면 설정</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">테마</div>
+          <div class="setting-sub">그래프 배경 및 전체 색상 모드</div>
+        </div>
+        <div class="toggle-wrap">
+          <button class="mode-pill active" id="pillLight" onclick="setTheme('light')">☀️ 화이트</button>
+          <button class="mode-pill" id="pillDark" onclick="setTheme('dark')">🌙 다크</button>
+        </div>
+      </div>
+    </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+const S = { sessionId:null, lens:null, iq:90, verdicts:[], history:[] };
+
+// ═══════════════════════════════════════════════════════
+//  DEMO DATA  (데카르트 『방법서설』)
+// ═══════════════════════════════════════════════════════
+const DEMO = {
+  session_id:'demo',
+  author_lens:{
+    name:'르네 데카르트', field:'철학·수학', era:'근세',
+    thinking_pattern:'모든 기존 믿음을 방법적으로 의심하여 해체한 뒤, 의심 불가능한 유일한 사실(코기토)에서 출발해 확실성의 체계를 연역적으로 재건한다',
+    cognitive_style:'방법적 해체 → 불가침 기점 확보 → 연역적 재구성',
+    core_assumption:'명확하고 판명하게(명증하게) 인식되는 것만이 참이다',
+    mental_model:'의심할 수 없는 단 하나의 사실에서 모든 지식을 논리적으로 재건할 수 있다',
+    '4d_signature':'어떤 믿음이든 "이것을 의심할 수 있는가?"로 먼저 필터링한 뒤, 의심 불가능한 것에서만 지식 체계를 세우는 재건의 사고',
+    genius_level:180
+  },
+  nodes:[
+    {id:'n1',concept:'감각',     role:'contrast',   dimension:1,depth:1,
+     description:'시각·청각 등 외부 지각 — 불확실성의 원천',
+     author_emphasis:'한 번이라도 속인 것은 완전히 신뢰할 수 없다고 단호히 규정'},
+    {id:'n2',concept:'방법적 의심',role:'anchor',   dimension:4,depth:1,
+     description:'모든 믿음을 의도적·체계적으로 의심하는 인식론적 도구',
+     author_emphasis:'진리를 찾기 위한 방법 — 회의주의가 목적이 아닌 도구'},
+    {id:'n3',concept:'코기토',   role:'bridge',     dimension:4,depth:2,
+     description:'나는 생각한다 — 의심하는 행위 자체가 사유를 증명',
+     author_emphasis:'의심할 수 없는 유일한 사실 — 전체 체계의 아르키메데스적 기점'},
+    {id:'n4',concept:'명증성',   role:'bridge',     dimension:3,depth:2,
+     description:'명확하고 판명한 인식의 기준 — 참 지식의 필요조건',
+     author_emphasis:'코기토에서 추출한 진리 기준을 모든 지식에 적용'},
+    {id:'n5',concept:'존재 증명',role:'conclusion', dimension:4,depth:3,
+     description:'나는 존재한다 — 사유로부터 연역된 확실한 결론',
+     author_emphasis:'의심에서 출발해 의심할 수 없는 존재에 도달하는 역설적 귀결'},
+  ],
+  edges:[
+    {from:'n1',to:'n2',relation:'causes',     author_logic:'감각의 불확실성이 방법적 의심을 촉발', dimension:2,strength:2},
+    {from:'n2',to:'n3',relation:'transforms', author_logic:'의심 행위 자체가 사유하는 자아를 드러냄 — 의심이 코기토를 낳음', dimension:4,strength:3},
+    {from:'n3',to:'n4',relation:'supports',   author_logic:'코기토의 명증성에서 진리 기준을 추출', dimension:3,strength:2},
+    {from:'n3',to:'n5',relation:'causes',     author_logic:'생각함 → 고로 존재함 (코기토 에르고 숨)', dimension:4,strength:3},
+    {from:'n1',to:'n4',relation:'contradicts',author_logic:'감각은 명증성 기준을 충족하지 못함', dimension:3,strength:2},
+    {from:'n4',to:'n5',relation:'supports',   author_logic:'명증성이 존재 증명의 인식론적 보증', dimension:3,strength:1},
+  ],
+  cognitive_signature:{
+    unique_moves:[
+      '의심 자체를 의심하여 의심 불가능한 기점 발견',
+      '해체(회의)와 재건(연역)을 하나의 사이클로 묶음',
+      '가장 간단한 사실에서 가장 복잡한 체계를 연역'
+    ],
+    install_key:'어떤 믿음이든 "이것을 의심할 수 있는가?"를 먼저 물은 뒤, 의심 불가능한 것에서만 논리를 전개하는 훈련'
+  },
+  reverse_learning_path:{
+    step1_anchor:'n2 (방법적 의심)',
+    step2_pattern:'n2 anchor에서 출발 → n3 코기토(bridge)를 거쳐 → n5 존재 증명(결론)으로 흐름. n1은 n2의 촉발 원인, n4는 n3에서 추출된 기준',
+    step3_question:'"데카르트는 왜 모든 것을 의심했는가? 의심의 목적이 진리를 얻는 것이라면, 의심 자체는 어떻게 의심하는가?"',
+    step4_reread:'각 문장에서 "데카르트는 지금 무언가를 의심하는가, 재건하는가?"를 구분하며 읽기'
+  },
+  visualization_hint:{layout:'force',primary_color:'#2D4E7A',emphasis_nodes:['n2','n3','n5']}
+};
+
+// ═══════════════════════════════════════════════════════
+//  TAB
+// ═══════════════════════════════════════════════════════
+function tab(name){
+  const names=['lens','coupling','speech','feedback','settings'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('p-'+name).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+//  THEME
+// ═══════════════════════════════════════════════════════
+function setTheme(mode){
+  const isDark = mode === 'dark';
+  document.body.classList.toggle('dark', isDark);
+  document.getElementById('themeBtn').textContent = isDark ? '🌙 다크' : '☀️ 라이트';
+  document.getElementById('pillLight').classList.toggle('active', !isDark);
+  document.getElementById('pillDark').classList.toggle('active', isDark);
+  localStorage.setItem('brain180-theme', mode);
+}
+function toggleTheme(){
+  setTheme(document.body.classList.contains('dark') ? 'light' : 'dark');
+}
+
+// ═══════════════════════════════════════════════════════
+//  IQ BAR
+// ═══════════════════════════════════════════════════════
+function setIq(iq){
+  S.iq=iq;
+  document.getElementById('iqNum').textContent=iq;
+  document.getElementById('iqFill').style.width=Math.max(0,Math.min(100,(iq-90)/90*100))+'%';
+  const stages=[
+    {min:0,  lbl:'🌱 착수'},{min:101,lbl:'🔥 발사 준비'},
+    {min:116,lbl:'🚀 발사'},{min:131,lbl:'🛸 궤도 진입'},
+    {min:151,lbl:'🌕 달 궤도'},{min:171,lbl:'🏆 달 도착'},
+  ];
+  document.getElementById('stageLabel').textContent=stages.filter(s=>iq>=s.min).pop().lbl;
+}
+
+// ═══════════════════════════════════════════════════════
+//  D3 GRAPH
+// ═══════════════════════════════════════════════════════
+const NC={anchor:'#2D5A27',bridge:'#4A7C59',conclusion:'#C8941A',evidence:'#8FAF89',contrast:'#C44B4B'};
+const NR={anchor:34,bridge:26,conclusion:29,evidence:18,contrast:22};
+const EC={causes:'#444',contradicts:'#C44B4B',supports:'#4A7C59',transforms:'#2D5A27',
+          examples:'#999',questions:'#F5A623',transcends:'#7B68EE'};
+
+let sim;
+
+function drawGraph(data){
+  document.getElementById('hint').style.display='none';
+  const el=document.getElementById('graph');
+  el.innerHTML='';
+  const W=el.clientWidth,H=el.clientHeight;
+  const svg=d3.select('#graph').attr('viewBox',`0 0 ${W} ${H}`);
+  const zoom=d3.zoom().scaleExtent([.25,4]).on('zoom',e=>g.attr('transform',e.transform));
+  svg.call(zoom);
+  const g=svg.append('g');
+
+  // Defs: arrowheads
+  const defs=svg.append('defs');
+  Object.entries(EC).forEach(([r,c])=>{
+    defs.append('marker').attr('id','arr-'+r)
+      .attr('viewBox','0 -4 8 8').attr('refX',22).attr('refY',0)
+      .attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+      .append('path').attr('d','M0,-4L8,0L0,4').attr('fill',c);
+  });
+
+  const nodes=data.nodes.map(n=>({...n}));
+  const links=data.edges.map(e=>({source:e.from,target:e.to,...e}));
+
+  sim=d3.forceSimulation(nodes)
+    .force('link',d3.forceLink(links).id(d=>d.id).distance(130))
+    .force('charge',d3.forceManyBody().strength(-320))
+    .force('center',d3.forceCenter(W/2,H/2))
+    .force('col',d3.forceCollide(55));
+
+  // Edges
+  const link=g.append('g').selectAll('line').data(links).enter().append('line')
+    .attr('stroke',d=>EC[d.relation]||'#888')
+    .attr('stroke-width',d=>d.strength||1)
+    .attr('stroke-dasharray',d=>['contradicts','examples'].includes(d.relation)?'5,3':null)
+    .attr('stroke-opacity',.75)
+    .attr('marker-end',d=>`url(#arr-${d.relation})`);
+
+  // Node groups
+  const node=g.append('g').selectAll('g').data(nodes).enter().append('g')
+    .attr('id',d=>'nd-'+d.id)
+    .style('cursor','pointer')
+    .call(d3.drag()
+      .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y})
+      .on('drag', (e,d)=>{d.fx=e.x;d.fy=e.y})
+      .on('end',  (e,d)=>{if(!e.active)sim.alphaTarget(0)}))
+    .on('mouseover',showTip).on('mousemove',moveTip).on('mouseout',hideTip);
+
+  node.append('circle')
+    .attr('r',d=>NR[d.role]||24)
+    .attr('fill',d=>NC[d.role]||'#888')
+    .attr('stroke',d=>d.dimension===4?'#F5C842':'rgba(255,255,255,.25)')
+    .attr('stroke-width',d=>d.dimension===4?2.5:1)
+    .style('filter',d=>{
+      if(d.dimension===4)return'drop-shadow(0 0 9px #F5C842)';
+      if(d.dimension===3)return'drop-shadow(0 0 5px #4A7CB0)';
+      return null;
+    });
+
+  node.append('text')
+    .text(d=>d.concept)
+    .attr('text-anchor','middle').attr('dominant-baseline','middle')
+    .attr('fill','#fff')
+    .style('font-size',d=>d.concept.length>4?'9px':'11px')
+    .style('font-weight','700').style('pointer-events','none');
+
+  // 4D badge
+  node.filter(d=>d.dimension===4).append('text')
+    .text('✨').attr('text-anchor','middle').attr('y',d=>-(NR[d.role]||24)-6)
+    .style('font-size','12px').style('pointer-events','none');
+
+  sim.on('tick',()=>{
+    link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+        .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    node.attr('transform',d=>`translate(${d.x},${d.y})`);
+  });
+}
+
+function pulseNode(id,verdict){
+  const c=d3.select('#nd-'+id+' circle');
+  if(c.empty())return;
+  const glow={correct:'drop-shadow(0 0 14px #2D9949)',partial:'drop-shadow(0 0 10px #D4A017)',
+              incorrect:'drop-shadow(0 0 10px #C44B4B)',off_lens:'drop-shadow(0 0 12px #4A7CB0)'};
+  const orig=c.style('filter');
+  c.transition().duration(80).style('filter',glow[verdict]||'')
+   .transition().duration(1300).style('filter',orig);
+}
+
+// Tooltip
+function showTip(evt,d){
+  const t=document.getElementById('tip');
+  t.innerHTML=`<strong>${d.concept}</strong> (${d.role} · ${d.dimension}차원)<br><span style="opacity:.8">${d.description||''}</span><br><em style="color:#aaa;font-size:10px">${d.author_emphasis||''}</em>`;
+  t.style.display='block';moveTip(evt);
+}
+function moveTip(evt){const t=document.getElementById('tip');t.style.left=(evt.clientX+12)+'px';t.style.top=(evt.clientY-32)+'px';}
+function hideTip(){document.getElementById('tip').style.display='none';}
+
+// ═══════════════════════════════════════════════════════
+//  LENS
+// ═══════════════════════════════════════════════════════
+async function runLens(){
+  const txt=document.getElementById('txtIn').value.trim();
+  if(!txt){alert('텍스트를 입력해주세요.');return;}
+  const btn=document.getElementById('lensBtn');
+  btn.disabled=true;
+  show('lensLoading');hide('lensOut');
+  try{
+    const r=await fetch('/api/lens',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:txt,author_info:document.getElementById('authorIn').value,target_iq:+document.getElementById('iqSel').value})
+    });
+    if(!r.ok)throw new Error(await r.text());
+    applyLens(await r.json());
+  }catch(e){
+    show('lensOut');
+    document.getElementById('lensOut').innerHTML=`<div class="alert err">오류: ${e.message}<br><small>API 키를 확인하거나 데모를 사용하세요.</small></div>`;
+  }finally{btn.disabled=false;hide('lensLoading');}
+}
+
+function loadDemo(){
+  document.getElementById('txtIn').value='나는 지금까지 가장 참이라고 받아들였던 모든 것을 감각으로부터 얻었다. 그런데 나는 감각이 때로 우리를 속인다는 것을 경험했다. 따라서 단 한 번이라도 나를 속인 것들을 완전히 신뢰하지 않는 것이 현명하다. 내가 모든 것을 의심하더라도, 의심하는 나 자신이 존재한다는 것만은 의심할 수 없다. 나는 생각한다, 고로 나는 존재한다.';
+  document.getElementById('authorIn').value='르네 데카르트, 17세기 프랑스 철학자·수학자, 방법서설·성찰';
+  applyLens(DEMO);
+}
+
+function applyLens(data){
+  S.sessionId=data.session_id||'demo';
+  S.lens=data;
+  drawGraph(data);
+  const al=data.author_lens;
+  const rlp=data.reverse_learning_path;
+  show('lensOut');
+  document.getElementById('lensOut').innerHTML=`
+    <div class="lens-box">
+      <div class="lens-author">📚 ${al.name} <small style="font-weight:400;color:#888">${al.field||''} · ${al.era||''}</small></div>
+      <div style="margin-bottom:3px"><strong>사고 패턴</strong>: ${al.thinking_pattern}</div>
+      <div style="color:#555"><strong>인지 스타일</strong>: ${al.cognitive_style}</div>
+      <div class="lens-4d">✨ 4D: ${al['4d_signature']||al.mental_model}</div>
+    </div>
+    ${rlp?`<div class="rev-guide">
+      <h4>🔄 역방향 독서 가이드</h4>
+      <div class="rev-step"><div class="rev-num">1</div><div>그래프에서 <strong>${rlp.step1_anchor}</strong> 노드 먼저 보기</div></div>
+      <div class="rev-step"><div class="rev-num">2</div><div>${rlp.step2_pattern}</div></div>
+      <div class="rev-step"><div class="rev-num">3</div><div>사전 질문: <em>${rlp.step3_question}</em></div></div>
+      <div class="rev-step"><div class="rev-num">4</div><div>${rlp.step4_reread}</div></div>
+    </div>`:''}
+    <div class="alert ok">✓ 뇌인지구조 추출 완료 — 왼쪽 그래프를 확인하세요</div>`;
+  unlockPanel('c');unlockPanel('s');
+}
+
+// ═══════════════════════════════════════════════════════
+//  COUPLING
+// ═══════════════════════════════════════════════════════
+async function runCoupling(){
+  if(!S.sessionId)return;
+  const speech=document.getElementById('couplingTxt').value.trim();
+  if(!speech){alert('스피치를 입력해주세요.');return;}
+  show('cLoading');hide('cOut');
+  try{
+    let r;
+    if(S.sessionId==='demo'){
+      await delay(1200);
+      r={
+        coupling_score:{lens_fit:68,node_activation:60,edge_reproduction:44,genius_capture:18,total:48,iq_equivalent:114},
+        activated_nodes:['n1','n2'],
+        missing_nodes:[
+          {id:'n3',concept:'코기토',why_critical:'전체 체계의 아르키메데스적 기점 — 이것 없이는 n5 도달 불가'},
+          {id:'n5',concept:'존재 증명',why_critical:'데카르트의 최종 결론 — 코기토에서 연역된 귀결'}
+        ],
+        gap_from_author:'감각의 불확실성은 언급했으나, 의심 자체를 도구로 전환하는 데카르트의 핵심 전략이 누락됨',
+        well_coupled_moments:['"감각이 불확실하다"는 n1 인식은 저자 렌즈와 일치'],
+        off_lens_moments:['결론을 일반적인 회의주의로 마무리 — 데카르트는 회의주의자가 아닌 재건주의자'],
+        next_question:'"데카르트에게 의심은 목적인가, 도구인가? 의심이 도구라면 무엇을 위한 도구인가?"'
+      };
+    }else{
+      const res=await fetch('/api/coupling',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({session_id:S.sessionId,student_speech:speech})});
+      r=await res.json();
+    }
+    renderCoupling(r);
+    unlockFeedback();
+  }catch(e){console.error(e);}
+  finally{hide('cLoading');}
+}
+
+function renderCoupling(r){
+  const sc=r.coupling_score;
+  setIq(sc.iq_equivalent||90);
+  show('cOut');
+  document.getElementById('cOut').innerHTML=`
+    <div class="score-total">
+      <small>커플링 IQ 등가</small>
+      <div class="iq-eq">${sc.iq_equivalent}</div>
+      <small>총점 ${sc.total}점</small>
+    </div>
+    <div class="score-grid" style="margin-top:8px">
+      ${scard('렌즈 착용도',sc.lens_fit,'#4A7C59')}
+      ${scard('노드 활성화',sc.node_activation,'#2D5A27')}
+      ${scard('엣지 재현율',sc.edge_reproduction,'#4A7CB0')}
+      ${scard('천재성 포착✨',sc.genius_capture,'#D4A017')}
+    </div>
+    ${r.gap_from_author?`<div class="info-sec"><h4>🎯 핵심 격차</h4>${r.gap_from_author}</div>`:''}
+    ${r.next_question?`<div class="info-sec"><h4>💬 소크라테스 질문</h4><em>${r.next_question}</em></div>`:''}`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  SPEECH
+// ═══════════════════════════════════════════════════════
+async function verify(){
+  if(!S.sessionId)return;
+  const sent=document.getElementById('sentIn').value.trim();
+  if(!sent)return;
+  document.getElementById('sentIn').value='';
+  try{
+    let r;
+    if(S.sessionId==='demo'){
+      await delay(500);
+      const hasD1=sent.includes('감각')||sent.includes('경험')||sent.includes('불확실');
+      const hasD2=sent.includes('의심')||sent.includes('회의')||sent.includes('방법');
+      const hasD4=hasD2&&(sent.includes('코기토')||sent.includes('생각한다')||sent.includes('존재')||sent.includes('확실'));
+      const v=hasD4?'correct':hasD2?'partial':hasD1?'partial':'off_lens';
+      r={verdict:v,signal:hasD4?'✓':hasD2||hasD1?'△':'↗',
+         brief_feedback:hasD4?'코기토 포착!':hasD2?'더 깊이!':hasD1?'렌즈를 더':'데카르트의 눈으로!',
+         node_hit:hasD4?'n3':hasD2?'n2':hasD1?'n1':null,
+         dimension_hit:hasD4?4:hasD2?3:hasD1?2:1,special_event:null};
+    }else{
+      const res=await fetch('/api/speech/verify',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({session_id:S.sessionId,sentence:sent,
+          context:S.history.slice(-3).map(h=>h.sentence).join(' '),
+          consecutive_verdicts:S.verdicts.slice(-3)})});
+      r=await res.json();
+    }
+    S.history.push({sentence:sent,verdict:r.verdict});
+    S.verdicts.push(r.verdict);
+    if(S.verdicts.length>5)S.verdicts.shift();
+    if(r.node_hit)pulseNode(r.node_hit,r.verdict);
+    addVerdict(sent,r);
+  }catch(e){console.error(e);}
+}
+
+function addVerdict(sent,r){
+  const vs=document.getElementById('vstream');
+  if(vs.querySelector('div[style]'))vs.innerHTML='';
+  const cls={correct:'sc',partial:'sp',incorrect:'si',off_lens:'sl'};
+  const cl=cls[r.verdict]||'sc';
+  const div=document.createElement('div');div.className='vitem';
+  div.innerHTML=`<div class="vsig ${cl}">${r.signal}</div>
+    <div><div class="vtext">${sent}</div>
+    <div class="vfb ${cl}">${r.brief_feedback}${r.dimension_hit===4?' ✨4D!':''}</div></div>`;
+  vs.appendChild(div);vs.scrollTop=vs.scrollHeight;
+  const cnt=S.history.length;
+  document.getElementById('verdictCnt').textContent=`(${cnt}문장)`;
+  if(r.special_event==='genius_pattern_detected'){
+    const e=document.createElement('div');
+    e.innerHTML='<div style="text-align:center;padding:6px;color:#D4A017;font-weight:700">🏆 천재 패턴 감지!</div>';
+    vs.appendChild(e);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  FEEDBACK
+// ═══════════════════════════════════════════════════════
+async function runFeedback(){
+  if(!S.sessionId)return;
+  show('fLoading');hide('fOut');
+  try{
+    let r;
+    if(S.sessionId==='demo'){
+      await delay(1500);
+      r={
+        diagnosis:{current_iq_equivalent:122,previous_iq:S.iq,delta_iq:32,
+          dimension_scores:{d1_content:80,d2_structure:65,d3_relation:48,d4_pattern:20},
+          dormant_nodes:[
+            {id:'n3',concept:'코기토',why_critical:'데카르트 전체 체계의 핵심 기점'},
+            {id:'n5',concept:'존재 증명',why_critical:'의심에서 존재로의 연역 — 4차원 패턴의 정수'}
+          ],
+          student_pattern:'감각의 불확실성(n1)은 인식했으나, 의심을 도구로 전환하는 데카르트의 재건 사고가 아닌 일반 회의주의 패턴으로 설명함',
+          biggest_gap:'4차원: 의심이 파괴가 아닌 재건의 도구라는 데카르트만의 역설적 사고 전략 미포착'},
+        upgraded_model:{
+          nodes_to_install:[{id:'n3',install_method:'"내가 지금 이 생각을 하고 있다"는 행위 자체가 증거라는 사고 훈련'}],
+          lens_adjustment:'"이것을 의심할 수 있는가?"를 모든 믿음의 첫 필터로 자동화',
+          '4d_upgrade_key':'회의(해체)와 코기토(재건 기점)를 하나의 연속 동작으로 인식하는 훈련'},
+        next_training:{method:'reverse_reading',
+          instruction:'그래프에서 n2(방법적 의심) → n3(코기토) → n5(존재 증명) 흐름을 먼저 눈에 새긴 후, "데카르트는 지금 해체하는가, 재건하는가?"를 구분하며 원문을 다시 읽어보세요',
+          estimated_sessions:4},
+        brainshot_report:{stage:'발사 준비',stage_progress_percent:40,trajectory:'상승 중',
+          session_iq_history:[90,122],projected_sessions_to_180:11,
+          message:'감각 불확실성(n1) 인식에 성공했습니다! 이제 코기토(n3)의 역설적 힘 — 의심 자체가 존재를 증명한다는 데카르트의 4차원 사고를 포착해보세요.'}
+      };
+    }else{
+      const res=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({session_id:S.sessionId})});
+      r=await res.json();
+    }
+    renderFeedback(r);
+    setIq(r.diagnosis.current_iq_equivalent);
+  }catch(e){console.error(e);}
+  finally{hide('fLoading');}
+}
+
+function renderFeedback(r){
+  const d=r.diagnosis,br=r.brainshot_report;
+  const icons={'착수':'🌱','발사 준비':'🔥','발사':'🚀','궤도 진입':'🛸','달 궤도':'🌕','달 도착':'🏆'};
+  show('fOut');
+  document.getElementById('fOut').innerHTML=`
+    <div class="brainshot">
+      <div class="bs-icon">${icons[br.stage]||'🚀'}</div>
+      <div><div class="bs-name">${br.stage}</div>
+      <div class="bs-prog">진행 ${br.stage_progress_percent}% · IQ ${d.previous_iq} → ${d.current_iq_equivalent} (+${d.delta_iq})</div></div>
+    </div>
+    <div class="score-grid" style="margin-top:8px">
+      ${scard('1차원 내용',d.dimension_scores.d1_content,'#888')}
+      ${scard('2차원 구조',d.dimension_scores.d2_structure,'#4A7C59')}
+      ${scard('3차원 관계망',d.dimension_scores.d3_relation,'#4A7CB0')}
+      ${scard('4차원 패턴✨',d.dimension_scores.d4_pattern,'#D4A017')}
+    </div>
+    <div class="info-sec"><h4>🔍 핵심 격차</h4>${d.biggest_gap}</div>
+    <div class="info-sec"><h4>📋 다음 훈련 — ${r.next_training.method}</h4>
+      ${r.next_training.instruction}<br>
+      <small style="color:#888">예상 ${r.next_training.estimated_sessions}세션</small></div>
+    <div class="info-sec" style="background:linear-gradient(135deg,#f0f7f0,#e8f4ea)">
+      <h4 style="color:var(--g-dark)">💬 브레인샷 메시지</h4>${br.message}</div>
+    <div style="text-align:center;font-size:10px;color:#aaa;padding:6px">
+      IQ 180까지 예상 ${br.projected_sessions_to_180}세션 · ${br.trajectory}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════
+function scard(lbl,val,color){
+  return`<div class="scard"><div class="scard-lbl">${lbl}</div>
+    <div class="scard-val" style="color:${color}">${val}</div>
+    <div class="sbar"><div class="sbar-fill" style="width:${val}%;background:${color}"></div></div></div>`;
+}
+function show(id){document.getElementById(id).style.display='block';}
+function hide(id){document.getElementById(id).style.display='none';}
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+function unlockPanel(prefix){
+  document.getElementById(prefix+'-lock').style.display='none';
+  document.getElementById(prefix+'-form').style.display='flex';
+}
+function unlockFeedback(){
+  document.getElementById('f-lock').style.display='none';
+  document.getElementById('f-form').style.display='flex';
+}
+
+// ─── Init ───
+setIq(90);
+setTheme(localStorage.getItem('brain180-theme') || 'light');
+</script>
+</body>
+</html>
