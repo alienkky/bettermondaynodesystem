@@ -53,23 +53,26 @@
   .palette{border-right:1.5px solid var(--border-card);background:var(--cream);padding:14px 12px;overflow:auto;}
   .palette h3{margin:0 0 10px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--fg-3);font-weight:800;}
   .pitem{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:2px solid var(--border-card);background:#fff;margin-bottom:8px;cursor:grab;font-size:12px;font-weight:700;user-select:none;}
-  .pitem .ico{font-size:16px;}
-  .pitem.ref{border-color:var(--accent);background:var(--el-fire-bg);}
-  .pitem.note{border-color:var(--coin,#D4A64A);background:#FFF8D9;}
-  .pitem.screen{border-color:var(--roast);border-width:3px;}
-  .pitem.system{border-color:var(--el-wood);background:var(--el-wood-bg);}
-  .pitem.decision{background:#fff;transform:rotate(0deg);}
-  .pitem.group{border-style:dashed;}
-  .pitem.goal{border-color:#2F7D59;background:#EAF6EF;}
-  .pitem.question{border-color:#3D6FB6;background:#EAF1FF;}
-  .pitem.assumption{border-color:#A66A2C;background:#FFF1DD;}
-  .pitem.evidence{border-color:#6B55A3;background:#F1EDFF;}
-  .pitem.constraint{border-color:#9A4A4A;background:#FFECEC;}
-  .pitem.agent{border-color:#1F7A8C;background:#E7F6F8;}
-  .pitem.prompt{border-color:#7A5C1F;background:#FFF7D6;}
-  .pitem.task{border-color:#C8383C;background:#FFE9EA;}
-  .pitem.risk{border-color:#B54708;background:#FFF0E5;}
-  .pitem.output{border-color:#4B6B2A;background:#EEF7E8;}
+  .pitem .ico{font-size:12px;font-weight:900;color:var(--node-color,var(--roast-deep));min-width:22px;text-align:center;letter-spacing:0;}
+  .pitem.ref{--node-color:var(--accent);border-color:var(--accent);background:var(--el-fire-bg);}
+  .pitem.note{--node-color:var(--coin,#D4A64A);border-color:var(--coin,#D4A64A);background:#FFF8D9;}
+  .pitem.screen{--node-color:var(--roast);border-color:var(--roast);border-width:3px;}
+  .pitem.system{--node-color:var(--el-wood);border-color:var(--el-wood);background:var(--el-wood-bg);}
+  .pitem.decision{--node-color:var(--roast-deep);background:#fff;transform:rotate(0deg);}
+  .pitem.group{--node-color:var(--fg-2);border-style:dashed;}
+  .pitem.goal{--node-color:#2F7D59;border-color:#2F7D59;background:#EAF6EF;}
+  .pitem.question{--node-color:#3D6FB6;border-color:#3D6FB6;background:#EAF1FF;}
+  .pitem.assumption{--node-color:#A66A2C;border-color:#A66A2C;background:#FFF1DD;}
+  .pitem.evidence{--node-color:#6B55A3;border-color:#6B55A3;background:#F1EDFF;}
+  .pitem.constraint{--node-color:#9A4A4A;border-color:#9A4A4A;background:#FFECEC;}
+  .pitem.agent{--node-color:#1F7A8C;border-color:#1F7A8C;background:#E7F6F8;}
+  .pitem.prompt{--node-color:#7A5C1F;border-color:#7A5C1F;background:#FFF7D6;}
+  .pitem.task{--node-color:#C8383C;border-color:#C8383C;background:#FFE9EA;}
+  .pitem.risk{--node-color:#B54708;border-color:#B54708;background:#FFF0E5;}
+  .pitem.output{--node-color:#4B6B2A;border-color:#4B6B2A;background:#EEF7E8;}
+  .pitem.metric{--node-color:#5B5FC7;border-color:#5B5FC7;background:#EEEEFF;}
+  .pitem.feedback{--node-color:#8A4F7D;border-color:#8A4F7D;background:#F8EAF5;}
+  .pitem.status{--node-color:#52606D;border-color:#52606D;background:#EEF2F6;}
   .pitem.icon{background:#fff;border-color:var(--roast-deep);text-align:center;justify-content:center;padding:6px;font-size:20px;line-height:1;}
   .pitem.icon .ico{font-size:22px;margin:0;}
   .palette .icon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;}
@@ -111,6 +114,9 @@
   .rnode.task{background:#FFE9EA;border-color:#C8383C;padding:10px 14px;min-width:160px;}
   .rnode.risk{background:#FFF0E5;border-color:#B54708;padding:10px 14px;min-width:160px;}
   .rnode.output{background:#EEF7E8;border-color:#4B6B2A;padding:10px 14px;min-width:160px;}
+  .rnode.metric{background:#EEEEFF;border-color:#5B5FC7;padding:10px 14px;min-width:160px;}
+  .rnode.feedback{background:#F8EAF5;border-color:#8A4F7D;padding:10px 14px;min-width:160px;}
+  .rnode.status{background:#EEF2F6;border-color:#52606D;padding:10px 14px;min-width:160px;}
   .rnode.icon{background:var(--cream);border:2.5px solid var(--roast-deep);border-radius:50%;width:56px;height:56px;min-width:0;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:var(--sh-md);}
   .rnode.icon .glyph{font-size:26px;line-height:1;outline:none;}
   .rnode.icon .title{display:none;}
@@ -209,26 +215,29 @@
   <div class="main">
     <aside class="palette">
       <h3>노드</h3>
-      <div class="pitem ref" draggable="true" data-kind="ref"><span class="ico">🖼</span>레퍼런스 이미지</div>
-      <div class="pitem note" draggable="true" data-kind="note"><span class="ico">📝</span>스티키 노트</div>
-      <div class="pitem screen" draggable="true" data-kind="screen"><span class="ico">📱</span>화면</div>
-      <div class="pitem system" draggable="true" data-kind="system"><span class="ico">⚙</span>시스템</div>
-      <div class="pitem decision" draggable="true" data-kind="decision"><span class="ico">◇</span>의사결정</div>
-      <div class="pitem group" draggable="true" data-kind="group"><span class="ico">▭</span>그룹</div>
+      <div class="pitem ref" draggable="true" data-kind="ref" title="이미지, 캡처, 시각 레퍼런스"><span class="ico">IMG</span>레퍼런스 이미지</div>
+      <div class="pitem note" draggable="true" data-kind="note" title="자유 메모, 감상, 임시 생각"><span class="ico">N</span>스티키 노트</div>
+      <div class="pitem screen" draggable="true" data-kind="screen" title="화면, 페이지, 장면"><span class="ico">UI</span>화면</div>
+      <div class="pitem system" draggable="true" data-kind="system" title="시스템 구성요소, 기능 단위"><span class="ico">SYS</span>시스템</div>
+      <div class="pitem decision" draggable="true" data-kind="decision" title="선택지, 분기, 판단"><span class="ico">◇</span>의사결정</div>
+      <div class="pitem group" draggable="true" data-kind="group" title="묶음, 영역, 챕터"><span class="ico">▭</span>그룹</div>
 
       <h3 style="margin-top:18px;">Thinking</h3>
-      <div class="pitem goal" draggable="true" data-kind="goal"><span class="ico">◎</span>Goal</div>
-      <div class="pitem question" draggable="true" data-kind="question"><span class="ico">?</span>Question</div>
-      <div class="pitem assumption" draggable="true" data-kind="assumption"><span class="ico">≒</span>Assumption</div>
-      <div class="pitem evidence" draggable="true" data-kind="evidence"><span class="ico">※</span>Evidence</div>
-      <div class="pitem constraint" draggable="true" data-kind="constraint"><span class="ico">!</span>Constraint</div>
-      <div class="pitem risk" draggable="true" data-kind="risk"><span class="ico">△</span>Risk</div>
+      <div class="pitem goal" draggable="true" data-kind="goal" title="내가 이루려는 목적"><span class="ico">◎</span>Goal</div>
+      <div class="pitem question" draggable="true" data-kind="question" title="아직 답이 없는 질문"><span class="ico">?</span>Question</div>
+      <div class="pitem assumption" draggable="true" data-kind="assumption" title="현재 깔고 있는 가정"><span class="ico">≒</span>Assumption</div>
+      <div class="pitem evidence" draggable="true" data-kind="evidence" title="근거, 사례, 캡처, 대화 기록"><span class="ico">※</span>Evidence</div>
+      <div class="pitem constraint" draggable="true" data-kind="constraint" title="제약 조건"><span class="ico">!</span>Constraint</div>
+      <div class="pitem risk" draggable="true" data-kind="risk" title="위험, 불확실성"><span class="ico">△</span>Risk</div>
+      <div class="pitem metric" draggable="true" data-kind="metric" title="잘 되고 있는지 판단 기준"><span class="ico">%</span>Metric</div>
+      <div class="pitem feedback" draggable="true" data-kind="feedback" title="에이전트나 사용자의 반응"><span class="ico">FB</span>Feedback</div>
+      <div class="pitem status" draggable="true" data-kind="status" title="Idea, Draft, Blocked, Done 같은 진행 상태"><span class="ico">ST</span>Status</div>
 
       <h3 style="margin-top:18px;">Agent</h3>
-      <div class="pitem agent" draggable="true" data-kind="agent"><span class="ico">AI</span>Agent</div>
-      <div class="pitem prompt" draggable="true" data-kind="prompt"><span class="ico">⌁</span>Prompt</div>
-      <div class="pitem task" draggable="true" data-kind="task"><span class="ico">→</span>Task</div>
-      <div class="pitem output" draggable="true" data-kind="output"><span class="ico">□</span>Output</div>
+      <div class="pitem agent" draggable="true" data-kind="agent" title="대화할 에이전트 역할"><span class="ico">AI</span>Agent</div>
+      <div class="pitem prompt" draggable="true" data-kind="prompt" title="에이전트에게 보낼 요청문"><span class="ico">⌁</span>Prompt</div>
+      <div class="pitem task" draggable="true" data-kind="task" title="다음 행동"><span class="ico">→</span>Task / Action</div>
+      <div class="pitem output" draggable="true" data-kind="output" title="결과물, 브리프, 문서"><span class="ico">□</span>Output</div>
 
       <div class="dropzone" id="dropzone">
         📥 이미지 드롭<br>
@@ -292,11 +301,15 @@ const KIND_INFO = {
   task:       { title:'Task', sub:'다음에 실행할 행동' },
   risk:       { title:'Risk', sub:'위험, 불확실성, 막히는 지점' },
   output:     { title:'Output', sub:'브리프, 문서, 결과물' },
+  metric:     { title:'Metric', sub:'잘 되고 있는지 판단 기준' },
+  feedback:   { title:'Feedback', sub:'에이전트나 사용자의 반응' },
+  status:     { title:'Status', sub:'Idea / Draft / Blocked / Done' },
 };
 
 const STRUCTURED_KINDS = new Set([
   'screen', 'system', 'goal', 'question', 'assumption', 'evidence',
-  'constraint', 'agent', 'prompt', 'task', 'risk', 'output'
+  'constraint', 'agent', 'prompt', 'task', 'risk', 'output',
+  'metric', 'feedback', 'status'
 ]);
 
 let graph = load() || defaultGraph();
@@ -1564,6 +1577,9 @@ function generateBrief() {
     ['Evidence', 'evidence'],
     ['Constraints', 'constraint'],
     ['Risks', 'risk'],
+    ['Metrics', 'metric'],
+    ['Feedback', 'feedback'],
+    ['Status', 'status'],
   ].forEach(([label, kind]) => {
     const nodes = graph.nodes.filter(n => n.kind === kind);
     if (!nodes.length) return;
