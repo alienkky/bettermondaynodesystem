@@ -46,6 +46,16 @@
   .pitem.system{border-color:var(--el-wood);background:var(--el-wood-bg);}
   .pitem.decision{background:#fff;transform:rotate(0deg);}
   .pitem.group{border-style:dashed;}
+  .pitem.goal{border-color:#2F7D59;background:#EAF6EF;}
+  .pitem.question{border-color:#3D6FB6;background:#EAF1FF;}
+  .pitem.assumption{border-color:#A66A2C;background:#FFF1DD;}
+  .pitem.evidence{border-color:#6B55A3;background:#F1EDFF;}
+  .pitem.constraint{border-color:#9A4A4A;background:#FFECEC;}
+  .pitem.agent{border-color:#1F7A8C;background:#E7F6F8;}
+  .pitem.prompt{border-color:#7A5C1F;background:#FFF7D6;}
+  .pitem.task{border-color:#C8383C;background:#FFE9EA;}
+  .pitem.risk{border-color:#B54708;background:#FFF0E5;}
+  .pitem.output{border-color:#4B6B2A;background:#EEF7E8;}
   .dropzone{border:2.5px dashed var(--roast);border-radius:12px;padding:14px;text-align:center;font-size:11px;color:var(--fg-2);font-weight:700;margin-top:12px;cursor:pointer;background:var(--paper);}
   .dropzone:hover{background:var(--cream-warm);color:var(--roast);}
 
@@ -63,6 +73,16 @@
   .rnode.screen{border-color:var(--roast);border-width:3px;padding:10px 14px;min-width:160px;}
   .rnode.system{background:var(--el-wood-bg);border-color:var(--el-wood);padding:10px 14px;min-width:150px;}
   .rnode.decision{background:#fff;padding:10px 18px;min-width:140px;text-align:center;border-radius:20px;}
+  .rnode.goal{background:#EAF6EF;border-color:#2F7D59;padding:10px 14px;min-width:160px;}
+  .rnode.question{background:#EAF1FF;border-color:#3D6FB6;padding:10px 14px;min-width:160px;}
+  .rnode.assumption{background:#FFF1DD;border-color:#A66A2C;padding:10px 14px;min-width:160px;}
+  .rnode.evidence{background:#F1EDFF;border-color:#6B55A3;padding:10px 14px;min-width:160px;}
+  .rnode.constraint{background:#FFECEC;border-color:#9A4A4A;padding:10px 14px;min-width:160px;}
+  .rnode.agent{background:#E7F6F8;border-color:#1F7A8C;padding:10px 14px;min-width:160px;}
+  .rnode.prompt{background:#FFF7D6;border-color:#7A5C1F;padding:10px 14px;min-width:160px;}
+  .rnode.task{background:#FFE9EA;border-color:#C8383C;padding:10px 14px;min-width:160px;}
+  .rnode.risk{background:#FFF0E5;border-color:#B54708;padding:10px 14px;min-width:160px;}
+  .rnode.output{background:#EEF7E8;border-color:#4B6B2A;padding:10px 14px;min-width:160px;}
   .rnode.group{background:rgba(243,232,210,0.35);border:2px dashed var(--border-card);min-width:260px;min-height:180px;z-index:0;padding:28px 14px 14px;}
   .rnode.group.drop-in{background:rgba(199,144,112,0.18);border-color:var(--accent);border-style:solid;}
   .rnode .title{font-weight:800;font-size:13px;letter-spacing:-0.01em;outline:none;}
@@ -159,6 +179,20 @@
       <div class="pitem decision" draggable="true" data-kind="decision"><span class="ico">◇</span>의사결정</div>
       <div class="pitem group" draggable="true" data-kind="group"><span class="ico">▭</span>그룹</div>
 
+      <h3 style="margin-top:18px;">Thinking</h3>
+      <div class="pitem goal" draggable="true" data-kind="goal"><span class="ico">◎</span>Goal</div>
+      <div class="pitem question" draggable="true" data-kind="question"><span class="ico">?</span>Question</div>
+      <div class="pitem assumption" draggable="true" data-kind="assumption"><span class="ico">≒</span>Assumption</div>
+      <div class="pitem evidence" draggable="true" data-kind="evidence"><span class="ico">※</span>Evidence</div>
+      <div class="pitem constraint" draggable="true" data-kind="constraint"><span class="ico">!</span>Constraint</div>
+      <div class="pitem risk" draggable="true" data-kind="risk"><span class="ico">△</span>Risk</div>
+
+      <h3 style="margin-top:18px;">Agent</h3>
+      <div class="pitem agent" draggable="true" data-kind="agent"><span class="ico">AI</span>Agent</div>
+      <div class="pitem prompt" draggable="true" data-kind="prompt"><span class="ico">⌁</span>Prompt</div>
+      <div class="pitem task" draggable="true" data-kind="task"><span class="ico">→</span>Task</div>
+      <div class="pitem output" draggable="true" data-kind="output"><span class="ico">□</span>Output</div>
+
       <div class="dropzone" id="dropzone">
         📥 이미지 드롭<br>
         <span style="font-weight:500;color:var(--fg-3);">여기/캔버스 어디든</span>
@@ -210,7 +244,22 @@ const KIND_INFO = {
   system:   { title:'시스템', sub:'룰/매커닉' },
   decision: { title:'의사결정', sub:'조건' },
   group:    { title:'그룹', sub:'' },
+  goal:       { title:'Goal', sub:'이루려는 최종 목적' },
+  question:   { title:'Question', sub:'아직 답이 필요한 질문' },
+  assumption: { title:'Assumption', sub:'현재 사실처럼 두는 가정' },
+  evidence:   { title:'Evidence', sub:'근거, 사례, 캡처, 대화 기록' },
+  constraint: { title:'Constraint', sub:'지켜야 할 제약 조건' },
+  agent:      { title:'Agent', sub:'대화할 에이전트 역할' },
+  prompt:     { title:'Prompt', sub:'에이전트에게 보낼 요청문' },
+  task:       { title:'Task', sub:'다음에 실행할 행동' },
+  risk:       { title:'Risk', sub:'위험, 불확실성, 막히는 지점' },
+  output:     { title:'Output', sub:'브리프, 문서, 결과물' },
 };
+
+const STRUCTURED_KINDS = new Set([
+  'screen', 'system', 'goal', 'question', 'assumption', 'evidence',
+  'constraint', 'agent', 'prompt', 'task', 'risk', 'output'
+]);
 
 let graph = load() || defaultGraph();
 let selected = null;
@@ -334,7 +383,7 @@ function renderNode(n) {
     `;
   } else if (n.kind === 'note') {
     inner = `<div class="body">${escapeHtml(n.body || '')}</div>`;
-  } else if (n.kind === 'screen' || n.kind === 'system') {
+  } else if (STRUCTURED_KINDS.has(n.kind)) {
     inner = `${n.icon ? `<div class="icon">${n.icon}</div>` : ''}
       <div class="title">${escapeHtml(n.title||'')}</div>
       <div class="sub">${escapeHtml(n.sub||'')}</div>`;
@@ -1187,14 +1236,42 @@ function generateBrief() {
     lines.push(`- ${n.title || '?'} — ${n.sub || ''}`);
   });
   lines.push('');
-  lines.push('## 6. Connections');
+  lines.push('## 6. Thinking Nodes');
+  [
+    ['Goals', 'goal'],
+    ['Questions', 'question'],
+    ['Assumptions', 'assumption'],
+    ['Evidence', 'evidence'],
+    ['Constraints', 'constraint'],
+    ['Risks', 'risk'],
+  ].forEach(([label, kind]) => {
+    const nodes = graph.nodes.filter(n => n.kind === kind);
+    if (!nodes.length) return;
+    lines.push(`### ${label}`);
+    nodes.forEach(n => lines.push(`- **${n.title || kind}** :: ${n.sub || ''}`));
+    lines.push('');
+  });
+  lines.push('## 7. Agent Collaboration');
+  [
+    ['Agents', 'agent'],
+    ['Prompts', 'prompt'],
+    ['Tasks', 'task'],
+    ['Outputs', 'output'],
+  ].forEach(([label, kind]) => {
+    const nodes = graph.nodes.filter(n => n.kind === kind);
+    if (!nodes.length) return;
+    lines.push(`### ${label}`);
+    nodes.forEach(n => lines.push(`- **${n.title || kind}** :: ${n.sub || ''}`));
+    lines.push('');
+  });
+  lines.push('## 8. Connections');
   graph.edges.forEach(e => {
     const f = graph.nodes.find(n => n.id === e.from);
     const t = graph.nodes.find(n => n.id === e.to);
     if (f && t) lines.push(`- ${f.title || f.kind} → ${t.title || t.kind}${e.label ? ` (${e.label})` : ''}`);
   });
   lines.push('');
-  lines.push('## 7. Instruction for Claude Code');
+  lines.push('## 9. Instruction for Claude Code');
   lines.push('');
   lines.push('위 캔버스 정리 내용을 바탕으로 다음 작업을 진행해주세요:');
   lines.push('1. 각 항목의 의도·관계를 먼저 요약');
