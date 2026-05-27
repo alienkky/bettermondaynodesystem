@@ -188,13 +188,13 @@
 
   <div class="main">
     <aside class="palette">
-      <h3>Nodes</h3>
-      <div class="pitem ref" draggable="true" data-kind="ref"><span class="ico">🖼</span>Reference Image</div>
-      <div class="pitem note" draggable="true" data-kind="note"><span class="ico">📝</span>Sticky Note</div>
-      <div class="pitem screen" draggable="true" data-kind="screen"><span class="ico">📱</span>Screen</div>
-      <div class="pitem system" draggable="true" data-kind="system"><span class="ico">⚙</span>System</div>
-      <div class="pitem decision" draggable="true" data-kind="decision"><span class="ico">◇</span>Decision</div>
-      <div class="pitem group" draggable="true" data-kind="group"><span class="ico">▭</span>Group</div>
+      <h3>노드</h3>
+      <div class="pitem ref" draggable="true" data-kind="ref"><span class="ico">🖼</span>레퍼런스 이미지</div>
+      <div class="pitem note" draggable="true" data-kind="note"><span class="ico">📝</span>스티키 노트</div>
+      <div class="pitem screen" draggable="true" data-kind="screen"><span class="ico">📱</span>화면</div>
+      <div class="pitem system" draggable="true" data-kind="system"><span class="ico">⚙</span>시스템</div>
+      <div class="pitem decision" draggable="true" data-kind="decision"><span class="ico">◇</span>의사결정</div>
+      <div class="pitem group" draggable="true" data-kind="group"><span class="ico">▭</span>그룹</div>
 
       <div class="dropzone" id="dropzone">
         📥 이미지 드롭<br>
@@ -202,7 +202,7 @@
       </div>
       <input type="file" id="imgIn" accept="image/*" multiple style="display:none">
 
-      <h3 style="margin-top:18px;">Tips</h3>
+      <h3 style="margin-top:18px;">팁</h3>
       <div style="font-size:11px;color:var(--fg-2);line-height:1.8;">
         <b>🖼</b> 레퍼런스 캡쳐 붙여넣기<br>
         <b>📝</b> 스티키로 설명/감상 적기<br>
@@ -241,12 +241,12 @@
 // MODEL
 // ============================================================
 const KIND_INFO = {
-  ref:      { title:'Reference', sub:'캡쳐 이미지' },
-  note:     { title:'Note', sub:'설명/감상' },
-  screen:   { title:'Screen', sub:'화면 구상' },
-  system:   { title:'System', sub:'룰/매커닉' },
-  decision: { title:'?', sub:'조건' },
-  group:    { title:'GROUP', sub:'' },
+  ref:      { title:'레퍼런스 이미지', sub:'캡쳐 이미지' },
+  note:     { title:'스티키 노트', sub:'설명/감상' },
+  screen:   { title:'화면', sub:'화면 구상' },
+  system:   { title:'시스템', sub:'룰/매커닉' },
+  decision: { title:'의사결정', sub:'조건' },
+  group:    { title:'그룹', sub:'' },
   icon:     { title:'', sub:'' },
 };
 
@@ -1215,8 +1215,67 @@ document.getElementById('imgIn').addEventListener('change', e => {
 });
 
 // Paste image from clipboard
+function buildClipboardNodePayload() {
+  if (!selectedIds.size) return null;
+  const selectedNodeIds = new Set(selectedIds);
+  const nodes = graph.nodes
+    .filter(n => selectedNodeIds.has(n.id))
+    .map(n => JSON.parse(JSON.stringify(n)));
+  if (!nodes.length) return null;
+  const edges = graph.edges
+    .filter(e => selectedNodeIds.has(e.from) && selectedNodeIds.has(e.to))
+    .map(e => JSON.parse(JSON.stringify(e)));
+  return { type: 'bm-node-copy', nodes, edges };
+}
+
+function pasteCopiedNodes(payload) {
+  if (!payload?.nodes?.length) return false;
+  const oldToNewId = new Map();
+  const copiedNodes = payload.nodes.map(n => {
+    const cloned = JSON.parse(JSON.stringify(n));
+    cloned.id = uid();
+    cloned.x = Math.round((cloned.x || 0) + 40);
+    cloned.y = Math.round((cloned.y || 0) + 40);
+    oldToNewId.set(n.id, cloned.id);
+    return cloned;
+  });
+  const copiedEdges = (payload.edges || [])
+    .filter(e => oldToNewId.has(e.from) && oldToNewId.has(e.to))
+    .map(e => ({ ...JSON.parse(JSON.stringify(e)), id: uidE(), from: oldToNewId.get(e.from), to: oldToNewId.get(e.to) }));
+
+  commit();
+  graph.nodes.push(...copiedNodes);
+  graph.edges.push(...copiedEdges);
+  selectedIds = new Set(copiedNodes.map(n => n.id));
+  selected = copiedNodes.length ? { type: 'node', id: copiedNodes[0].id } : null;
+  save(); render();
+  toast(`📋 노드 ${copiedNodes.length}개 붙여넣음`);
+  return true;
+}
+
+addEventListener('copy', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+  const payload = buildClipboardNodePayload();
+  if (!payload) return;
+  e.clipboardData?.setData('application/x-bm-node-copy', JSON.stringify(payload));
+  e.clipboardData?.setData('text/plain', `[BM_NODE_COPY:${payload.nodes.length}]`);
+  e.preventDefault();
+  toast(`📋 노드 ${payload.nodes.length}개 복사됨`);
+});
+
 addEventListener('paste', async e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+  const raw = e.clipboardData?.getData('application/x-bm-node-copy');
+  if (raw) {
+    try {
+      if (pasteCopiedNodes(JSON.parse(raw))) {
+        e.preventDefault();
+        return;
+      }
+    } catch (err) {
+      console.warn('node paste parse failed:', err);
+    }
+  }
   const items = e.clipboardData?.items || [];
   for (const item of items) {
     if (item.type.startsWith('image/')) {
