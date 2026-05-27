@@ -181,22 +181,22 @@
       <div class="pitem decision" draggable="true" data-kind="decision" title="선택지, 분기, 판단"><span class="ico">◇</span>의사결정</div>
       <div class="pitem group" draggable="true" data-kind="group" title="묶음, 영역, 챕터"><span class="ico">▭</span>그룹</div>
 
-      <h3 style="margin-top:18px;">Thinking</h3>
-      <div class="pitem goal" draggable="true" data-kind="goal" title="내가 이루려는 목적"><span class="ico">◎</span>Goal</div>
-      <div class="pitem question" draggable="true" data-kind="question" title="아직 답이 없는 질문"><span class="ico">?</span>Question</div>
-      <div class="pitem assumption" draggable="true" data-kind="assumption" title="현재 깔고 있는 가정"><span class="ico">≒</span>Assumption</div>
-      <div class="pitem evidence" draggable="true" data-kind="evidence" title="근거, 사례, 캡처, 대화 기록"><span class="ico">※</span>Evidence</div>
-      <div class="pitem constraint" draggable="true" data-kind="constraint" title="제약 조건"><span class="ico">!</span>Constraint</div>
-      <div class="pitem risk" draggable="true" data-kind="risk" title="위험, 불확실성"><span class="ico">△</span>Risk</div>
-      <div class="pitem metric" draggable="true" data-kind="metric" title="잘 되고 있는지 판단 기준"><span class="ico">%</span>Metric</div>
-      <div class="pitem feedback" draggable="true" data-kind="feedback" title="에이전트나 사용자의 반응"><span class="ico">FB</span>Feedback</div>
-      <div class="pitem status" draggable="true" data-kind="status" title="Idea, Draft, Blocked, Done 같은 진행 상태"><span class="ico">ST</span>Status</div>
+      <h3 style="margin-top:18px;">생각</h3>
+      <div class="pitem goal" draggable="true" data-kind="goal" title="내가 이루려는 목적"><span class="ico">◎</span>목적</div>
+      <div class="pitem question" draggable="true" data-kind="question" title="아직 답이 없는 질문"><span class="ico">?</span>질문</div>
+      <div class="pitem assumption" draggable="true" data-kind="assumption" title="현재 깔고 있는 가정"><span class="ico">≒</span>가정</div>
+      <div class="pitem evidence" draggable="true" data-kind="evidence" title="근거, 사례, 캡처, 대화 기록"><span class="ico">※</span>근거</div>
+      <div class="pitem constraint" draggable="true" data-kind="constraint" title="제약 조건"><span class="ico">!</span>제약</div>
+      <div class="pitem risk" draggable="true" data-kind="risk" title="위험, 불확실성"><span class="ico">△</span>위험</div>
+      <div class="pitem metric" draggable="true" data-kind="metric" title="잘 되고 있는지 판단 기준"><span class="ico">%</span>판단 기준</div>
+      <div class="pitem feedback" draggable="true" data-kind="feedback" title="에이전트나 사용자의 반응"><span class="ico">FB</span>피드백</div>
+      <div class="pitem status" draggable="true" data-kind="status" title="Idea, Draft, Blocked, Done 같은 진행 상태"><span class="ico">ST</span>상태</div>
 
-      <h3 style="margin-top:18px;">Agent</h3>
-      <div class="pitem agent" draggable="true" data-kind="agent" title="대화할 에이전트 역할"><span class="ico">AI</span>Agent</div>
-      <div class="pitem prompt" draggable="true" data-kind="prompt" title="에이전트에게 보낼 요청문"><span class="ico">⌁</span>Prompt</div>
-      <div class="pitem task" draggable="true" data-kind="task" title="다음 행동"><span class="ico">→</span>Task / Action</div>
-      <div class="pitem output" draggable="true" data-kind="output" title="결과물, 브리프, 문서"><span class="ico">□</span>Output</div>
+      <h3 style="margin-top:18px;">에이전트</h3>
+      <div class="pitem agent" draggable="true" data-kind="agent" title="대화할 에이전트 역할"><span class="ico">AI</span>에이전트</div>
+      <div class="pitem prompt" draggable="true" data-kind="prompt" title="에이전트에게 보낼 요청문"><span class="ico">⌁</span>요청문</div>
+      <div class="pitem task" draggable="true" data-kind="task" title="다음 행동"><span class="ico">→</span>다음 행동</div>
+      <div class="pitem output" draggable="true" data-kind="output" title="결과물, 브리프, 문서"><span class="ico">□</span>결과물</div>
 
       <div class="dropzone" id="dropzone">
         📥 이미지 드롭<br>
@@ -249,19 +249,19 @@ const KIND_INFO = {
   system:   { title:'시스템', sub:'룰/매커닉' },
   decision: { title:'의사결정', sub:'조건' },
   group:    { title:'그룹', sub:'' },
-  goal:       { title:'Goal', sub:'이루려는 최종 목적' },
-  question:   { title:'Question', sub:'아직 답이 필요한 질문' },
-  assumption: { title:'Assumption', sub:'현재 사실처럼 두는 가정' },
-  evidence:   { title:'Evidence', sub:'근거, 사례, 캡처, 대화 기록' },
-  constraint: { title:'Constraint', sub:'지켜야 할 제약 조건' },
-  agent:      { title:'Agent', sub:'대화할 에이전트 역할' },
-  prompt:     { title:'Prompt', sub:'에이전트에게 보낼 요청문' },
-  task:       { title:'Task', sub:'다음에 실행할 행동' },
-  risk:       { title:'Risk', sub:'위험, 불확실성, 막히는 지점' },
-  output:     { title:'Output', sub:'브리프, 문서, 결과물' },
-  metric:     { title:'Metric', sub:'잘 되고 있는지 판단 기준' },
-  feedback:   { title:'Feedback', sub:'에이전트나 사용자의 반응' },
-  status:     { title:'Status', sub:'Idea / Draft / Blocked / Done' },
+  goal:       { title:'목적', sub:'이루려는 최종 목적' },
+  question:   { title:'질문', sub:'아직 답이 필요한 질문' },
+  assumption: { title:'가정', sub:'현재 사실처럼 두는 가정' },
+  evidence:   { title:'근거', sub:'근거, 사례, 캡처, 대화 기록' },
+  constraint: { title:'제약', sub:'지켜야 할 제약 조건' },
+  agent:      { title:'에이전트', sub:'대화할 에이전트 역할' },
+  prompt:     { title:'요청문', sub:'에이전트에게 보낼 요청문' },
+  task:       { title:'다음 행동', sub:'다음에 실행할 행동' },
+  risk:       { title:'위험', sub:'위험, 불확실성, 막히는 지점' },
+  output:     { title:'결과물', sub:'브리프, 문서, 결과물' },
+  metric:     { title:'판단 기준', sub:'잘 되고 있는지 판단 기준' },
+  feedback:   { title:'피드백', sub:'에이전트나 사용자의 반응' },
+  status:     { title:'상태', sub:'Idea / Draft / Blocked / Done' },
 };
 
 const STRUCTURED_KINDS = new Set([
