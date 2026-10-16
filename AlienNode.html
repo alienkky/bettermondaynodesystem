@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AlienNode — 프로젝트 노드 시스템</title>
+  <link rel="stylesheet" href="colors_and_type.css">
+  <link rel="stylesheet" href="figma-theme.css">
+  <link rel="stylesheet" href="aliennode-home.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">ALIEN AGENTIC / THINK → CONNECT → CREATE</p>
+    <h1>AlienNode</h1>
+    <p>목표와 근거를 연결하고, 생각을 실행 가능한 에이전트 브리프로 만드세요.</p>
+    <form id="project-form">
+      <label for="project">프로젝트 ID</label>
+      <div class="project-row">
+        <input id="project" name="project" value="default" required maxlength="120" autocomplete="off">
+        <button type="submit">프로젝트 열기</button>
+      </div>
+      <p>같은 ID는 같은 작업 공간을 엽니다. 프로젝트마다 다른 ID를 사용하세요.</p>
+    </form>
+    <nav aria-label="캔버스 선택">
+      <a data-canvas="Reference Canvas.html"><strong>Reference Canvas</strong><span>목표 · 질문 · 근거 · 결정 · 에이전트 · 작업</span></a>
+      <a data-canvas="Flow Editor.html"><strong>Flow Editor</strong><span>화면과 상태, 단계와 분기 흐름 설계</span></a>
+      <a data-canvas="Flow Diagrams.html"><strong>Flow Diagrams</strong><span>플로우 시각화 및 검토</span></a>
+      <a data-canvas="Structure + Flow Dashboard.html"><strong>Structure + Flow</strong><span>구조 트리와 흐름을 함께 검토</span></a>
+    </nav>
+    <p id="active-project" role="status"></p>
+    <p>새 프로젝트는 <a href="templates/project-starter.json" download>시작 템플릿 JSON</a>을 내려받아 Reference Canvas의 Load로 불러오세요.</p>
+    <p>작업은 현재 브라우저에 저장됩니다. 다른 기기나 Drive로 옮길 때는 Export JSON을 사용하세요.</p>
+  </main>
+  <script src="aliennode-home.js"></script>
+</body>
+</html>

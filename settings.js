@@ -12,12 +12,12 @@
 
   function load() {
     try {
-      const raw = localStorage.getItem(PREF_KEY);
+      const raw = AlienNodeStorage.getItem(PREF_KEY);
       if (raw) prefs = Object.assign({}, DEFAULTS, JSON.parse(raw));
     } catch (e) { /* ignore */ }
   }
   function persist() {
-    try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {}
+    try { AlienNodeStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {}
   }
   function apply() {
     document.body.classList.remove('dens-compact', 'dens-normal', 'dens-comfy');

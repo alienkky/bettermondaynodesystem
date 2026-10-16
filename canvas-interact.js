@@ -1,6 +1,6 @@
 /* ============================================================================
    canvas-interact.js — shared pan/zoom + multi-select + smart-align module
-   for BetterMonday flow surfaces (Editor, Dashboard, Diagrams).
+   for AlienNode flow surfaces (Editor, Dashboard, Diagrams).
 
    Usage:
      const ci = CanvasInteract.attach({

@@ -1,11 +1,14 @@
 {
-  "name": "bettermondaynodesystem",
+  "name": "aliennode",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test tests/*.test.cjs",
+    "package:portable": "node scripts/package-portable.cjs"
   },
   "dependencies": {
     "express": "^4.19.0"
-  }
+  },
+  "description": "AlienNode — reusable project planning canvases and agent briefs"
 }

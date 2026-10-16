@@ -1,62 +1,29 @@
 ---
-name: bettermonday-node-design-system
-description: Use this skill to work on BetterMonday Node Design System — a general-purpose, designer-facing planning canvas tool that helps designers structure their thinking (nodes, relationships, references, flows) BEFORE handing it to an AI. The tool is a collection of single-file HTML canvases bundled into one deployable HTML. Includes a custom bundler, shared interaction layer, and a single design-token source. Use this skill when modifying any canvas (Reference Canvas, Flow Editor, Flow Diagrams, Structure + Flow Dashboard), the bundle, the design tokens, or the deployment.
-user-invocable: true
+name: aliennode
+description: Use AlienNode to structure project goals, evidence, references, decisions, agent briefs, and tasks as reusable node canvases, or maintain and integrate the AlienNode runtime. Applies to AlienNode requests and node-based project planning; not generic Node.js development.
 ---
 
-Read `CLAUDE.md` and `README.md` for full context before making changes. They define:
+# AlienNode
 
-- **What the tool is for**: a pre-AI planning canvas for designers. The user (a designer) sketches structure/relationships/references on a canvas first, then uses that visualization to write better AI prompts. The tool is *not* the artifact; the user's mental clarity is.
-- **What this tool is NOT**: a game, a specific product's interface, or an AI-integrated workspace. It is a general-purpose, dumb, fast, single-file canvas. Treat it as such.
+Use this workflow when the user requests AlienNode, reusable planning nodes, or a project canvas based on this system. It is a planning and handoff tool; an agent node records a role and does not launch agents or authorize external messages.
 
-## Files in this project
+## Locate resources
 
-- `BetterMonday 노드 디자인 시스템.html` — the deployable bundle (~13MB single file). Generated, not edited by hand.
-- `Reference Canvas.html` — free-form node canvas (drag, group, connect references). Source file.
-- `Flow Editor.html` — flow diagram editor. Source file.
-- `Flow Diagrams.html` — flow viewer (read-focused). Source file.
-- `Structure + Flow Dashboard.html` — combined structure-tree + flow view. Source file.
-- `canvas-interact.js` — shared drag/zoom/connect interaction logic used by canvases.
-- `colors_and_type.css` — the single source of truth for design tokens (colors, type scale, spacing, radii, shadows). Always reference these via CSS variables.
-- `server.js` — Express static-file server for Railway deployment.
+An installed user skill has `references/ARCHITECTURE.md`, `references/REUSE.md`, and a portable runtime in `assets/aliennode/`. Read the architecture for the actual schema and storage behavior, and the reuse guide when integrating a project. In the source repository the equivalent documents live under `docs/`, and the runtime files are at the repository root.
 
-> Filenames are now normalized to generic keywords (Flow / Structure). The tool is general-purpose.
+## Apply to a project
 
-## When invoked
+- Read the target project's existing instructions and relevant context. Identify the user's outcome, evidence, constraints and chosen decisions; record uncertainty as questions or assumptions.
+- Use only the nodes needed. The common flow is goal → constraints/evidence → screen/system → decision → task → output, with risk, metric and feedback where useful.
+- Prefer the existing project canvas and brief. For a new canvas, adapt `templates/project-starter.json` in the portable runtime. Keep node IDs unique and edge endpoints valid. Use `sub` for structured descriptions and `body` for note text.
+- Give each project a stable unique ID through `AlienNode.html` or `?project=...`. The default project preserves legacy BetterMonday browser data. Export JSON before changing origins or importing over work.
+- Save project artifacts to an appropriate project directory, typically `docs/aliennode/`. Generate an Agent Brief from the canvas or produce an equivalent brief grounded in its actual JSON. Include open questions, constraints, decisions, tasks and expected outputs; distinguish assumptions from evidence.
+- Implement the user's requested work using the project's conventions, then update results and validation evidence in its canvas/brief. Do not impose the tool's visual theme on the target product.
 
-Decide what kind of work the user wants:
+## Install the runtime when requested
 
-- **Modify a canvas** → edit the relevant source `.html` only. Do NOT touch the bundle.
-- **Add a new canvas** → clone the closest existing `.html`, reuse `canvas-interact.js` and `colors_and_type.css`, assign a unique `localStorage` key prefix.
-- **Change design tokens** → edit `colors_and_type.css` only. Verify visual regression across canvases.
-- **Regenerate the bundle** → operate on the source `.html` files; rebuild the bundle file. After rebuild, run the JSON-integrity check in `CLAUDE.md`.
-- **Fix bundle corruption** → see the recovery procedure in `CLAUDE.md` (a real incident: `Unterminated string in JSON at position 83477` was caused by a missing closing `"` in the template JSON).
-- **Deployment / server** → `server.js`, `railway.json`, `package.json`. Deployment is Railway, auto-triggered by `git push origin main`.
+Copy the portable `assets/aliennode/` directory into a suitable target such as `tools/aliennode/`, inspecting an existing destination before merging. Keep adjacent HTML, JS, CSS and fonts together. `npm ci` then `npm start` serves the launcher. Change PORT if needed and export/import browser data across ports. Merge `templates/AGENTS.aliennode.md` into existing project instructions only when persistent project guidance is requested; do not replace existing instructions.
 
-## Hard rules (do not violate)
+## Maintain AlienNode
 
-1. **Single-file canvases**: every source `.html` must work by double-clicking — no build step, no CDN dependency. Inline libraries.
-2. **Design tokens only**: never hard-code colors, font sizes, spacing, or radii. Use the CSS variables from `colors_and_type.css`.
-3. **Never edit the bundle by hand**: it is a generated artifact. Direct text edits will break its embedded JSON.
-4. **Storage isolation**: each canvas uses a distinct `localStorage` / `IndexedDB` key. Cross-canvas data exchange happens only via JSON export/import.
-5. **Stay general-purpose**: do not write code that assumes the canvas content is "a game" or any specific domain. The user's content could be anything.
-
-## When suggesting changes
-
-- Prefer minimal, reversible edits.
-- If a feature requires changing the bundle generation, propose updates to the (planned) bundler script rather than editing the bundle file.
-- For any visual change, mention which token in `colors_and_type.css` you used (and add a new token only if the user approves).
-- For storage schema changes, include forward-compatible migration code (read old shape → write new shape).
-
-## If asked to create artifacts
-
-If the user wants HTML mockups or design exports (not changes to the tool itself), create standalone HTML files that load `colors_and_type.css` and use the token vocabulary. Do not invent new colors or sizes without confirming with the user.
-
-## When the user invokes this skill with no other context
-
-Ask:
-1. Which canvas are they working with (or do they want a new one)?
-2. Is the change visual, behavioral, structural, or about the bundle/deployment?
-3. Will it touch storage shape? (If yes, plan migration up front.)
-
-Then act as a careful collaborator who values the designer's thinking process over feature additions. The tool's job is to stay out of the way.
+Read the source `AGENTS.md`. Edit the four source canvases and shared JS/CSS. Preserve default storage keys, project separation, and existing JSON fields. Keep the previous generated BetterMonday bundle as an archive. Run `npm test` after runtime changes and `npm run package:portable` before refreshing skill assets or Drive snapshots. Drive is a manual snapshot unless the user separately requests synchronization.

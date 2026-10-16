@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>BetterMonday — 노드 디자인 시스템 · Reference Canvas</title>
+<script src="aliennode-storage.js"></script>
+<title>AlienNode — 노드 디자인 시스템 · Reference Canvas</title>
 <template id="__bundler_thumbnail">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
     <rect width="400" height="400" fill="#f3e6d4"/>
@@ -13,7 +14,7 @@
       <circle cx="200" cy="0" r="22" fill="#fff" stroke="#6b3f2a" stroke-width="3"/>
       <text x="200" y="9" text-anchor="middle" font-size="24">⭐</text>
     </g>
-    <text x="200" y="310" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="700" fill="#2b1a0f">BetterMonday</text>
+    <text x="200" y="310" text-anchor="middle" font-family="sans-serif" font-size="22" font-weight="700" fill="#2b1a0f">AlienNode</text>
     <text x="200" y="340" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#6b3f2a">노드 디자인 시스템</text>
   </svg>
 </template>
@@ -190,7 +191,7 @@
 <body>
 <div class="app">
   <div class="bar">
-    <div class="brand">🔷 BetterMonday 노드 디자인 시스템</div>
+    <div class="brand">🔷 AlienNode 노드 디자인 시스템</div>
     <div class="dot"></div>
     <button class="btn" id="undoBtn" title="되돌리기 (Ctrl+Z)" disabled>↶</button>
     <button class="btn" id="redoBtn" title="다시실행 (Ctrl+Shift+Z)" disabled>↷</button>
@@ -204,7 +205,7 @@
     <span id="fileStatus" style="font-size:11px;color:var(--fg-3);"></span>
     <div class="sep"></div>
     <button class="btn" id="exportBtn">Export JSON</button>
-    <button class="btn primary" id="briefBtn">📋 Generate Brief</button>
+    <button class="btn primary" id="briefBtn">📋 Agent Brief</button>
     <div class="sep"></div>
     <button class="btn" id="fitBtn">Fit</button>
     <button class="btn" id="zoomIn">+</button>
@@ -254,7 +255,7 @@
         <b>⚙</b> 시스템/룰<br>
         <b>◇</b> 분기 조건<br>
         <b>▭</b> 섹션 묶음<br><br>
-        → 모두 연결 후 <b>Generate Brief</b>
+        → 모두 연결 후 <b>Agent Brief</b>
       </div>
     </aside>
 
@@ -317,7 +318,7 @@ let graph = load() || defaultGraph();
 let selected = null;
 let selectedIds = new Set(); // multi-selection of node ids
 let zoom = 1, pan = { x: 0, y: 0 };
-let nextId = Number(localStorage.getItem('bm-ref-nextid') || 100);
+let nextId = Number(AlienNodeStorage.getItem('bm-ref-nextid') || 100);
 const SNAP = 6; // px snap threshold (in canvas coords)
 
 function defaultGraph() {
@@ -327,14 +328,14 @@ function defaultGraph() {
   };
 }
 
-function uid() { const id = 'n' + (nextId++); localStorage.setItem('bm-ref-nextid', nextId); return id; }
-function uidE() { const id = 'e' + (nextId++); localStorage.setItem('bm-ref-nextid', nextId); return id; }
+function uid() { const id = 'n' + (nextId++); AlienNodeStorage.setItem('bm-ref-nextid', nextId); return id; }
+function uidE() { const id = 'e' + (nextId++); AlienNodeStorage.setItem('bm-ref-nextid', nextId); return id; }
 
 // ============================================================
 // PERSISTENCE: IndexedDB (local, up to hundreds of MB)
 // + optional File System Access API (auto-write to a real .json)
 // ============================================================
-const IDB_NAME = 'bm-ref-canvas-db';
+const IDB_NAME = AlienNodeStorage.key('bm-ref-canvas-db');
 const IDB_STORE = 'kv';
 let idbPromise = null;
 function openIdb() {
@@ -412,7 +413,7 @@ function save() {
     toast('⚠️ 저장 실패 — 브라우저 저장소 확인');
   });
   // Keep a tiny pointer in localStorage so we know data exists (no payload)
-  try { localStorage.setItem('bm-ref-has-data', '1'); } catch {}
+  try { AlienNodeStorage.setItem('bm-ref-has-data', '1'); } catch {}
   // Optionally mirror to a real file on disk
   writeToFileDebounced();
 }
@@ -1013,7 +1014,7 @@ function renderInspector() {
   if (!selected) {
     insp.innerHTML = `<div class="empty">👈 노드/엣지 선택 시 속성 표시<br><br>
     레퍼런스 이미지는 드롭존이나<br>캔버스에 직접 드롭하면<br>자동 추가됩니다.<br><br>
-    완성 후 <b>Generate Brief</b>로<br>VSCode용 설명서 생성.</div>`;
+    완성 후 <b>Agent Brief</b>로<br>VSCode용 설명서 생성.</div>`;
     return;
   }
   if (selected.type === 'node') {
@@ -1540,7 +1541,9 @@ function fit() {
 // ============================================================
 function generateBrief() {
   const lines = [];
-  lines.push('# Reference Canvas — Brief');
+  lines.push('# AlienNode — Agent Brief');
+  lines.push('');
+  lines.push('Project: ' + AlienNodeStorage.project);
   lines.push('');
   lines.push('> Auto-generated from Reference Canvas. Paste into your AI of choice.');
   lines.push('');
@@ -1608,7 +1611,7 @@ function generateBrief() {
     if (f && t) lines.push(`- ${f.title || f.kind} → ${t.title || t.kind}${e.label ? ` (${e.label})` : ''}`);
   });
   lines.push('');
-  lines.push('## 9. Instruction for Claude Code');
+  lines.push('## 9. Request to Agent');
   lines.push('');
   lines.push('위 캔버스 정리 내용을 바탕으로 다음 작업을 진행해주세요:');
   lines.push('1. 각 항목의 의도·관계를 먼저 요약');
@@ -1648,11 +1651,11 @@ async function bootstrap() {
   // 2) Migrate old localStorage data (5MB-capped) if IDB is empty
   if (!loaded) {
     try {
-      const legacy = localStorage.getItem('bm-ref-canvas');
+      const legacy = AlienNodeStorage.getItem('bm-ref-canvas');
       if (legacy) {
         loaded = JSON.parse(legacy);
         await idbSet('graph', loaded);
-        localStorage.removeItem('bm-ref-canvas'); // free up the 5MB slot
+        AlienNodeStorage.removeItem('bm-ref-canvas'); // free up the 5MB slot
         toast('📦 이전 데이터 이동됨 (IndexedDB)');
       }
     } catch {}
