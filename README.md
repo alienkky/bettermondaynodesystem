@@ -1,145 +1,46 @@
-# BetterMonday — 노드 디자인 시스템
+# AlienNode — 프로젝트 노드 시스템
 
-> **AI 작업 전에, 먼저 캔버스에서 정리한다.**
-> 디자이너가 구조·관계·레퍼런스·플로우를 시각적으로 기획하는 단일 HTML 캔버스 툴.
+목표·근거·구조·결정·에이전트·작업을 노드로 연결하고, 실행 가능한 브리프로 전달하는 ALIEN AGENTIC의 범용 기획 도구입니다.
 
----
-
-## 이게 뭔가요
-
-요즘 디자이너의 작업은 절반 이상이 **AI에게 무엇을 어떻게 시킬지 정리하는 일**입니다.
-하지만 머릿속 아이디어를 곧장 텍스트 프롬프트로 옮기면 — 관계가 빠지고, 맥락이 흐려지고, AI는 엉뚱한 결과를 냅니다.
-
-**노드 디자인 시스템**은 그 사이에 들어가는 도구입니다.
-
-```
-[머릿속 아이디어]
-       ↓
-   [캔버스 기획]  ← 이 도구가 다루는 영역
-       ↓
-   [정제된 프롬프트]
-       ↓
-   [AI 작업물]
-       ↓
-   [캔버스 기준으로 검증]
-```
-
-- 노드와 연결선으로 **구조**를 그리고
-- 자유 캔버스에 **레퍼런스**를 군집화하고
-- 다이어그램으로 **플로우**를 정리한 뒤
-- 그 시각화를 바탕으로 AI에게 명확한 요청을 보낸다.
-
----
-
-## 누구를 위한 도구
-
-- 작업 시작 전 늘 머리부터 정리해야 마음이 놓이는 디자이너
-- AI 도구를 자주 쓰지만, 매번 결과가 산만하다고 느끼는 사람
-- 클라이언트/팀과 공유할 "기획 자체"를 시각화하고 싶은 사람
-- 게임·앱·웹·브랜딩·콘텐츠 — **분야 무관**
-
----
-
-## 도구 구성
-
-| 캔버스 | 무엇을 하는가 |
-|---|---|
-| **Reference Canvas** | 자유 노드 배치. 레퍼런스 이미지·메모·아이디어를 시각적으로 군집화 |
-| **Flow Editor** | 화면·상태·단계의 흐름을 다이어그램으로 작성 |
-| **Flow Diagrams** | 작성된 플로우를 깔끔하게 검토 (읽기 중심) |
-| **Structure + Flow Dashboard** | 구조 트리와 플로우를 한 화면에서 검토 |
-
-모두 한 곳에서 쓰려면 → `BetterMonday 노드 디자인 시스템.html` (통합 번들)
-하나만 빠르게 쓰려면 → 각 `.html` 파일 더블클릭
-
----
+원본: [alienkky/bettermondaynodesystem](https://github.com/alienkky/bettermondaynodesystem), 기준 커밋 `77e074470e41e08a020f92ba594377395b76faaa`.
 
 ## 실행
 
-### 로컬
-
-```bash
-# 정적 서버로 띄우기
-npm install
+```sh
+npm ci
 npm start
-# → http://localhost:3000
 ```
 
-또는 각 `.html` 파일을 브라우저에서 직접 열기 (외부 빌드 불필요).
+`http://localhost:3000`에서 AlienNode 시작 화면을 엽니다. 프로젝트 ID를 정하고 원하는 캔버스를 선택합니다. 같은 origin 안에서도 프로젝트별 작업을 분리합니다.
 
-### 배포 (Railway)
+| 캔버스 | 용도 |
+|---|---|
+| Reference Canvas | 레퍼런스·사고·에이전트·실행 노드와 Agent Brief |
+| Flow Editor | 단계·분기·화면 흐름 편집 |
+| Flow Diagrams | 플로우 검토 |
+| Structure + Flow | 구조 트리와 흐름 검토 |
 
-`git push origin main` → Railway 자동 배포.
-배포 URL: `bettermondaynodesystem-production.up.railway.app`
+Reference Canvas에서 `templates/project-starter.json`을 Load하면 바로 시작할 수 있습니다. Load는 현재 작업을 대체하므로 기존 작업은 먼저 Export JSON으로 보관하세요.
 
----
+## 다른 프로젝트에서 재사용
 
-## 폴더 구조
-
-```
-bettermondaynodesystem/
-├── BetterMonday 노드 디자인 시스템.html    # 통합 번들 (배포본)
-├── Reference Canvas.html                    # 노드 캔버스 (소스)
-├── Flow Editor.html                         # 플로우 에디터 (소스)
-├── Flow Diagrams.html                       # 플로우 뷰어 (소스)
-├── Structure + Flow Dashboard.html          # 구조+플로우 통합 (소스)
-├── canvas-interact.js                       # 공통 캔버스 인터랙션
-├── colors_and_type.css                      # 디자인 토큰 (색·타이포·간격)
-├── server.js                                # Express 정적 서버
-├── package.json / railway.json
-├── final/                                   # 보존된 산출물
-├── CLAUDE.md                                # Claude Code용 규칙
-└── SKILL.md                                 # Skill 매니페스트
+```sh
+npm run package:portable
 ```
 
-> 파일명은 범용 키워드(Flow / Structure)로 통일됨. 초기에는 `Game Flow ...`로 명명돼 있었음.
+생성된 `dist/aliennode/`를 대상 프로젝트의 `tools/aliennode/` 등에 복사합니다. HTML·JS·CSS·fonts를 함께 유지하세요. 서버 없이 HTML을 직접 열 수도 있지만 저장소·파일 API의 일관성을 위해 로컬 서버 사용을 권장합니다.
 
----
+- [구조·노드·저장 계약](docs/ARCHITECTURE.md)
+- [프로젝트 적용 방법과 스킬 설치](docs/REUSE.md)
+- [프로젝트 에이전트 지침](templates/AGENTS.aliennode.md)
+- [시작 그래프](templates/project-starter.json)
 
-## 데이터 저장
+`$aliennode` 사용자 전역 스킬을 설치하면 다른 프로젝트에서도 같은 노드 체계를 요청할 수 있습니다. 스킬은 명시적으로 호출하거나 해당 작업에 맞을 때 선택됩니다. 모든 대화가 자동으로 이 내용을 기억한다고 보장하지는 않습니다.
 
-- 모든 작업물은 **브라우저 로컬에만** 저장 (`localStorage` / `IndexedDB`)
-- 서버로 전송되는 사용자 데이터 없음
-- 캔버스별로 다른 저장 키를 써서 충돌 방지
+## 호환성과 검증
 
-내보내기/가져오기로 다른 기기·브라우저와 공유 가능 (JSON).
+프로젝트 ID 생략 또는 `default`는 기존 BetterMonday 브라우저 저장 키를 유지합니다. 다른 ID는 별도 localStorage/IndexedDB 공간을 사용합니다. 도메인·포트·기기 변경 시에는 Export JSON / Load로 옮깁니다. Drive 업로드는 파일 스냅샷이며 자동 동기화가 아닙니다.
 
----
+`npm test`로 프로젝트 저장 분리, 기본 데이터 호환성, HTML 스크립트 문법, 템플릿 관계와 서버 진입점을 확인합니다.
 
-## 디자인 토큰
-
-`colors_and_type.css`가 색·타이포·간격·반경·그림자의 단일 출처입니다.
-- 색: 따뜻한 갈색 + 크림 + 단청 레드 + 청자 톤 (warm-neutral)
-- 타이포: Pretendard 9 weights
-- 간격: 8pt grid
-- 반경: 2 / 8 / 16 / 999
-
-토큰 변경은 `colors_and_type.css`만 수정하면 모든 캔버스에 반영됩니다.
-
----
-
-## 사용 철학
-
-1. **사고 정리가 먼저, 도구는 다음** — 화면이 단순한 이유.
-2. **AI는 자동 정리가 아니다** — 정리해서 보내야 정리된 답이 온다.
-3. **시각화 자체가 디자인이다** — 캔버스에 그리는 행위 = 사고를 명확화하는 행위.
-4. **분야는 가리지 않는다** — 게임·앱·웹·콘텐츠 무엇이든 구조가 있다면 다 적용됨.
-
----
-
-## 알려진 이슈 & 노트
-
-- 번들 HTML(`BetterMonday 노드 디자인 시스템.html`)을 직접 텍스트 편집하면
-  내부 JSON 매니페스트가 깨질 수 있음 — 소스 캔버스를 수정 후 재번들 권장.
-- 캔버스 작업물은 브라우저 로컬 저장이므로, 시크릿 모드/캐시 삭제 시 사라짐 — 정기적으로 export 권장.
-
----
-
-## 명명
-
-- **BetterMonday** — 디자이너 alienkky의 작업 브랜드.
-- **노드 디자인 시스템** — 노드 기반 캔버스 + 디자인 토큰의 합성.
-
----
-
-_이 도구는 "AI 시대의 디자이너 작업 흐름"이라는 문제의식에서 만들어졌습니다._
+기존 `BetterMonday 노드 디자인 시스템.html` 생성 번들과 게임/미리보기 자료는 보존합니다. 새 진입점은 `AlienNode.html`이며 번들 JSON을 직접 편집하지 않습니다. 기존 Railway 연결과 저장소 이름은 유지되며, main push는 이전 배포를 갱신할 수 있습니다.

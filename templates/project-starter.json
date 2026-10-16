@@ -1,0 +1,168 @@
+{
+  "nodes": [
+    {
+      "id": "starter-goal",
+      "kind": "goal",
+      "title": "최종 목표",
+      "sub": "이 프로젝트로 이루려는 결과를 적으세요.",
+      "x": 60,
+      "y": 60
+    },
+    {
+      "id": "starter-constraint",
+      "kind": "constraint",
+      "title": "제약 조건",
+      "sub": "일정, 예산, 기술, 반드시 지켜야 할 조건",
+      "x": 350,
+      "y": 60
+    },
+    {
+      "id": "starter-evidence",
+      "kind": "evidence",
+      "title": "확인된 근거",
+      "sub": "출처 링크와 관찰한 사실. 가정과 분리하세요.",
+      "x": 640,
+      "y": 60
+    },
+    {
+      "id": "starter-question",
+      "kind": "question",
+      "title": "열린 질문",
+      "sub": "아직 결정하지 못한 내용",
+      "x": 930,
+      "y": 60
+    },
+    {
+      "id": "starter-system",
+      "kind": "system",
+      "title": "핵심 구조",
+      "sub": "기능이나 구성 요소",
+      "x": 60,
+      "y": 240
+    },
+    {
+      "id": "starter-decision",
+      "kind": "decision",
+      "title": "선택한 방향",
+      "sub": "선택 내용과 근거, 대안",
+      "x": 350,
+      "y": 240
+    },
+    {
+      "id": "starter-agent",
+      "kind": "agent",
+      "title": "담당 역할",
+      "sub": "기획 / 디자인 / 개발 / 리뷰 역할",
+      "x": 640,
+      "y": 240
+    },
+    {
+      "id": "starter-prompt",
+      "kind": "prompt",
+      "title": "에이전트 요청",
+      "sub": "목표와 제약을 기준으로 다음 작업을 구체화하세요.",
+      "x": 930,
+      "y": 240
+    },
+    {
+      "id": "starter-task",
+      "kind": "task",
+      "title": "다음 행동",
+      "sub": "담당자, 완료 기준, 다음 행동",
+      "x": 60,
+      "y": 420
+    },
+    {
+      "id": "starter-output",
+      "kind": "output",
+      "title": "결과물",
+      "sub": "실제 파일이나 링크와 검증 결과",
+      "x": 350,
+      "y": 420
+    },
+    {
+      "id": "starter-metric",
+      "kind": "metric",
+      "title": "성공 기준",
+      "sub": "어떤 결과면 성공인지 적으세요.",
+      "x": 640,
+      "y": 420
+    },
+    {
+      "id": "starter-risk",
+      "kind": "risk",
+      "title": "위험",
+      "sub": "미확인 전제와 실패 가능성",
+      "x": 930,
+      "y": 420
+    }
+  ],
+  "edges": [
+    {
+      "id": "starter-edge-0",
+      "from": "starter-goal",
+      "to": "starter-constraint",
+      "label": "requires"
+    },
+    {
+      "id": "starter-edge-1",
+      "from": "starter-evidence",
+      "to": "starter-decision",
+      "label": "supports"
+    },
+    {
+      "id": "starter-edge-2",
+      "from": "starter-question",
+      "to": "starter-decision",
+      "label": "informs"
+    },
+    {
+      "id": "starter-edge-3",
+      "from": "starter-goal",
+      "to": "starter-system",
+      "label": "requires"
+    },
+    {
+      "id": "starter-edge-4",
+      "from": "starter-system",
+      "to": "starter-task",
+      "label": "requires"
+    },
+    {
+      "id": "starter-edge-5",
+      "from": "starter-decision",
+      "to": "starter-task",
+      "label": "decides"
+    },
+    {
+      "id": "starter-edge-6",
+      "from": "starter-agent",
+      "to": "starter-task",
+      "label": "담당"
+    },
+    {
+      "id": "starter-edge-7",
+      "from": "starter-prompt",
+      "to": "starter-agent",
+      "label": "asks"
+    },
+    {
+      "id": "starter-edge-8",
+      "from": "starter-task",
+      "to": "starter-output",
+      "label": "produces"
+    },
+    {
+      "id": "starter-edge-9",
+      "from": "starter-metric",
+      "to": "starter-goal",
+      "label": "checks"
+    },
+    {
+      "id": "starter-edge-10",
+      "from": "starter-risk",
+      "to": "starter-task",
+      "label": "blocks"
+    }
+  ]
+}

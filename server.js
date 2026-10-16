@@ -10,7 +10,8 @@ const APP_VERSION =
   'local';
 
 app.use((req, res, next) => {
-  res.setHeader('X-BMNS-Version', APP_VERSION);
+  res.setHeader('X-AlienNode-Version', APP_VERSION);
+  res.setHeader('X-BMNS-Version', APP_VERSION); // Legacy clients
   next();
 });
 
@@ -28,22 +29,22 @@ app.use(express.static(__dirname, {
   }
 }));
 
-// Serve the actively maintained canvas source as root.
+// Serve the AlienNode project launcher as root.
 // (The legacy bundled file can become stale unless regenerated.)
 app.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.sendFile(path.join(__dirname, 'Reference Canvas.html'));
+  res.sendFile(path.join(__dirname, 'AlienNode.html'));
 });
 
 app.get('/__version', (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.json({
     ok: true,
-    app: 'bettermondaynodesystem',
+    app: 'aliennode',
     version: APP_VERSION,
-    servedRoot: 'Reference Canvas.html',
+    servedRoot: 'AlienNode.html',
     railwayEnvironment: process.env.RAILWAY_ENVIRONMENT_NAME || null,
     railwayProject: process.env.RAILWAY_PROJECT_NAME || null,
     railwayService: process.env.RAILWAY_SERVICE_NAME || null,
@@ -51,6 +52,6 @@ app.get('/__version', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`BetterMonday Node System running on port ${PORT}`);
+const server = app.listen(PORT, () => {
+  console.log(`AlienNode running on port ${server.address().port}`);
 });

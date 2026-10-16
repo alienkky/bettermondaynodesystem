@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>BetterMonday — Flow Editor</title>
+<script src="aliennode-storage.js"></script>
+<title>AlienNode — Flow Editor</title>
 <link rel="stylesheet" href="colors_and_type.css">
 <link rel="stylesheet" href="figma-theme.css">
 <style id="extras">
@@ -167,7 +168,7 @@
     <button class="btn" id="redoBtn" title="Redo (Ctrl+Shift+Z / Ctrl+Y)" disabled>⟳ Redo</button>
     <div class="sep"></div>
     <button class="btn" id="exportBtn">Export JSON</button>
-    <button class="btn primary" id="briefBtn">📋 Generate Brief</button>
+    <button class="btn primary" id="briefBtn">📋 Agent Brief</button>
     <div class="sep"></div>
     <button class="btn" id="fitBtn">Fit</button>
     <button class="btn" id="zoomIn">+</button>
@@ -217,7 +218,7 @@
         <b>⚙</b> 시스템/룰<br>
         <b>◇</b> 분기 조건<br>
         <b>▭</b> 섹션 묶음<br><br>
-        → 모두 연결 후 <b>Generate Brief</b>
+        → 모두 연결 후 <b>Agent Brief</b>
       </div>
     </aside>
 
@@ -279,7 +280,7 @@ let graph = load() || defaultGraph();
 let selected = null;
 let selectedIds = new Set(); // multi-selection of node ids
 let zoom = 1, pan = { x: 0, y: 0 };
-let nextId = Number(localStorage.getItem('bm-editor-nextid') || 100);
+let nextId = Number(AlienNodeStorage.getItem('bm-editor-nextid') || 100);
 const SNAP = 6; // px snap threshold (in canvas coords)
 
 function defaultGraph() {
@@ -289,11 +290,11 @@ function defaultGraph() {
   };
 }
 
-function uid() { const id = 'n' + (nextId++); localStorage.setItem('bm-editor-nextid', nextId); return id; }
-function uidE() { const id = 'e' + (nextId++); localStorage.setItem('bm-editor-nextid', nextId); return id; }
+function uid() { const id = 'n' + (nextId++); AlienNodeStorage.setItem('bm-editor-nextid', nextId); return id; }
+function uidE() { const id = 'e' + (nextId++); AlienNodeStorage.setItem('bm-editor-nextid', nextId); return id; }
 
-function save() { localStorage.setItem('bm-editor-canvas', JSON.stringify(graph)); pushHistoryDebounced(); }
-function load() { try { return JSON.parse(localStorage.getItem('bm-editor-canvas')); } catch { return null; } }
+function save() { AlienNodeStorage.setItem('bm-editor-canvas', JSON.stringify(graph)); pushHistoryDebounced(); }
+function load() { try { return JSON.parse(AlienNodeStorage.getItem('bm-editor-canvas')); } catch { return null; } }
 
 // ============================================================
 // UNDO / REDO HISTORY
@@ -344,7 +345,7 @@ function applyHistory() {
   if (selected?.type === 'node' && !graph.nodes.find(n => n.id === selected.id)) selected = null;
   if (selected?.type === 'edge' && !graph.edges.find(e => e.id === selected.id)) selected = null;
   selectedIds = new Set([...selectedIds].filter(id => graph.nodes.find(n => n.id === id)));
-  localStorage.setItem('bm-editor-canvas', snap);
+  AlienNodeStorage.setItem('bm-editor-canvas', snap);
   render();
   updateHistoryButtons();
 }
@@ -809,7 +810,7 @@ function select(type, id) { selected = { type, id }; render(); }
 function renderInspector() {
   const insp = document.getElementById('insp');
   if (!selected) {
-    insp.innerHTML = `<div class="empty">👈 노드/엣지 선택 시 속성 표시<br><br>화면·상태·시스템을<br>노드로 편집하세요.<br><br>완성 후 <b>Generate Brief</b>로<br>AI용 지시서 생성.</div>`;
+    insp.innerHTML = `<div class="empty">👈 노드/엣지 선택 시 속성 표시<br><br>화면·상태·시스템을<br>노드로 편집하세요.<br><br>완성 후 <b>Agent Brief</b>로<br>AI용 지시서 생성.</div>`;
     return;
   }
   if (selected.type === 'node') {
@@ -1288,7 +1289,7 @@ function generateBrief() {
     if (f && t) lines.push(`- ${f.title || f.kind} → ${t.title || t.kind}${e.label ? ` (${e.label})` : ''}`);
   });
   lines.push('');
-  lines.push('## 9. Instruction for Claude Code');
+  lines.push('## 9. Request to Agent');
   lines.push('');
   lines.push('위 캔버스 정리 내용을 바탕으로 다음 작업을 진행해주세요:');
   lines.push('1. 각 항목의 의도·관계를 먼저 요약');
